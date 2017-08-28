@@ -2549,12 +2549,6 @@
                 "authorId": {
                     "type": "integer"
                 },
-                "consentTypeIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -2570,12 +2564,6 @@
                 },
                 "questions": {
                     "$ref": "#/definitions/surveyQuestions"
-                },
-                "consentDocuments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/surveyConsentType"
-                    }
                 }
             },
             "additionalProperties": false
@@ -2636,30 +2624,6 @@
                         "$ref": "#/definitions/sectionTextUpdate"
                     },
                     "minItems": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "profileSurvey": {
-            "type": "object",
-            "required": ["exists"],
-            "properties": {
-                "exists": {
-                    "type": "boolean"
-                },
-                "survey": {
-                    "$ref": "#/definitions/survey"
-                }
-            },
-            "additionalProperties": false
-        },
-        "newProfileSurveyId": {
-            "type": "object",
-            "required": ["profileSurveyId"],
-            "properties": {
-                "profileSurveyId": {
-                    "type": "integer",
-                    "minimum": 1
                 }
             },
             "additionalProperties": false
