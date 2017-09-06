@@ -35,7 +35,6 @@ const UserAuditDAO = require('./user-audit.dao');
 const Macro = require('./macro');
 const FilterDAO = require('./filter.dao');
 const FilterAnswerDAO = require('./filter-answer.dao');
-const CohortDAO = require('./cohort.dao');
 const FileDAO = require('./file.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
@@ -89,7 +88,6 @@ const doasPerSchema = function (db, daosGenerator) {
     const macro = new Macro(db, { survey, profileSurvey });
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
-    const cohort = new CohortDAO(db, { answer, filter, registry });
     const file = new FileDAO(db);
 
     return {
@@ -128,7 +126,6 @@ const doasPerSchema = function (db, daosGenerator) {
         macro,
         filter,
         filterAnswer,
-        cohort,
         file,
     };
 };
