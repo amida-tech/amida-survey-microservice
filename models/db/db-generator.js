@@ -45,8 +45,6 @@ const answerIdentifier = require('./answer-identifier.model');
 const surveyIdentifier = require('./survey-identifier.model');
 const stagingBhrGap = require('./staging-bhr-gap.model');
 const userAudit = require('./user-audit.model');
-const researchSite = require('./research-site.model');
-const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
@@ -128,8 +126,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyIdentifier = surveyIdentifier(sequelize, Sequelize, schema);
     const StagingBhrGap = stagingBhrGap(sequelize, Sequelize, schema);
     const UserAudit = userAudit(sequelize, Sequelize, schema);
-    const ResearchSite = researchSite(sequelize, Sequelize, schema);
-    const ResearchSiteVicinity = researchSiteVicinity(sequelize, Sequelize, schema);
     const Registry = registry(sequelize, Sequelize, schema);
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
@@ -200,19 +196,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
-    ResearchSiteVicinity.belongsTo(ResearchSite, {
-        as: 'vicinity',
-        foreignKey: {
-            allowNull: false,
-            fieldName: 'researchSiteId',
-            field: 'research_site_id',
-            references: {
-                model: 'research_site',
-                key: 'id',
-            },
-        },
-    });
-
     SurveyConsent.belongsTo(Survey, {
         as: 'survey',
         onUpdate: 'NO ACTION',
@@ -276,8 +259,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         ChoiceSet,
         StagingBhrGap,
         UserAudit,
-        ResearchSite,
-        ResearchSiteVicinity,
         Registry,
         Filter,
         FilterAnswer,
