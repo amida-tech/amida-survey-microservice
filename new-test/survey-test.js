@@ -32,6 +32,4 @@ describe('## Survey tests', () => {
       });
     }
 
-
-
 });
