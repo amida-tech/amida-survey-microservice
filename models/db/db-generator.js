@@ -48,8 +48,6 @@ const userAudit = require('./user-audit.model');
 const registry = require('./registry.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
-const cohort = require('./cohort.model');
-const cohortAnswer = require('./cohort-answer.model');
 const file = require('./file.model');
 const smtpType = require('./smtp-type.model');
 
@@ -129,8 +127,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Registry = registry(sequelize, Sequelize, schema);
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
-    const Cohort = cohort(sequelize, Sequelize, schema);
-    const CohortAnswer = cohortAnswer(sequelize, Sequelize, schema);
     const File = file(sequelize, Sequelize, schema);
     const SmtpType = smtpType(sequelize, Sequelize, schema);
 
@@ -212,8 +208,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
 
     FilterAnswer.belongsTo(Question, questionBelongsTo());
     FilterAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
-    CohortAnswer.belongsTo(Question, questionBelongsTo());
-    CohortAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
     return {
         sequelize,
@@ -262,8 +256,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Registry,
         Filter,
         FilterAnswer,
-        Cohort,
-        CohortAnswer,
         File,
         SmtpType,
         schema,
