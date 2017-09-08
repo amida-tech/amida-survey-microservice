@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --harmony index.js",
-    "test": "NODE_ENV=test istanbul cover _mocha test/*.js test/use-cases/*.js",
+    "test": "istanbul cover _mocha test/*.js test/use-cases/*.js",
     "coverage": "NODE_ENV=test istanbul cover _mocha test/*.js"
   },
   "repository": {
