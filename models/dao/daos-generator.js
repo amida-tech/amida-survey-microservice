@@ -6,14 +6,7 @@ const QuestionChoiceDAO = require('./question-choice.dao');
 const QuestionDAO = require('./question.dao');
 const AnswerDAO = require('./answer.dao');
 const SurveyDAO = require('./survey.dao');
-const ConsentTypeDAO = require('./consent-type.dao');
-const ConsentDocumentDAO = require('./consent-document.dao');
-const ConsentSignatureDAO = require('./consent-signature.dao');
-const UserConsentDocumentDAO = require('./user-consent-document.dao');
-const ConsentDAO = require('./consent.dao');
 const SurveyQuestionDAO = require('./survey-question.dao');
-const SurveyConsentDAO = require('./survey-consent.dao');
-const SurveyConsentDocumentDAO = require('./survey-consent-document.dao');
 const ProfileSurveyDAO = require('./profile-survey.dao');
 const ProfileDAO = require('./profile.dao');
 const LanguageDAO = require('./language.dao');
@@ -29,7 +22,6 @@ const AnswerIdentifierDAO = require('./answer-identifier.dao');
 const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
-const ResearchSiteDAO = require('./research-site.dao');
 const Registry = require('./registry.dao');
 const UserAuditDAO = require('./user-audit.dao');
 const Macro = require('./macro');
@@ -42,16 +34,8 @@ const doasPerSchema = function (db, daosGenerator) {
     const questionIdentifier = new QuestionIdentifierDAO(db);
     const answerIdentifier = new AnswerIdentifierDAO(db);
     const surveyIdentifier = new SurveyIdentifierDAO(db);
-    const consentType = new ConsentTypeDAO(db);
-    const consentDocument = new ConsentDocumentDAO(db, { consentType });
-    const consentSignature = new ConsentSignatureDAO(db);
-    const userConsentDocument = new UserConsentDocumentDAO(db, { consentDocument });
-    const user = new UserDAO(db, { consentDocument });
+    const user = new UserDAO(db, {});
     const auth = new AuthDAO(db);
-    const surveyConsent = new SurveyConsentDAO(db, { consentType });
-    const surveyConsentDocument = new SurveyConsentDocumentDAO(db, {
-        surveyConsent, userConsentDocument,
-    });
     const section = new SectionDAO(db);
     const surveySectionQuestion = new SurveySectionQuestionDAO(db);
     const surveySection = new SurveySectionDAO(db, { section, surveySectionQuestion });
@@ -63,7 +47,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
     const answer = new AnswerDAO(db, {
-        surveyConsentDocument, surveyQuestion, answerRule, registry, generator: daosGenerator,
+        surveyQuestion, answerRule, registry, generator: daosGenerator,
     });
     const survey = new SurveyDAO(db, {
         answer,
@@ -74,16 +58,13 @@ const doasPerSchema = function (db, daosGenerator) {
         surveyIdentifier,
         surveyQuestion,
     });
-    consentDocument.survey = survey;
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
-    const consent = new ConsentDAO(db, { consentDocument });
-    const profileSurvey = new ProfileSurveyDAO(db, { survey, consentDocument, answer });
-    const profile = new ProfileDAO(db, { profileSurvey, survey, answer, user, consentSignature });
+    const profileSurvey = new ProfileSurveyDAO(db, { survey, answer });
+    const profile = new ProfileDAO(db, { profileSurvey, survey, answer, user });
     const language = new LanguageDAO(db);
     const smtp = new SmtpDAO(db);
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
-    const researchSite = new ResearchSiteDAO(db);
     const userAudit = new UserAuditDAO(db);
     const macro = new Macro(db, { survey, profileSurvey });
     const filterAnswer = new FilterAnswerDAO(db);
@@ -101,13 +82,6 @@ const doasPerSchema = function (db, daosGenerator) {
         answer,
         survey,
         userSurvey,
-        consentType,
-        consentDocument,
-        consentSignature,
-        userConsentDocument,
-        consent,
-        surveyConsent,
-        surveyConsentDocument,
         profileSurvey,
         profile,
         language,
@@ -120,7 +94,6 @@ const doasPerSchema = function (db, daosGenerator) {
         choiceSet,
         surveyQuestion,
         answerRule,
-        researchSite,
         registry,
         userAudit,
         macro,

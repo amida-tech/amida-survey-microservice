@@ -224,22 +224,6 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateConsent(userId, surveyId, action, transaction) {
-        return this.surveyConsentDocument.listSurveyConsentDocuments({
-            userId,
-            surveyId,
-            action,
-        }, {}, transaction)
-            .then((consentDocuments) => {
-                if (consentDocuments && consentDocuments.length > 0) {
-                    const err = new RRError('profileSignaturesMissing');
-                    err.consentDocuments = consentDocuments;
-                    return SPromise.reject(err);
-                }
-                return null;
-            });
-    }
-
     validateAnswers(userId, surveyId, answers, status) {
         const Answer = this.db.Answer;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
@@ -315,8 +299,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
     validateCreate(userId, surveyId, answers, status, transaction) {
-        return this.validateAnswers(userId, surveyId, answers, status)
-            .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
+        return this.validateAnswers(userId, surveyId, answers, status);
     }
 
     createAnswersTx(inputRecord, transaction) {
@@ -448,8 +431,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
     getAnswers({ userId, surveyId }) {
-        return this.validateConsent(userId, surveyId, 'read')
-            .then(() => this.listAnswers({ userId, surveyId }));
+        return this.listAnswers({ userId, surveyId });
     }
 
     exportForUser(userId) {

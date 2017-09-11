@@ -20,14 +20,6 @@ const answer = require('./answer.model');
 const survey = require('./survey.model');
 const profileSurvey = require('./profile-survey.model');
 const surveyText = require('./survey-text.model');
-const consentType = require('./consent-type.model');
-const consentTypeText = require('./consent-type-text.model');
-const consentDocument = require('./consent-document.model');
-const consentDocumentText = require('./consent-document-text.model');
-const consentSignature = require('./consent-signature.model');
-const consentSection = require('./consent-section.model');
-const consent = require('./consent.model');
-const surveyConsent = require('./survey-consent.model');
 const language = require('./language.model');
 const section = require('./section.model');
 const sectionText = require('./section-text.model');
@@ -45,8 +37,6 @@ const answerIdentifier = require('./answer-identifier.model');
 const surveyIdentifier = require('./survey-identifier.model');
 const stagingBhrGap = require('./staging-bhr-gap.model');
 const userAudit = require('./user-audit.model');
-const researchSite = require('./research-site.model');
-const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
@@ -101,14 +91,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Survey = survey(sequelize, Sequelize, schema);
     const ProfileSurvey = profileSurvey(sequelize, Sequelize, schema);
     const SurveyText = surveyText(sequelize, Sequelize, schema);
-    const ConsentType = consentType(sequelize, Sequelize, schema);
-    const ConsentTypeText = consentTypeText(sequelize, Sequelize, schema);
-    const ConsentDocument = consentDocument(sequelize, Sequelize, schema);
-    const ConsentDocumentText = consentDocumentText(sequelize, Sequelize, schema);
-    const ConsentSignature = consentSignature(sequelize, Sequelize, schema);
-    const ConsentSection = consentSection(sequelize, Sequelize, schema);
-    const Consent = consent(sequelize, Sequelize, schema);
-    const SurveyConsent = surveyConsent(sequelize, Sequelize, schema);
     const Language = language(sequelize, Sequelize, schema);
     const Section = section(sequelize, Sequelize, schema);
     const SectionText = sectionText(sequelize, Sequelize, schema);
@@ -126,8 +108,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyIdentifier = surveyIdentifier(sequelize, Sequelize, schema);
     const StagingBhrGap = stagingBhrGap(sequelize, Sequelize, schema);
     const UserAudit = userAudit(sequelize, Sequelize, schema);
-    const ResearchSite = researchSite(sequelize, Sequelize, schema);
-    const ResearchSiteVicinity = researchSiteVicinity(sequelize, Sequelize, schema);
     const Registry = registry(sequelize, Sequelize, schema);
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
@@ -196,33 +176,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
-    ResearchSiteVicinity.belongsTo(ResearchSite, {
-        as: 'vicinity',
-        foreignKey: {
-            allowNull: false,
-            fieldName: 'researchSiteId',
-            field: 'research_site_id',
-            references: {
-                model: 'research_site',
-                key: 'id',
-            },
-        },
-    });
-
-    SurveyConsent.belongsTo(Survey, {
-        as: 'survey',
-        onUpdate: 'NO ACTION',
-        foreignKey: {
-            allowNull: false,
-            fieldName: 'surveyId',
-            field: 'survey_id',
-            references: {
-                model: 'survey',
-                key: 'id',
-            },
-        },
-    });
-
     FilterAnswer.belongsTo(Question, questionBelongsTo());
     FilterAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
@@ -248,14 +201,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Survey,
         SurveyText,
         ProfileSurvey,
-        ConsentType,
-        ConsentTypeText,
-        ConsentDocument,
-        ConsentDocumentText,
-        ConsentSignature,
-        ConsentSection,
-        Consent,
-        SurveyConsent,
         Language,
         SmtpText,
         Smtp,
@@ -270,8 +215,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         ChoiceSet,
         StagingBhrGap,
         UserAudit,
-        ResearchSite,
-        ResearchSiteVicinity,
         Registry,
         Filter,
         FilterAnswer,
