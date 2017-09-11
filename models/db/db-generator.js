@@ -20,14 +20,6 @@ const answer = require('./answer.model');
 const survey = require('./survey.model');
 const profileSurvey = require('./profile-survey.model');
 const surveyText = require('./survey-text.model');
-const consentType = require('./consent-type.model');
-const consentTypeText = require('./consent-type-text.model');
-const consentDocument = require('./consent-document.model');
-const consentDocumentText = require('./consent-document-text.model');
-const consentSignature = require('./consent-signature.model');
-const consentSection = require('./consent-section.model');
-const consent = require('./consent.model');
-const surveyConsent = require('./survey-consent.model');
 const language = require('./language.model');
 const section = require('./section.model');
 const sectionText = require('./section-text.model');
@@ -99,14 +91,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Survey = survey(sequelize, Sequelize, schema);
     const ProfileSurvey = profileSurvey(sequelize, Sequelize, schema);
     const SurveyText = surveyText(sequelize, Sequelize, schema);
-    const ConsentType = consentType(sequelize, Sequelize, schema);
-    const ConsentTypeText = consentTypeText(sequelize, Sequelize, schema);
-    const ConsentDocument = consentDocument(sequelize, Sequelize, schema);
-    const ConsentDocumentText = consentDocumentText(sequelize, Sequelize, schema);
-    const ConsentSignature = consentSignature(sequelize, Sequelize, schema);
-    const ConsentSection = consentSection(sequelize, Sequelize, schema);
-    const Consent = consent(sequelize, Sequelize, schema);
-    const SurveyConsent = surveyConsent(sequelize, Sequelize, schema);
     const Language = language(sequelize, Sequelize, schema);
     const Section = section(sequelize, Sequelize, schema);
     const SectionText = sectionText(sequelize, Sequelize, schema);
@@ -192,20 +176,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
-    SurveyConsent.belongsTo(Survey, {
-        as: 'survey',
-        onUpdate: 'NO ACTION',
-        foreignKey: {
-            allowNull: false,
-            fieldName: 'surveyId',
-            field: 'survey_id',
-            references: {
-                model: 'survey',
-                key: 'id',
-            },
-        },
-    });
-
     FilterAnswer.belongsTo(Question, questionBelongsTo());
     FilterAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
@@ -231,14 +201,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Survey,
         SurveyText,
         ProfileSurvey,
-        ConsentType,
-        ConsentTypeText,
-        ConsentDocument,
-        ConsentDocumentText,
-        ConsentSignature,
-        ConsentSection,
-        Consent,
-        SurveyConsent,
         Language,
         SmtpText,
         Smtp,

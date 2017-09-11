@@ -510,14 +510,12 @@ module.exports = class SurveyDAO extends Translatable {
         const SurveyQuestion = this.db.SurveyQuestion;
         const SurveySection = this.db.SurveySection;
         const ProfileSurvey = this.db.ProfileSurvey;
-        const SurveyConsent = this.db.SurveyConsent;
         const Answer = this.db.Answer;
         return this.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction }))
-                .then(() => Answer.destroy({ where: { surveyId: id }, transaction }))
-                .then(() => SurveyConsent.destroy({ where: { surveyId: id }, transaction })));
+                .then(() => Answer.destroy({ where: { surveyId: id }, transaction })));
     }
 
     listSurveys(opt = {}) {
@@ -558,42 +556,8 @@ module.exports = class SurveyDAO extends Translatable {
                 .then(surveys => surveys.map(survey => survey.id));
         }
         return this.db.Survey.findAll(options)
-            .then(surveys => this.updateAllTexts(surveys, options.language))
-            .then((surveys) => {
-                if (scope === 'export') {
-                    return this.updateSurveyListExport(surveys);
-                }
-                if (!opt.admin) {
-                    return surveys;
-                }
-                const surveyIds = surveys.map(({ id }) => id);
-                return this.db.SurveyConsent.findAll({
-                    where: { surveyId: { $in: surveyIds } },
-                    raw: true,
-                    attributes: ['surveyId', 'consentTypeId'],
-                    order: 'consent_type_id',
-                })
-                    .then(records => records.reduce((r, record) => {
-                        const id = record.surveyId;
-                        const current = r.get(id);
-                        if (!current) {
-                            r.set(id, [record.consentTypeId]);
-                            return r;
-                        }
-                        current.push(record.consentTypeId);
-                        return r;
-                    }, new Map()))
-                    .then((map) => {
-                        surveys.forEach((r) => {
-                            const id = r.id;
-                            const consentTypeIds = map.get(id);
-                            if (consentTypeIds) {
-                                r.consentTypeIds = _.uniq(consentTypeIds);
-                            }
-                        });
-                        return surveys;
-                    });
-            });
+            .then(surveys => this.updateAllTexts(surveys, options.language));
+
     }
 
     updateSurveyListExport(surveys) {
@@ -679,8 +643,8 @@ module.exports = class SurveyDAO extends Translatable {
                                         }
                                         return survey;
                                     })));
-            })
-            .then((survey) => {
+            });
+            /*.then((survey) => {
                 if (!options.admin) {
                     return survey;
                 }
@@ -697,7 +661,7 @@ module.exports = class SurveyDAO extends Translatable {
                         }
                         return survey;
                     });
-            });
+            });*/
     }
 
     updateQuestionQuestionsMap(questions, map) {
