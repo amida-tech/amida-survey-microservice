@@ -18,7 +18,6 @@ const surveyQuestion = require('./survey-question.model');
 const answerType = require('./answer-type.model');
 const answer = require('./answer.model');
 const survey = require('./survey.model');
-const profileSurvey = require('./profile-survey.model');
 const surveyText = require('./survey-text.model');
 const language = require('./language.model');
 const section = require('./section.model');
@@ -89,7 +88,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const AnswerType = answerType(sequelize, Sequelize, schema);
     const Answer = answer(sequelize, Sequelize, schema);
     const Survey = survey(sequelize, Sequelize, schema);
-    const ProfileSurvey = profileSurvey(sequelize, Sequelize, schema);
     const SurveyText = surveyText(sequelize, Sequelize, schema);
     const Language = language(sequelize, Sequelize, schema);
     const Section = section(sequelize, Sequelize, schema);
@@ -200,7 +198,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Answer,
         Survey,
         SurveyText,
-        ProfileSurvey,
         Language,
         SmtpText,
         Smtp,

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node --harmony index.js",
-    "test": "istanbul cover _mocha test/*.js test/use-cases/*.js",
-    "coverage": "NODE_ENV=test istanbul cover _mocha test/*.js"
+    "test": "NODE_ENV=test mocha test/*.js test/use-cases/*.js test/import-export/*.js",
+    "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
   },
   "repository": {
     "type": "git",
