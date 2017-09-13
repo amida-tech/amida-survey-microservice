@@ -7,8 +7,6 @@ const QuestionDAO = require('./question.dao');
 const AnswerDAO = require('./answer.dao');
 const SurveyDAO = require('./survey.dao');
 const SurveyQuestionDAO = require('./survey-question.dao');
-const ProfileSurveyDAO = require('./profile-survey.dao');
-const ProfileDAO = require('./profile.dao');
 const LanguageDAO = require('./language.dao');
 const SectionDAO = require('./section.dao');
 const SurveySectionQuestionDAO = require('./survey-section-question.dao');
@@ -59,14 +57,12 @@ const doasPerSchema = function (db, daosGenerator) {
         surveyQuestion,
     });
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
-    const profileSurvey = new ProfileSurveyDAO(db, { survey, answer });
-    const profile = new ProfileDAO(db, { profileSurvey, survey, answer, user });
     const language = new LanguageDAO(db);
     const smtp = new SmtpDAO(db);
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
     const userAudit = new UserAuditDAO(db);
-    const macro = new Macro(db, { survey, profileSurvey });
+    const macro = new Macro(db, { survey});
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
     const file = new FileDAO(db);
@@ -82,8 +78,6 @@ const doasPerSchema = function (db, daosGenerator) {
         answer,
         survey,
         userSurvey,
-        profileSurvey,
-        profile,
         language,
         smtp,
         assessment,
