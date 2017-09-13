@@ -485,8 +485,6 @@ module.exports = class SurveyDAO extends Translatable {
                         const record = { surveyId: id };
                         return survey.destroy({ transaction })
                             .then(() => this.db.SurveyQuestion.destroy({ where, transaction }))
-                            .then(() => this.db.ProfileSurvey.destroy({ where, transaction }))
-                            .then(() => this.db.ProfileSurvey.create(record, { transaction }))
                             .then(() => id);
                     });
             });
@@ -509,12 +507,10 @@ module.exports = class SurveyDAO extends Translatable {
         const Survey = this.db.Survey;
         const SurveyQuestion = this.db.SurveyQuestion;
         const SurveySection = this.db.SurveySection;
-        const ProfileSurvey = this.db.ProfileSurvey;
         const Answer = this.db.Answer;
         return this.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
-                .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => Answer.destroy({ where: { surveyId: id }, transaction })));
     }
 
