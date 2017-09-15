@@ -191,7 +191,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (question.choiceSetId) {
                     return this.questionChoice.listQuestionChoices(question.choiceSetId, language)
                         .then((choices) => {
-                            question.choices = choices.map(({ id, text, code }) => ({ id, text, code })); // eslint-disable-line no-param-reassign, max-len
+                            question.choices = choices.map(choice => _.omit(choice, ['type', 'choiceSetId'])); // eslint-disable-line no-param-reassign, max-len
                             delete question.choiceSetId; // eslint-disable-line no-param-reassign, max-len
                             return question;
                         });
@@ -455,6 +455,9 @@ module.exports = class QuestionDAO extends Translatable {
                     if (choice.code) {
                         line.choiceCode = choice.code;
                     }
+                    if (choice.weight || choice.weight === 0) {
+                        line.choiceWeight = choice.weight;
+                    }
                     if (choice.meta && options.meta) {
                         Object.assign(questionLine, exportMetaQuestionProperties(choice.meta, options.meta, true, false)); // eslint-disable-line max-len
                     }
@@ -512,6 +515,9 @@ module.exports = class QuestionDAO extends Translatable {
                         }
                         if (record.choiceCode) {
                             choice.code = record.choiceCode;
+                        }
+                        if (record.choiceWeight) {
+                            choice.weight = parseInt(record.choiceWeight, 10);
                         }
                         if (options.meta) {
                             const meta = importMetaQuestionProperties(record, options.meta, 'choice'); // eslint-disable-line max-len

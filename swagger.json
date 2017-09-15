@@ -3151,6 +3151,9 @@
                 "code": {
                     "type": "string"
                 },
+                "weight": {
+                    "type": "integer"
+                },
                 "type": {
                     "$ref": "#/definitions/choiceType"
                 },
@@ -3792,6 +3795,9 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
                 },
                 "answerIdentifier": {
                     "$ref": "#/definitions/newIdentifier"
@@ -4480,6 +4486,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -4517,6 +4526,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -4570,6 +4582,9 @@
                 "code": {
                     "type": "string"
                 },
+                "weight": {
+                    "type": "integer"
+                },
                 "meta": {
                     "type": "object"
                 },
@@ -4596,6 +4611,9 @@
                     "minLength": 1
                 },
                 "code": {
+                    "type": "string"
+                },
+                "weight": {
                     "type": "string"
                 },
                 "meta": {
