@@ -29,6 +29,9 @@ module.exports = function questionChoice(sequelize, Sequelize, schema) {
         code: {
             type: Sequelize.TEXT,
         },
+        weight: {
+            type: Sequelize.INTEGER,
+        },
         meta: {
             type: Sequelize.JSON,
         },

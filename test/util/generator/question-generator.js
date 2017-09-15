@@ -90,10 +90,12 @@ module.exports = class QuestionGenerator {
         const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
         const choices = this.newChoices(options.choiceCount);
-        if (((typeChoiceIndex % 3) === 0) && !noOneOf) {
+        if (((typeChoiceIndex % 4) === 0) && !noOneOf) {
             question.oneOfChoices = choices;
-        } else if ((typeChoiceIndex % 3) === 1) {
+        } else if ((typeChoiceIndex % 4) === 1) {
             question.choices = choices.map(choice => ({ text: choice, code: `code_${choice}` }));
+        } else if ((typeChoiceIndex % 4) === 2) {
+            question.choices = choices.map((choice, index) => ({ text: choice, weight: this.typeChoiceIndex + index }));
         } else {
             question.choices = choices.map(choice => ({ text: choice }));
         }

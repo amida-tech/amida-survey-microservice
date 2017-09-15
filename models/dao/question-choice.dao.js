@@ -121,7 +121,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.findAll({
             raw: true,
             where: { questionId },
-            attributes: ['id', 'type', 'meta', 'code'],
+            attributes: ['id', 'type', 'meta', 'code', 'weight'],
             order: 'line',
         })
             .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
@@ -131,7 +131,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     getAllQuestionChoices(questionIds, language) {
         const options = {
             raw: true,
-            attributes: ['id', 'type', 'questionId', 'meta', 'code'],
+            attributes: ['id', 'type', 'questionId', 'meta', 'code', 'weight'],
             order: 'line',
         };
         if (questionIds) {
@@ -146,7 +146,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     getAllChoiceSetChoices(choiceSetIds, language) {
         const options = {
             raw: true,
-            attributes: ['id', 'type', 'choiceSetId', 'meta', 'code'],
+            attributes: ['id', 'type', 'choiceSetId', 'meta', 'code', 'weight'],
             order: ['choiceSetId', 'line'],
         };
         if (choiceSetIds) {
@@ -164,7 +164,8 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     listQuestionChoices(choiceSetId, language) {
         const QuestionChoice = this.db.QuestionChoice;
-        return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code'], order: 'line' })
+        return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code', 'weight'], order: 'line' })
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
     }
 

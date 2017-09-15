@@ -145,8 +145,8 @@ describe('question integration', () => {
         };
     };
 
-    const rerrSuperTestUpdatedQxFn = function (index) {
-        return function rerrSuperTestUpdatedQx(done) {
+    const restoreUpdatedUpdatedQxFn = function (index) {
+        return function restoreUpdatedUpdatedQx(done) {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
@@ -162,7 +162,7 @@ describe('question integration', () => {
     _.range(10).forEach((i) => {
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
-        it(`rerrSuperTest question ${i} text`, rerrSuperTestUpdatedQxFn(i));
+        it(`restore updated question ${i} text`, restoreUpdatedUpdatedQxFn(i));
     });
 
     it('list questions (complete)', tests.listQuestionsFn('complete'));
@@ -239,7 +239,7 @@ describe('question integration', () => {
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
-        it(`rerrSuperTest question ${i} text`, rerrSuperTestUpdatedQxFn(i));
+        it(`restore updated question ${i} text`, restoreUpdatedUpdatedQxFn(i));
     });
 
     it('list common questions', () => rrSuperTest.get('/questions', true, 200, { 'common-only': true })

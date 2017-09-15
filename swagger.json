@@ -2334,11 +2334,6 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
-        },
-        "any": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
         }
     },
     "responses": {
@@ -2352,15 +2347,6 @@
             "description": "Successful response",
             "schema": {
                 "$ref": "#/definitions/id"
-            }
-        },
-        "anyArray": {
-            "description": "Unrestricted object.",
-            "schema": {
-                "type": "array",
-                "items": {
-                    "type": "object"
-                }
             }
         }
     },
@@ -2840,28 +2826,6 @@
             },
             "minItems": 1
         },
-        "surveyConsentType": {
-            "type": "object",
-            "required": ["id", "name", "title"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "createdAt": {
-                    "type": "string",
-                    "format": "dateTime"
-                },
-                "title": {
-                    "type": "string"
-                }
-             },
-            "additionalProperties": false
-        },
         "survey": {
             "type": "object",
             "required": [
@@ -3150,6 +3114,9 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
@@ -3793,6 +3760,9 @@
                 "code": {
                     "type": "string"
                 },
+                "weight": {
+                    "type": "integer"
+                },
                 "answerIdentifier": {
                     "$ref": "#/definitions/newIdentifier"
                 }
@@ -3894,55 +3864,6 @@
                 "$ref": "#/definitions/linkedAnswer"
             }
         },
-        "newUserProfile": {
-            "type": "object",
-            "required": [
-                "user"
-            ],
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/newUser"
-                },
-                "answers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/linkedAnswer"
-                    }
-                },
-                "signatures": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    }
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "updateUserProfile": {
-            "type": "object",
-            "required": ["user"],
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/userPatch"
-                },
-                "answers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/linkedAnswer"
-                    }
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
         "surveyAnswers": {
             "type": "object",
             "required": [
@@ -3967,17 +3888,6 @@
                 }
             },
             "additionalProperties": false
-        },
-        "userProfile": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/user"
-                },
-                "survey": {
-                    "$ref": "#/definitions/survey"
-                }
-            }
         },
         "language": {
             "type": "object",
@@ -4184,111 +4094,6 @@
             },
             "additionalProperties": false
         },
-        "newSurveyConsent": {
-            "type": "object",
-            "required": ["surveyId", "consentTypeId", "action"],
-            "properties": {
-                "surveyId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentTypeId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "action": {
-                    "type": "string",
-                    "enum": ["read", "create"]
-                }
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentInfo": {
-            "type": "object",
-            "required": ["id", "consentTypeId", "action", "surveyId"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "surveyId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentName": {
-                    "type": "string"
-                },
-                "consentTypeId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentTypeName": {
-                    "type": "string"
-                },
-                "consentTypeTitle": {
-                    "type": "string"
-                },
-                "action": {
-                    "type": "string",
-                    "enum": ["read", "create"]
-                }
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentDashboard": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/surveyConsentInfo"
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentDocumentInfo": {
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "createdAt": {
-                    "type": "string",
-                    "format": "dateTime"
-                },
-                "consentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentName": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentDocumentDashboard": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/surveyConsentDocumentInfo"
-            },
-            "additionalProperties": false
-        },
         "assessmentSurveys": {
             "type": "array",
             "items": {
@@ -4480,6 +4285,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -4517,6 +4325,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -4570,6 +4381,9 @@
                 "code": {
                     "type": "string"
                 },
+                "weight": {
+                    "type": "integer"
+                },
                 "meta": {
                     "type": "object"
                 },
@@ -4598,6 +4412,9 @@
                 "code": {
                     "type": "string"
                 },
+                "weight": {
+                    "type": "string"
+                },
                 "meta": {
                     "type": "object"
                 },
@@ -4615,62 +4432,6 @@
                 }
             },
             "additionalProperties": false
-        },
-        "zip": {
-            "type": "string",
-            "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})"
-        },
-        "newRegistry": {
-            "type": "object",
-            "required": ["name"],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "url": {
-                    "type": "string",
-                    "format": "uri",
-                    "minLength": 1
-                },
-                "schema": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false,
-            "minProperties": 2,
-            "maxProperties": 2
-        },
-        "registry": {
-            "type": "object",
-            "required": ["id", "name"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "url": {
-                    "type": "string",
-                    "format": "uri",
-                    "minLength": 1
-                },
-                "schema": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "registries": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/registries"
-            }
         },
         "userAudit": {
             "type": "object",
