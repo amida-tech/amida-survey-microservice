@@ -11,7 +11,6 @@ const LanguageDAO = require('./language.dao');
 const SectionDAO = require('./section.dao');
 const SurveySectionQuestionDAO = require('./survey-section-question.dao');
 const SurveySectionDAO = require('./survey-section.dao');
-const SmtpDAO = require('./smtp.dao');
 const UserSurveyDAO = require('./user-survey.dao');
 const AssessmentDAO = require('./assessment.dao');
 const UserAssessmentDAO = require('./user-assessment.dao');
@@ -20,15 +19,12 @@ const AnswerIdentifierDAO = require('./answer-identifier.dao');
 const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
-const Registry = require('./registry.dao');
 const UserAuditDAO = require('./user-audit.dao');
-const Macro = require('./macro');
 const FilterDAO = require('./filter.dao');
 const FilterAnswerDAO = require('./filter-answer.dao');
 const FileDAO = require('./file.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
-    const registry = new Registry(db);
     const questionIdentifier = new QuestionIdentifierDAO(db);
     const answerIdentifier = new AnswerIdentifierDAO(db);
     const surveyIdentifier = new SurveyIdentifierDAO(db);
@@ -45,7 +41,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
     const answer = new AnswerDAO(db, {
-        surveyQuestion, answerRule, registry, generator: daosGenerator,
+        surveyQuestion, answerRule, generator: daosGenerator,
     });
     const survey = new SurveyDAO(db, {
         answer,
@@ -58,11 +54,9 @@ const doasPerSchema = function (db, daosGenerator) {
     });
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
     const language = new LanguageDAO(db);
-    const smtp = new SmtpDAO(db);
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
     const userAudit = new UserAuditDAO(db);
-    const macro = new Macro(db, { survey });
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
     const file = new FileDAO(db);
@@ -79,7 +73,6 @@ const doasPerSchema = function (db, daosGenerator) {
         survey,
         userSurvey,
         language,
-        smtp,
         assessment,
         userAssessment,
         questionIdentifier,
@@ -88,9 +81,7 @@ const doasPerSchema = function (db, daosGenerator) {
         choiceSet,
         surveyQuestion,
         answerRule,
-        registry,
         userAudit,
-        macro,
         filter,
         filterAnswer,
         file,

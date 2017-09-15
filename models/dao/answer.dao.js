@@ -5,11 +5,9 @@ const _ = require('lodash');
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const logger = require('../../logger');
-const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 
 const answerCommon = require('./answer-common');
-const registryCommon = require('./registry-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -585,12 +583,7 @@ module.exports = class AnswerDAO extends Base {
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    countParticipants(criteria, federatedModels) {
-        if (criteria.federated) {
-            return this.localCriteriaToFederatedCriteria(criteria)
-                .then(fc => this.federatedCountParticipants(federatedModels, fc));
-        }
-
+    countParticipants(criteria) {
         // if criteria is empty, return count of all users
         if (!_.get(criteria, 'questions.length')) {
             return this.countAllParticipants();
@@ -808,25 +801,6 @@ module.exports = class AnswerDAO extends Base {
         }
         return this.federatedCriteriaToLocalCriteria(federatedCriteria)
             .then(criteria => this.countParticipants(criteria));
-    }
-
-    federatedCountParticipants(federatedModels, criteria) {
-        return this.registry.findRegistries()
-            .then((registries) => {
-                const promises = registries.map(({ name, schema, url }) => {
-                    if (schema) {
-                        const models = federatedModels[schema];
-                        return models.answer.countParticipantsIdentifiers(criteria);
-                    }
-                    return registryCommon.requestPost(name, criteria, url, 'answers/identifier-queries');
-                });
-                return SPromise.all(promises);
-            })
-            .then(federated => this.countParticipantsIdentifiers(criteria)
-                .then((local) => {
-                    const count = federated.reduce((r, p) => r + p.count, local.count);
-                    return { count };
-                }));
     }
 
     fillAnswerIdentifiers(answers) {
