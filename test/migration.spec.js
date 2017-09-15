@@ -1,4 +1,4 @@
-/* global describe,it*/
+/* global xdescribe,it*/
 
 'use strict';
 
@@ -35,7 +35,7 @@ const checkBootstrapData = function (tableName) {
     return checkData(query);
 };
 
-describe('migration spec', () => {
+xdescribe('migration spec', () => {
     if (!config.db.schema || config.db.schema === 'public') {
         it('drop all schemas', function dropAllSchemas() {
             return db.sequelize.dropAllSchemas();

@@ -1,4 +1,4 @@
-/* global before,describe,it,it*/
+/* global before,xdescribe,it,it*/
 
 'use strict';
 
@@ -30,7 +30,7 @@ const expect = chai.expect;
 
 const shared = new SharedSpec();
 
-describe('bhr gap import-export unit', () => {
+xdescribe('bhr gap import-export unit', () => {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/bhr-gap');
     const outputDir = path.join(__dirname, '../generated');
 

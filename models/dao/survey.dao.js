@@ -552,8 +552,13 @@ module.exports = class SurveyDAO extends Translatable {
                 .then(surveys => surveys.map(survey => survey.id));
         }
         return this.db.Survey.findAll(options)
-            .then(surveys => this.updateAllTexts(surveys, options.language));
-
+            .then(surveys => this.updateAllTexts(surveys, options.language))
+            .then((surveys) => {
+                if (scope === 'export') {
+                    return this.updateSurveyListExport(surveys);
+                }
+                return surveys;
+            });
     }
 
     updateSurveyListExport(surveys) {
