@@ -298,7 +298,7 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateCreate(userId, surveyId, answers, status, transaction) {
+    validateCreate(userId, surveyId, answers, status) {
         return this.validateAnswers(userId, surveyId, answers, status);
     }
 

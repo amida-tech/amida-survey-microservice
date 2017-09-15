@@ -6,12 +6,6 @@ const config = require('./config');
 const appGenerator = require('./app-generator');
 const modelsGenerator = require('./models/generator');
 
-const consentSeed = require('./test/util/consent-seed');
-const consentExample = require('./test/fixtures/example/consent-demo');
-
-const researchSiteSeed = require('./test/util/research-site-seed');
-const researchSiteExamples = require('./test/fixtures/example/research-site-demo');
-
 const gapDemoSurveySeed = require('./test/util/gap-demo-survey-seed');
 const gapDemoSurveys = require('./test/fixtures/example/gap-demo-survey');
 
@@ -43,8 +37,6 @@ const models = modelsGenerator(schema);
 
 const initializeData = function (m) {
     return m.profileSurvey.createProfileSurvey(survey)
-        .then(() => consentSeed(consentExample, m))
-        .then(() => researchSiteSeed(researchSiteExamples, m))
         .then(() => gapDemoSurveySeed(gapDemoSurveys, m));
 };
 

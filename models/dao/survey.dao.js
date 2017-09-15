@@ -482,7 +482,6 @@ module.exports = class SurveyDAO extends Translatable {
                     })
                     .then((id) => {
                         const where = { surveyId: survey.id };
-                        const record = { surveyId: id };
                         return survey.destroy({ transaction })
                             .then(() => this.db.SurveyQuestion.destroy({ where, transaction }))
                             .then(() => id);
@@ -645,24 +644,6 @@ module.exports = class SurveyDAO extends Translatable {
                                         return survey;
                                     })));
             });
-            /*.then((survey) => {
-                if (!options.admin) {
-                    return survey;
-                }
-                return this.db.SurveyConsent.findAll({
-                    where: { surveyId: survey.id },
-                    raw: true,
-                    attributes: ['consentTypeId'],
-                    order: 'consent_type_id',
-                })
-                    .then(records => records.map(r => r.consentTypeId))
-                    .then((consentTypeIds) => {
-                        if (consentTypeIds.length) {
-                            survey.consentTypeIds = _.uniq(consentTypeIds); // eslint-disable-line max-len, no-param-reassign
-                        }
-                        return survey;
-                    });
-            });*/
     }
 
     updateQuestionQuestionsMap(questions, map) {

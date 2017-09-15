@@ -102,7 +102,9 @@ module.exports = class QuestionDAO extends Translatable {
                                         choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' })); // eslint-disable-line max-len
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(chs => (result.choices = chs)); // eslint-disable-line no-param-reassign, max-len
+                                        .then((chs) => {
+                                            result.choices = chs; // eslint-disable-line no-param-reassign, max-len
+                                        });
                                 }
                                 return null;
                             })

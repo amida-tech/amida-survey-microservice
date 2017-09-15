@@ -1,4 +1,4 @@
-/* global xdescribe,it*/
+/* global xdescribe,it */
 
 'use strict';
 
