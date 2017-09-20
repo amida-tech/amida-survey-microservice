@@ -32,6 +32,37 @@ const noAuth = {
     statusCode: 401,
 };
 
+const authorization = function(req, res, next) {
+    const isAuth = req.url.indexOf('/auth/basic') >= 0;
+    const token = _.get(req, 'cookies.rr-jwt-token');
+    if(!token && !isAuth) {
+       res.send(noAuth);
+    } else if(token && !isAuth){
+
+      jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+
+          if (!err) {
+            return req.models.auth.getUser(payload)
+                .then((user) => {
+                    if (user) {
+                        req.user = user;
+                        _.set(req, 'headers.authorization', `Bearer ${token}`);
+                        next();
+                    }
+
+                });
+            next();
+          } else {
+            res.send(invalidAuth + err);
+          }
+
+      });
+    } else {
+      next();
+    }
+
+}
+
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
     const jsonErr = jsutil.errToJSON(err);
@@ -40,6 +71,8 @@ const errHandler = function (err, req, res, next) { // eslint-disable-line no-un
     }
     res.json(jsonErr);
 };
+
+
 
 const userAudit = function (req, res, next) {
     const userId = _.get(req, 'user.id');
@@ -123,7 +156,7 @@ exports.initialize = function initialize(app, options, callback) {
         }
 
       //  app.use(middleware.swaggerSecurity(security));
-
+      app.use(authorization);
         app.use(userAudit);
 
         const controllers = options.controllers || './controllers';
@@ -191,45 +224,6 @@ exports.newExpress = function newExpress(options = {}) {
     app.enable('trust proxy');
     app.use(passport.initialize());
 
-    app.use((req, res, next) => {
-        const isAuth = req.url.indexOf('/auth/basic') >= 0;
-        const token = _.get(req, 'cookies.rr-jwt-token');
-        if(!token && !isAuth) {
-          // res.send(noAuth);
-        } else if(token && !isAuth){
-
-          jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-              console.log(isAuth)
-              console.log("is req.models undefined?: ", req.models)
-              if (!err) {
-                // return req.models.auth.getUser(payload)
-                //     .then((user) => {
-                //         if (user) {
-                //             req.user = user;
-                //
-                //             _.set(req, 'headers.authorization', `Bearer ${token}`);
-                //
-                //             next();
-                //         }
-                //
-                //     });
-                next();
-              } else {
-                res.send(invalidAuth + err);
-              }
-
-          });
-        } else {
-          next()
-        }
-
-
-
-
-
-
-
-    });
 
     return app;
 };
