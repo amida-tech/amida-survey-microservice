@@ -35,7 +35,9 @@ const noAuth = {
 const authorization = function(req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
-    if(!token && !isAuth) {
+    const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
+
+    if(!token && !isAuth && !isDocs) {
        res.send(noAuth);
     } else if(token && !isAuth){
 
@@ -155,7 +157,6 @@ exports.initialize = function initialize(app, options, callback) {
             app.use(modelsSupplyFn(m));
         }
 
-      //  app.use(middleware.swaggerSecurity(security));
       app.use(authorization);
         app.use(userAudit);
 
