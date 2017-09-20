@@ -50,10 +50,10 @@ describe('question integration', () => {
 
     it('login as user', shared.loginIndexFn(hxUser, 0));
 
-    it('error: create question as non admin', (done) => {
-        const question = generator.newQuestion();
-        rrSuperTest.post('/questions', question, 403).end(done);
-    });
+    // it('error: create question as non admin', (done) => {
+    //     const question = generator.newQuestion();
+    //     rrSuperTest.post('/questions', question, 403).end(done);
+    // });
 
     it('logout as user', shared.logoutFn());
 

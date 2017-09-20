@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
+const jwt = require('jsonwebtoken');
 
 const modelsGenerator = require('./models/generator');
 const swaggerUtil = require('./lib/swagger-util');
@@ -18,6 +19,18 @@ const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
+
+const invalidAuth = {
+    message: 'Invalid authorization',
+    code: 'invalid_auth',
+    statusCode: 401,
+};
+
+const noAuth = {
+    message: 'No authorization',
+    code: 'no_auth',
+    statusCode: 401,
+};
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
@@ -109,7 +122,7 @@ exports.initialize = function initialize(app, options, callback) {
             app.use(modelsSupplyFn(m));
         }
 
-        app.use(middleware.swaggerSecurity(security));
+      //  app.use(middleware.swaggerSecurity(security));
 
         app.use(userAudit);
 
@@ -181,10 +194,41 @@ exports.newExpress = function newExpress(options = {}) {
     app.use((req, res, next) => {
         const isAuth = req.url.indexOf('/auth/basic') >= 0;
         const token = _.get(req, 'cookies.rr-jwt-token');
-        if (token && !isAuth) {
-            _.set(req, 'headers.authorization', `Bearer ${token}`);
+        if(!token && !isAuth) {
+          // res.send(noAuth);
+        } else if(token && !isAuth){
+
+          jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+              console.log(isAuth)
+              console.log("is req.models undefined?: ", req.models)
+              if (!err) {
+                // return req.models.auth.getUser(payload)
+                //     .then((user) => {
+                //         if (user) {
+                //             req.user = user;
+                //
+                //             _.set(req, 'headers.authorization', `Bearer ${token}`);
+                //
+                //             next();
+                //         }
+                //
+                //     });
+                next();
+              } else {
+                res.send(invalidAuth + err);
+              }
+
+          });
+        } else {
+          next()
         }
-        next();
+
+
+
+
+
+
+
     });
 
     return app;
