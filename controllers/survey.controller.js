@@ -21,7 +21,7 @@ exports.createSurvey = function createSurvey(req, res) {
         return;
     }
     const userId = req.user.id;
-    req.models.survey.createOrReplaceSurvey(req.body)
+    req.models.survey.createOrReplaceSurvey(req.body, userId)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };
@@ -59,7 +59,7 @@ exports.listSurveys = function listSurveys(req, res) {
 };
 
 exports.getAnsweredSurvey = function getAnsweredSurvey(req, res) {
-    const userId = req.user.id;
+    const userId = res.user.id;
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
