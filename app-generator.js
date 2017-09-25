@@ -32,14 +32,22 @@ const noAuth = {
     statusCode: 401,
 };
 
+const invalidEndpoint = {
+    message: 'Endpoint does not exist',
+    code: 'invalid_endpoint',
+    statusCode: 404,
+};
 const authorization = function(req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
+    console.log(req.url)
     if(!token && !isAuth && !isDocs) {
+       console.log("this should happen")
+       res.statusCode = 401;
        res.send(noAuth);
     } else if(token && !isAuth){
-
+      console.log("token exists")
       jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
 
           if (!err) {
@@ -61,6 +69,7 @@ const authorization = function(req, res, next) {
     } else {
       next();
     }
+
 
 }
 
@@ -142,11 +151,23 @@ exports.initialize = function initialize(app, options, callback) {
     const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
+
+
         app.use(middleware.swaggerMetadata());
 
+        app.use((req, res, next) => {
+          if(!req.swagger) {
+            res.statusCode = 404;
+            res.send(invalidEndpoint);
+          } else {
+            next();
+          }
+        })
         app.use(middleware.swaggerValidator({
             validateResponse: true,
         }));
+
+
 
         const m = options.models || modelsGenerator(schema);
         app.locals.models = m; // eslint-disable-line no-param-reassign
@@ -157,7 +178,7 @@ exports.initialize = function initialize(app, options, callback) {
         }
 
 
-      app.use(authorization);
+        app.use(authorization);
         app.use(userAudit);
 
         const controllers = options.controllers || './controllers';
@@ -166,6 +187,7 @@ exports.initialize = function initialize(app, options, callback) {
             ignoreMissingHandlers: true,
             controllers,
         }));
+
 
         app.use(middleware.swaggerUi());
 
