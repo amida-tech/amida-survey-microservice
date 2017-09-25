@@ -585,10 +585,8 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        const attributes = ['id', 'meta', 'status'];
-        if (options.admin) {
-            attributes.push('authorId');
-        }
+        const attributes = ['authorId','id', 'meta', 'status'];
+      
         let opt = { where: { id }, raw: true, attributes };
         if (options.override) {
             opt = _.assign({}, opt, options.override);

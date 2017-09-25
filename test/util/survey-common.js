@@ -231,7 +231,8 @@ const SpecTests = class SurveySpecTests {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then((survey) => {
-                    const client = hxSurvey.client(index);
+                    let client = hxSurvey.client(index);
+                    client.authorId = survey.authorId;
                     comparator.survey(client, survey);
                     hxSurvey.updateServer(index, survey);
                 });
@@ -320,10 +321,8 @@ const IntegrationTests = class SurveyIntegrationTests {
                 .expect((res) => {
                     hxSurvey.reloadServer(res.body);
                     let expected = hxSurvey.client(index);
-                    if (rrSuperTest.userRole === 'admin') {
-                        expected = _.cloneDeep(expected);
-                        expected.authorId = rrSuperTest.userId;
-                    }
+                    expected = _.cloneDeep(expected);
+                    expected.authorId = rrSuperTest.userId;
                     comparator.survey(expected, res.body);
                 })
                 .end(done);
