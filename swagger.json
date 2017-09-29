@@ -2662,6 +2662,9 @@
                 "name"
             ],
             "properties": {
+              "authorId": {
+                  "type": "integer"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -3061,6 +3064,9 @@
             "type": "object",
             "required": ["id", "name", "status"],
             "properties": {
+                "authorId": {
+                  "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },

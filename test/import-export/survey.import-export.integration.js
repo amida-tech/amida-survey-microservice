@@ -104,8 +104,11 @@ describe('survey import-export integration', function surveyImportExportIntegrat
 
     it('list imported surveys and verify', function listImportedAndVerify() {
         const query = { scope: 'export' };
+
         return rrSuperTest.get('/surveys', true, 200, query)
             .expect((res) => {
+              console.log("we got here")
+              console.log(res)
                 const expected = hxSurvey.listServersByScope({ scope: 'export' });
                 surveyCommon.updateIds(expected, idMap, questionIdMap);
                 expect(res.body).to.deep.equal(expected);

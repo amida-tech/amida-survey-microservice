@@ -294,16 +294,20 @@ describe('survey unit', function surveyUnit() {
     const replaceSurveyFn = function (index) {
         return function replaceSurvey() {
             const id = hxSurvey.id(index);
+
             const clientSurvey = generator.newSurvey();
             return models.survey.replaceSurvey(id, clientSurvey)
                 .then(newId => models.survey.getSurvey(newId))
                 .then((serverSurvey) => {
+
+                    clientSurvey.authorId = serverSurvey.authorId
                     comparator.survey(clientSurvey, serverSurvey);
                     hxSurvey.replace(index, clientSurvey, serverSurvey);
                 })
                 .then(() => models.survey.listSurveys())
                 .then((surveys) => {
                     const expected = hxSurvey.listServers();
+
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -391,6 +395,7 @@ describe('survey unit', function surveyUnit() {
     });
 
     it('create survey by existing questions only', () => {
+  
         const survey = generator.surveyGenerator.newBody();
         const questions = hxSurvey.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
@@ -398,6 +403,7 @@ describe('survey unit', function surveyUnit() {
             .then(id => models.survey.getSurvey(id))
             .then((serverSurvey) => {
                 survey.questions = questions;
+                survey.authorId = serverSurvey.authorId;
                 comparator.survey(survey, serverSurvey);
                 hxSurvey.push(survey, serverSurvey);
             });
@@ -442,6 +448,7 @@ describe('survey unit', function surveyUnit() {
             .then((serverSurvey) => {
                 survey.questions[1] = hxSurvey.questions[10];
                 survey.questions[2] = hxSurvey.questions[11];
+                survey.authorId = serverSurvey.authorId;
                 hxSurvey.push(survey, serverSurvey);
                 comparator.survey(survey, serverSurvey);
             });

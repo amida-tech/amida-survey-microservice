@@ -41,13 +41,13 @@ const authorization = function(req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
-    console.log(req.url)
+
     if(!token && !isAuth && !isDocs) {
-       console.log("this should happen")
+
        res.statusCode = 401;
        res.send(noAuth);
     } else if(token && !isAuth){
-      console.log("token exists")
+
       jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
 
           if (!err) {
@@ -154,7 +154,7 @@ exports.initialize = function initialize(app, options, callback) {
 
 
         app.use(middleware.swaggerMetadata());
-
+        app.use(middleware.swaggerUi());
         app.use((req, res, next) => {
           if(!req.swagger) {
             res.statusCode = 404;
@@ -189,7 +189,7 @@ exports.initialize = function initialize(app, options, callback) {
         }));
 
 
-        app.use(middleware.swaggerUi());
+
 
         app.use(errHandler);
 

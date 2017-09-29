@@ -367,14 +367,6 @@ const IntegrationTests = class SurveyIntegrationTests {
                         expect(res.body).to.have.length(count);
                     }
                     const opt = _.cloneDeep(options);
-                    if (rrSuperTest.userRole === 'admin') {
-                        opt.admin = true;
-                    } else {
-                        res.body.forEach(({ authorId, consentTypeIds }) => {
-                            expect(consentTypeIds).to.equal(undefined);
-                            expect(authorId).to.equal(undefined);
-                        });
-                    }
                     const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
                     return res;

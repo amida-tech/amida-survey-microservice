@@ -514,6 +514,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     listSurveys(opt = {}) {
+        console.log("listSurveys")
         const { scope, language, history, order, groupId, version, ids } = opt;
         const status = opt.status || 'published';
         const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
@@ -521,9 +522,7 @@ module.exports = class SurveyDAO extends Translatable {
             attributes.push('groupId');
             attributes.push('version');
         }
-        if (opt.admin && scope !== 'export') {
-            attributes.push('authorId');
-        }
+        attributes.push('authorId');
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
         if (groupId || version || (status !== 'all') || ids) {
             options.where = {};
@@ -540,6 +539,7 @@ module.exports = class SurveyDAO extends Translatable {
                 options.where.id = { $in: ids };
             }
         }
+
         if (language) {
             options.language = language;
         }
@@ -550,12 +550,16 @@ module.exports = class SurveyDAO extends Translatable {
             return this.db.Survey.findAll(options)
                 .then(surveys => surveys.map(survey => survey.id));
         }
+      //  console.log()
         return this.db.Survey.findAll(options)
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
+                  console.log("here???")
+
                     return this.updateSurveyListExport(surveys);
                 }
+                console.log("or here?")
                 return surveys;
             });
     }
@@ -586,7 +590,6 @@ module.exports = class SurveyDAO extends Translatable {
 
     getSurvey(id, options = {}) {
         const attributes = ['authorId','id', 'meta', 'status'];
-      
         let opt = { where: { id }, raw: true, attributes };
         if (options.override) {
             opt = _.assign({}, opt, options.override);
@@ -695,12 +698,14 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getAnsweredSurvey(userId, id, options) {
+
         return this.getSurvey(id, options)
             .then(survey => this.answer.getAnswers({
                 userId,
                 surveyId: survey.id,
             })
                     .then((answers) => {
+
                         const questionMap = this.getQuestionsMap(survey);
                         answers.forEach((answer) => {
                             const qid = answer.questionId;

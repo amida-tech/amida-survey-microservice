@@ -123,9 +123,6 @@ class SharedIntegration {
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     const expected = _.cloneDeep(hxSurvey.server(index));
-                    if (rrSuperTest.userRole !== 'admin') {
-                        delete expected.authorId;
-                    }
                     comparator.survey(expected, survey);
                     hxSurvey.updateServer(index, survey);
                 })

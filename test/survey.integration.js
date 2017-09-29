@@ -340,10 +340,10 @@ describe('survey integration', function surveyIntegration() {
 
     it('login as user', shared.loginIndexFn(hxUser, 0));
 
-    it('error: create survey as non admin', (done) => {
-        const survey = generator.newSurvey();
-        rrSuperTest.post('/surveys', survey, 403).end(done);
-    });
+    // it('error: create survey as non admin', (done) => {
+    //     const survey = generator.newSurvey();
+    //     rrSuperTest.post('/surveys', survey, 403).end(done);
+    // });
 
     it('list surveys (all)', tests.listSurveysFn());
 
@@ -376,12 +376,11 @@ describe('survey integration', function surveyIntegration() {
     });
 
     it('get answered survey', function getAnsweredSurvey() {
+
         const server = _.cloneDeep(hxSurvey.lastServer());
         return rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
             .then((res) => {
-                if (rrSuperTest.userRole !== 'admin') {
-                    delete server.authorId;
-                }
+
                 comparator.answeredSurvey(server, answers, res.body);
             });
     });
@@ -391,9 +390,6 @@ describe('survey integration', function surveyIntegration() {
         rrSuperTest.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
             .expect((res) => {
                 const server = _.cloneDeep(hxSurvey.lastServer());
-                if (rrSuperTest.userRole !== 'admin') {
-                    delete server.authorId;
-                }
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
                 survey.description = 'descripto';
@@ -449,12 +445,10 @@ describe('survey integration', function surveyIntegration() {
         });
 
         it('get answered survey', (done) => {
+
             const server = hxSurvey.server(index);
             rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
                 .expect((res) => {
-                    if (rrSuperTest.userRole !== 'admin') {
-                        delete server.authorId;
-                    }
                     comparator.answeredSurvey(server, answers, res.body);
                 })
                 .end(done);
