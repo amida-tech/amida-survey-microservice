@@ -231,7 +231,8 @@ const SpecTests = class SurveySpecTests {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then((survey) => {
-                    const client = hxSurvey.client(index);
+                    let client = hxSurvey.client(index);
+                    client.authorId = survey.authorId;
                     comparator.survey(client, survey);
                     hxSurvey.updateServer(index, survey);
                 });
@@ -320,10 +321,8 @@ const IntegrationTests = class SurveyIntegrationTests {
                 .expect((res) => {
                     hxSurvey.reloadServer(res.body);
                     let expected = hxSurvey.client(index);
-                    if (rrSuperTest.userRole === 'admin') {
-                        expected = _.cloneDeep(expected);
-                        expected.authorId = rrSuperTest.userId;
-                    }
+                    expected = _.cloneDeep(expected);
+                    expected.authorId = rrSuperTest.userId;
                     comparator.survey(expected, res.body);
                 })
                 .end(done);
@@ -368,14 +367,6 @@ const IntegrationTests = class SurveyIntegrationTests {
                         expect(res.body).to.have.length(count);
                     }
                     const opt = _.cloneDeep(options);
-                    if (rrSuperTest.userRole === 'admin') {
-                        opt.admin = true;
-                    } else {
-                        res.body.forEach(({ authorId, consentTypeIds }) => {
-                            expect(consentTypeIds).to.equal(undefined);
-                            expect(authorId).to.equal(undefined);
-                        });
-                    }
                     const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
                     return res;

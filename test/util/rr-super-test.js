@@ -70,6 +70,7 @@ module.exports = class RRSupertest {
             this.userAudit.push({ username: this.username, operation, endpoint });
         }
         const r = this.server[operation](this.baseUrl + endpoint);
+
         if (header) {
             _.toPairs(header).forEach(([key, value]) => r.set(key, value));
         }
@@ -77,6 +78,7 @@ module.exports = class RRSupertest {
     }
 
     post(endpoint, payload, status, header, validationError) {
+
         return this.update('post', endpoint, payload, status, header, validationError);
     }
 
@@ -118,13 +120,17 @@ module.exports = class RRSupertest {
     }
 
     get(endpoint, auth, status, query) {
+
         if (status < 401 && this.username) {
             this.userAudit.push({ username: this.username, operation: 'get', endpoint });
         }
+
         let r = this.server.get(this.baseUrl + endpoint);
+            
         if (query) {
             r = r.query(query);
         }
+
         return r.expect(status);
     }
 };

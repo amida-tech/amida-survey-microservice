@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
+const jwt = require('jsonwebtoken');
 
 const modelsGenerator = require('./models/generator');
 const swaggerUtil = require('./lib/swagger-util');
@@ -19,6 +20,59 @@ const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
 
+const invalidAuth = {
+    message: 'Invalid authorization',
+    code: 'invalid_auth',
+    statusCode: 401,
+};
+
+const noAuth = {
+    message: 'No authorization',
+    code: 'no_auth',
+    statusCode: 401,
+};
+
+const invalidEndpoint = {
+    message: 'Endpoint does not exist',
+    code: 'invalid_endpoint',
+    statusCode: 404,
+};
+const authorization = function(req, res, next) {
+    const isAuth = req.url.indexOf('/auth/basic') >= 0;
+    const token = _.get(req, 'cookies.rr-jwt-token');
+    const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
+
+    if(!token && !isAuth && !isDocs) {
+
+       res.statusCode = 401;
+       res.send(noAuth);
+    } else if(token && !isAuth){
+
+      jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+
+          if (!err) {
+            return req.models.auth.getUser(payload)
+                .then((user) => {
+                    if (user) {
+                        req.user = user;
+                        _.set(req, 'headers.authorization', `Bearer ${token}`);
+                        next();
+                    }
+
+                });
+            next();
+          } else {
+            res.send(invalidAuth + err);
+          }
+
+      });
+    } else {
+      next();
+    }
+
+
+}
+
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
     const jsonErr = jsutil.errToJSON(err);
@@ -27,6 +81,8 @@ const errHandler = function (err, req, res, next) { // eslint-disable-line no-un
     }
     res.json(jsonErr);
 };
+
+
 
 const userAudit = function (req, res, next) {
     const userId = _.get(req, 'user.id');
@@ -95,11 +151,23 @@ exports.initialize = function initialize(app, options, callback) {
     const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
-        app.use(middleware.swaggerMetadata());
 
+
+        app.use(middleware.swaggerMetadata());
+        app.use(middleware.swaggerUi());
+        app.use((req, res, next) => {
+          if(!req.swagger) {
+            res.statusCode = 404;
+            res.send(invalidEndpoint);
+          } else {
+            next();
+          }
+        })
         app.use(middleware.swaggerValidator({
             validateResponse: true,
         }));
+
+
 
         const m = options.models || modelsGenerator(schema);
         app.locals.models = m; // eslint-disable-line no-param-reassign
@@ -109,8 +177,8 @@ exports.initialize = function initialize(app, options, callback) {
             app.use(modelsSupplyFn(m));
         }
 
-        app.use(middleware.swaggerSecurity(security));
 
+        app.use(authorization);
         app.use(userAudit);
 
         const controllers = options.controllers || './controllers';
@@ -120,7 +188,8 @@ exports.initialize = function initialize(app, options, callback) {
             controllers,
         }));
 
-        app.use(middleware.swaggerUi());
+
+
 
         app.use(errHandler);
 
@@ -178,14 +247,6 @@ exports.newExpress = function newExpress(options = {}) {
     app.enable('trust proxy');
     app.use(passport.initialize());
 
-    app.use((req, res, next) => {
-        const isAuth = req.url.indexOf('/auth/basic') >= 0;
-        const token = _.get(req, 'cookies.rr-jwt-token');
-        if (token && !isAuth) {
-            _.set(req, 'headers.authorization', `Bearer ${token}`);
-        }
-        next();
-    });
 
     return app;
 };

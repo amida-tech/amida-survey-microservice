@@ -104,6 +104,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
 
     it('list imported surveys and verify', function listImportedAndVerify() {
         const query = { scope: 'export' };
+
         return rrSuperTest.get('/surveys', true, 200, query)
             .expect((res) => {
                 const expected = hxSurvey.listServersByScope({ scope: 'export' });

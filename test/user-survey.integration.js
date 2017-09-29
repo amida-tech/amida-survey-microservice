@@ -91,7 +91,9 @@ describe('user survey integration', () => {
     it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyListFn = function (statusList) {
+
         return function verifyUserSurveyList(done) {
+
             rrSuperTest.get('/user-surveys', true, 200)
                 .expect((res) => {
                     const userSurveys = res.body;
