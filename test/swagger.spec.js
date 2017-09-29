@@ -26,7 +26,7 @@ describe('swagger validations', () => {
                 if (err) {
                     return done(err);
                 }
-                console.log(result)
+              
                 expect(Boolean(result)).to.equal(false, JSON.stringify(result, undefined, 4));
                 return done();
             });

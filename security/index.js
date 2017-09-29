@@ -18,16 +18,14 @@ const noAuth = {
 };
 
 const jwtAuth = function (req, header, callback) {
-  console.log('********************');
-    console.log(req);
-    console.log('****************');
+
     if (header) {
         const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
 
             return jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-            
+
                 if (err) {
                     return callback(invalidAuth);
                 }

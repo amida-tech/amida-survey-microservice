@@ -514,7 +514,6 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     listSurveys(opt = {}) {
-        console.log("listSurveys")
         const { scope, language, history, order, groupId, version, ids } = opt;
         const status = opt.status || 'published';
         const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
@@ -550,16 +549,16 @@ module.exports = class SurveyDAO extends Translatable {
             return this.db.Survey.findAll(options)
                 .then(surveys => surveys.map(survey => survey.id));
         }
-      //  console.log()
+
         return this.db.Survey.findAll(options)
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
-                  console.log("here???")
+
 
                     return this.updateSurveyListExport(surveys);
                 }
-                console.log("or here?")
+
                 return surveys;
             });
     }
