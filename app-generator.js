@@ -51,6 +51,7 @@ const authorization = function(req, res, next) {
       jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
 
           if (!err) {
+            
             return req.models.auth.getUser(payload)
                 .then((user) => {
                     if (user) {
@@ -62,7 +63,8 @@ const authorization = function(req, res, next) {
                 });
             next();
           } else {
-            res.send(invalidAuth + err);
+            res.statusCode = 401;
+            res.send(invalidAuth);
           }
 
       });
