@@ -554,8 +554,6 @@ module.exports = class SurveyDAO extends Translatable {
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
-
-
                     return this.updateSurveyListExport(surveys);
                 }
 
@@ -588,7 +586,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        const attributes = ['authorId','id', 'meta', 'status'];
+        const attributes = ['authorId', 'id', 'meta', 'status'];
         let opt = { where: { id }, raw: true, attributes };
         if (options.override) {
             opt = _.assign({}, opt, options.override);
@@ -697,14 +695,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getAnsweredSurvey(userId, id, options) {
-
         return this.getSurvey(id, options)
             .then(survey => this.answer.getAnswers({
                 userId,
                 surveyId: survey.id,
             })
                     .then((answers) => {
-
                         const questionMap = this.getQuestionsMap(survey);
                         answers.forEach((answer) => {
                             const qid = answer.questionId;

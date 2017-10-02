@@ -52,8 +52,7 @@ exports.listSurveys = function listSurveys(req, res) {
     const status = _.get(req, 'swagger.params.status.value');
     const options = { scope, language, status };
     req.models.survey.listSurveys(options)
-        .then(surveys => {
-
+        .then((surveys) => {
             res.status(200).json(surveys);
         })
         .catch(shared.handleError(res));

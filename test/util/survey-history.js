@@ -8,7 +8,7 @@ const History = require('./history');
 
 module.exports = class SurveyHistory extends History {
     constructor() {
-        super(['authorId','id', 'name', 'description', 'status']);
+        super(['authorId', 'id', 'name', 'description', 'status']);
     }
 
     filterListServersByStatus(result, status = 'published') { // eslint-disable-line class-methods-use-this
@@ -32,8 +32,8 @@ module.exports = class SurveyHistory extends History {
         return this.filterListServersByStatus(result, status);
     }
 
-    listTranslatedServers(language, status = 'published', options = {}) {
-        const fields = ['authorId','id', 'name', 'description', 'status'];
+    listTranslatedServers(language, status = 'published') {
+        const fields = ['authorId', 'id', 'name', 'description', 'status'];
         const result = super.listTranslatedServers(language, fields);
         return this.filterListServersByStatus(result, status);
     }
@@ -57,11 +57,11 @@ module.exports = class SurveyHistory extends History {
     listServersByScope(options = {}) {
         const scope = options.scope || 'summary';
         if (scope === 'summary') {
-            const fields = ['authorId','id', 'name', 'description', 'status'];
+            const fields = ['authorId', 'id', 'name', 'description', 'status'];
             return this.listServers(fields, undefined, options.status);
         }
         if (scope === 'export') {
-            const result = this.listServers(['authorId','id', 'name', 'description', 'questions', 'sections', 'status']);
+            const result = this.listServers(['authorId', 'id', 'name', 'description', 'questions', 'sections', 'status']);
             result.forEach((survey) => {
                 if (!survey.sections) {
                     const questions = survey.questions.map(({ id, required, sections: questionSections }) => {

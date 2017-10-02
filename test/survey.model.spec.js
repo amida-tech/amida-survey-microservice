@@ -299,8 +299,7 @@ describe('survey unit', function surveyUnit() {
             return models.survey.replaceSurvey(id, clientSurvey)
                 .then(newId => models.survey.getSurvey(newId))
                 .then((serverSurvey) => {
-
-                    clientSurvey.authorId = serverSurvey.authorId
+                    clientSurvey.authorId = serverSurvey.authorId;
                     comparator.survey(clientSurvey, serverSurvey);
                     hxSurvey.replace(index, clientSurvey, serverSurvey);
                 })
@@ -395,7 +394,6 @@ describe('survey unit', function surveyUnit() {
     });
 
     it('create survey by existing questions only', () => {
-  
         const survey = generator.surveyGenerator.newBody();
         const questions = hxSurvey.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
