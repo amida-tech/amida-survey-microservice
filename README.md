@@ -100,7 +100,6 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_CONSTANT_CONTACT_LIST_ID: Unique identifier for Constant Contact list
 - RECREG_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
 - RECREG_ZIP_API_KEY: API key for Zipwise.
-- RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
 - RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID.
 - RECREG_AWS_SECRET: Amazon Web Service secret access key.
@@ -181,33 +180,13 @@ This is a English first design where all logical records are assumed to be in En
 
 - `choice_set`: This table defines a choice set (column `reference`) that can be used to for shared choices that can be used in questions.
 
-- `cohort`: This table stores a named shaped cohort (column `name`) that used the filter (colum `filter_id`) and with a possible limited number of participants (column `count`).
-
-- `cohort_answer`: This table stores the filter specifics (columns `question_id`, `exclude`, `question_choice_id`, `value`) for cohort (column `cohort_id`) at the time of creation.  Copied from `filter_answer` at the time of creation.
-
-- `consent`: Each record in this table represents a collection of consent documents.  Column `name` is used to identify the collection in API but otherwise this table does not have a data column.
-
-- `consent_document`: Each record in this table represents a consent document of a certain type (column `type_id`).  This table is designed to have at most one active record for each consent type at any point in time.  All other records of the same types will be in soft deleted state.  Actual content of the consent documents are stored in `consent_document_text`.
-
-- `consent_document_text`: This table stores translatable columns `content` and `update_comment` of consent documents.  `language` is also a column and each record has values for `content` and `update_comment` in that language.  `consent_document_id` column links each record to `consent_document` table.
-
-- `consent_section`: Each record in this table represents a section of consent type (column `consent_type_id`) in consent (column `consent_id`).
-
-- `consent_signature`: This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent document (column `consent_document_id`).  This table also stores ip (column `ip`) and browser information (column `user_agent`) during the signing of the document.
-
-- `consent_type`: Each record in this table represent a consent document type.  Column `name` is used in API to refer to the consent type and column `type` is client only field that identify how consent documents of this type are presented on the user interface. Title for the consent type is stored in table `consent_type_text`.
-
-- `consent_type_text`: This table stores translatable column `title` which stores consent type title. `language` is also a column and each record has a value for `title` in that language.  `consent_type_id` column links each record to `consent_type` table.
-
 - `file`: This table stores users' (column `user_id`) answers that are files (columns `name` and `content`).
 
-- `filter`: This table stores filter that can be used in cohort shaping.
+- `filter`: This table stores quesion filters.
 
 - `filter_answer`: This table stores filter specifics (columns `question_id`, `exclude`, `question_choice_id`, `value`) for filter (column `filter_id`).
 
 - `language`: Each record in this table represents a supported language.  `code` column is used as the primary key and designed to store two or three character ISO codes.  Columns `name` and `native_name` can be used for language selection on the client.
-
-- `profile_survey`: This table stores the profile survey (column `survey_id`) that is to be used during registration.
 
 - `question`: Each record in this table represents a question that is being or can be used in surveys .  Questions can be stand alone, can belong to a survey or can belong to multiple surveys.  Link to surveys (table `survey`) is achieved through `survey_question` table.  Question records can be soft deleted but when no other active record in any other table does not reference it.  Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first question in the group.  A set of types are supported (column `type`).
 
@@ -220,14 +199,6 @@ This is a English first design where all logical records are assumed to be in En
 - `question_text`: This table stores translatable logical question field `text` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `question_id` column links each record to `question` table.
 
 - `question_type`: This table stores available question types.
-
-- `registry`: This table stores all other registries that this registry should be aware of.  These registries can be in other servers (column `url`) or share the same database (column `schema`) for multi tenant setup.
-
-- `registry_user`: This table stores patient first name, last name, email, role, and login information (username, password, password reset through email token and its expiration date).
-
-- `research_site`: This stores the research centers for the registry.
-
-- `research_site_vicinity`: This stores closest research sites (column `research_site_id`) for a zip code (column `zip`).
 
 - `section`: This stores sections that can be used in surveys to group questions.
 
@@ -242,8 +213,6 @@ This is a English first design where all logical records are assumed to be in En
 - `staging_bhr_gap`: This table is used during importing of data.
 
 - `survey`: Each record in this table represents a survey.  Surveys can be deleted. Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first survey in the group.  Questions in surveys are represented using another table `survey_question`.  Only actual data column is `meta` which is designed to store client settings.
-
-- `survey_consent`: This table stores consents (either column `consent_id` or `consent_type_id`) that assigned to surveys (column `survey_id`).
 
 - `survey_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for surveys (columns `survey_id`).
 
@@ -266,9 +235,9 @@ This is a English first design where all logical records are assumed to be in En
 
 - `user_assessment`: This stores an instance of an assessment (column `assessment_id`) for a paricular participant (column `user_id`).
 
-- `user_assessment_answer`: This stores user answers (column `answer_id`) for a particular assessment (coilumn `user_assessment_id).
+- `user_assessment_answer`: This stores user answers (column `answer_id`) for a particular assessment (coilumn `user_assessment_id`).
 
-- `user_audit`: This is an audit table for endpoints (column `endpoint`) that users (column ``user_id`) accessed.
+- `user_audit`: This is an audit table for endpoints (column `endpoint`) that users (column `user_id`) accessed.
 
 - `user_survey`: This table stores status of a survey for a participant.  The status can be `in-progress` or `completed`.
 
@@ -280,7 +249,7 @@ Except account columns `email` and `password` in users table, none of the user f
 
 This project uses [sequelize-cli](https://github.com/sequelize/cli) for migrations.  The bootstrap model is located [here](./migration/models) and corresponds to the state of the database during first go-live.
 
-All migrations can be run using sequelize-cli](https://github.com/sequelize/cli) in migration directory
+All migrations can be run using[sequelize-cli](https://github.com/sequelize/cli) in migration directory
 ```bash
 cd migration
 sequelize

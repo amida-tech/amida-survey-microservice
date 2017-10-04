@@ -231,7 +231,7 @@ const SpecTests = class SurveySpecTests {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then((survey) => {
-                    let client = hxSurvey.client(index);
+                    const client = hxSurvey.client(index);
                     client.authorId = survey.authorId;
                     comparator.survey(client, survey);
                     hxSurvey.updateServer(index, survey);

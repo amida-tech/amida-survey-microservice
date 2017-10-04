@@ -16,7 +16,7 @@ exports.createAnswers = function createAnswers(req, res) {
 exports.getAnswers = function getAnswers(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const userId = req.user.id;
-    req.models.answer.getAnswers({userId, surveyId })
+    req.models.answer.getAnswers({ userId, surveyId })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };

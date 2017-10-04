@@ -3,7 +3,6 @@
 const config = require('../config');
 
 const jwt = require('jsonwebtoken');
-const _ = require('lodash');
 
 const invalidAuth = {
     message: 'Invalid authorization',
@@ -18,14 +17,12 @@ const noAuth = {
 };
 
 const jwtAuth = function (req, header, callback) {
-
     if (header) {
         const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
 
             return jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-
                 if (err) {
                     return callback(invalidAuth);
                 }
@@ -35,7 +32,7 @@ const jwtAuth = function (req, header, callback) {
                             req.user = user;
                             return callback(null);
                         }
-                        return callback(invalidUser);
+                        return callback(null);
                     });
             });
         }

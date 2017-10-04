@@ -376,11 +376,9 @@ describe('survey integration', function surveyIntegration() {
     });
 
     it('get answered survey', function getAnsweredSurvey() {
-
         const server = _.cloneDeep(hxSurvey.lastServer());
         return rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
             .then((res) => {
-
                 comparator.answeredSurvey(server, answers, res.body);
             });
     });
@@ -445,7 +443,6 @@ describe('survey integration', function surveyIntegration() {
         });
 
         it('get answered survey', (done) => {
-
             const server = hxSurvey.server(index);
             rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
                 .expect((res) => {

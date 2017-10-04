@@ -15,7 +15,6 @@ const modelsGenerator = require('./models/generator');
 const swaggerUtil = require('./lib/swagger-util');
 
 const swaggerJson = require('./swagger.json');
-const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
@@ -37,43 +36,34 @@ const invalidEndpoint = {
     code: 'invalid_endpoint',
     statusCode: 404,
 };
-const authorization = function(req, res, next) {
+const authorization = function (req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
 
-    if(!token && !isAuth && !isDocs) {
-
-       res.statusCode = 401;
-       res.send(noAuth);
-    } else if(token && !isAuth){
-
-      jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-
-          if (!err) {
-            
-            return req.models.auth.getUser(payload)
+    if (!token && !isAuth && !isDocs) {
+        res.statusCode = 401;
+        res.send(noAuth);
+    } else if (token && !isAuth) {
+        jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+            if (!err) {
+                return req.models.auth.getUser(payload)
                 .then((user) => {
                     if (user) {
                         req.user = user;
                         _.set(req, 'headers.authorization', `Bearer ${token}`);
-                        next();
                     }
-
+                    return next();
                 });
-            next();
-          } else {
+            }
             res.statusCode = 401;
             res.send(invalidAuth);
-          }
-
-      });
+            return null;
+        });
     } else {
-      next();
+        next();
     }
-
-
-}
+};
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
@@ -83,7 +73,6 @@ const errHandler = function (err, req, res, next) { // eslint-disable-line no-un
     }
     res.json(jsonErr);
 };
-
 
 
 const userAudit = function (req, res, next) {
@@ -153,22 +142,19 @@ exports.initialize = function initialize(app, options, callback) {
     const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
-
-
         app.use(middleware.swaggerMetadata());
         app.use(middleware.swaggerUi());
         app.use((req, res, next) => {
-          if(!req.swagger) {
-            res.statusCode = 404;
-            res.send(invalidEndpoint);
-          } else {
-            next();
-          }
-        })
+            if (!req.swagger) {
+                res.statusCode = 404;
+                res.send(invalidEndpoint);
+            } else {
+                next();
+            }
+        });
         app.use(middleware.swaggerValidator({
             validateResponse: true,
         }));
-
 
 
         const m = options.models || modelsGenerator(schema);
@@ -189,8 +175,6 @@ exports.initialize = function initialize(app, options, callback) {
             ignoreMissingHandlers: true,
             controllers,
         }));
-
-
 
 
         app.use(errHandler);

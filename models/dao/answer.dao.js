@@ -429,7 +429,6 @@ module.exports = class AnswerDAO extends Base {
     }
 
     getAnswers({ userId, surveyId }) {
-      
         return this.listAnswers({ userId, surveyId });
     }
 
