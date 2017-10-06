@@ -12,7 +12,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const SurveySupertest = require('../util/survey-super-test');
+const SurveySuperTest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const MultiQuestionGenerator = require('../util/generator/multi-question-generator');
 const History = require('../util/history');
@@ -24,9 +24,9 @@ const swaggerObject = require('../../swagger.json');
 const expect = chai.expect;
 
 describe('tenant single schema named (for raw query)', function tenantNamed4Raw() {
-    const SurveySupertest = new SurveySupertest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(SurveySupertest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
 
     const configClone = _.cloneDeep(config);
     configClone.db.schema = 'named';
@@ -70,7 +70,7 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('login as super', shared.loginFn(config.superUser));
 
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(SurveySupertest, { generator, hxQuestion });
+    const tests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
 
     _.range(3).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
@@ -92,7 +92,7 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('list questions (complete)', tests.listQuestionsFn('complete'));
 
     const multiCount = function () {
-        return SurveySupertest.get('/questions-multi-count', true, 200)
+        return surveySuperTest.get('/questions-multi-count', true, 200)
             .then(res => expect(res.body.count).to.equal('6'));
     };
 
@@ -101,6 +101,6 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('logout as super', shared.logoutFn());
 
     it('close connections', function closeSequelize() {
-        return SurveySupertest.shutDown();
+        return surveySuperTest.shutDown();
     });
 });

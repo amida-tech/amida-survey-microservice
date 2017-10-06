@@ -15,7 +15,7 @@ const mkdirp = require('mkdirp');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const SurveySupertest = require('../util/survey-super-test');
+const SurveySuperTest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
@@ -23,11 +23,11 @@ const surveyCommon = require('../util/survey-common');
 const expect = chai.expect;
 
 describe('survey import-export integration', function surveyImportExportIntegration() {
-    const SurveySupertest = new SurveySupertest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(SurveySupertest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const hxSurvey = new SurveyHistory();
-    const tests = new surveyCommon.IntegrationTests(SurveySupertest, generator, hxSurvey);
+    const tests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey);
 
     before(shared.setUpFn());
 
@@ -62,7 +62,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     });
 
     it('export questions to csv', function exportQuestionsToCSV() {
-        return SurveySupertest.get('/questions/csv', true, 200)
+        return surveySuperTest.get('/questions/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -70,7 +70,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     });
 
     it('export surveys to csv', function exportSurveysToCSV() {
-        return SurveySupertest.get('/surveys/csv', true, 200)
+        return surveySuperTest.get('/surveys/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'survey.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -85,7 +85,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
 
     it('import question csv into db', function importQuestionsFromCSV() {
         const filepath = path.join(generatedDirectory, 'question.csv');
-        return SurveySupertest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
+        return surveySuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
             .expect((res) => {
                 questionIdMap = res.body;
             });
@@ -96,7 +96,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     it('import survey csv into db', function importSurveysFromCSV() {
         const filepath = path.join(generatedDirectory, 'survey.csv');
         const questionidmap = JSON.stringify(questionIdMap);
-        return SurveySupertest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap }, 201)
+        return surveySuperTest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap }, 201)
             .expect((res) => {
                 idMap = res.body;
             });
@@ -105,7 +105,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     it('list imported surveys and verify', function listImportedAndVerify() {
         const query = { scope: 'export' };
 
-        return SurveySupertest.get('/surveys', true, 200, query)
+        return surveySuperTest.get('/surveys', true, 200, query)
             .expect((res) => {
                 const expected = hxSurvey.listServersByScope({ scope: 'export' });
                 surveyCommon.updateIds(expected, idMap, questionIdMap);
