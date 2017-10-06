@@ -11,7 +11,7 @@ const _ = require('lodash');
 
 const config = require('../config');
 
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
@@ -30,9 +30,9 @@ describe('user survey integration', () => {
     const hxUser = new History();
     const mapAnswers = new Map();
     const mapStatus = new Map();
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     before(shared.setUpFn());
@@ -48,7 +48,7 @@ describe('user survey integration', () => {
     it('logout as super', shared.logoutFn());
 
     const verifyNoUserSurveysFn = function (done) {
-        rrSuperTest.get('/user-surveys', true, 200)
+        surveySuperTest.get('/user-surveys', true, 200)
             .expect((res) => {
                 const userSurveys = res.body;
                 expect(userSurveys.length).to.equal(0);
@@ -72,7 +72,7 @@ describe('user survey integration', () => {
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
         return function verifyStatus(done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get(`/user-surveys/${surveyId}/status`, true, 200)
+            surveySuperTest.get(`/user-surveys/${surveyId}/status`, true, 200)
                 .expect((res) => {
                     const status = res.body.status;
                     expect(status).to.equal(expectedStatus);
@@ -92,7 +92,7 @@ describe('user survey integration', () => {
 
     const verifyUserSurveyListFn = function (statusList) {
         return function verifyUserSurveyList(done) {
-            rrSuperTest.get('/user-surveys', true, 200)
+            surveySuperTest.get('/user-surveys', true, 200)
                 .expect((res) => {
                     const userSurveys = res.body;
                     const expected = _.cloneDeep(hxSurvey.listServers());
@@ -118,7 +118,7 @@ describe('user survey integration', () => {
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
         return function verifyUserSurvey(done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200)
+            surveySuperTest.get(`/user-surveys/${surveyId}`, true, 200)
                 .expect((res) => {
                     const userSurvey = res.body;
                     const survey = hxSurvey.server(surveyIndex);
@@ -138,7 +138,7 @@ describe('user survey integration', () => {
             if (includeSurvey) {
                 query['include-survey'] = true;
             }
-            rrSuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
+            surveySuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
                 .expect((res) => {
                     const userSurveyAnswers = res.body;
                     if (includeSurvey) {
@@ -165,7 +165,7 @@ describe('user survey integration', () => {
                 status,
             };
             const key = getKey(userIndex, surveyIndex);
-            rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
+            surveySuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
@@ -186,7 +186,7 @@ describe('user survey integration', () => {
                 status: 'in-progress',
             };
             const key = getKey(userIndex, surveyIndex);
-            rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
+            surveySuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, 'in-progress');
@@ -209,7 +209,7 @@ describe('user survey integration', () => {
                 status: 'completed',
             };
             const key = getKey(userIndex, surveyIndex);
-            rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
+            surveySuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
                     const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
@@ -231,7 +231,7 @@ describe('user survey integration', () => {
                 answers,
                 status: 'completed',
             };
-            rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 400)
+            surveySuperTest.post(`/user-surveys/${survey.id}/answers`, input, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'answerRequiredMissing'))
                 .end(done);
         };
@@ -320,7 +320,7 @@ describe('user survey integration', () => {
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
         return function verifyTranslatedUserSurveyList(done) {
-            rrSuperTest.get('/user-surveys', true, 200, { language })
+            surveySuperTest.get('/user-surveys', true, 200, { language })
                 .expect((res) => {
                     const userSurveys = res.body;
                     if (!notTranslated) {
@@ -343,7 +343,7 @@ describe('user survey integration', () => {
     const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
         return function verifyTranslatedUserSurvey(done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200, { language })
+            surveySuperTest.get(`/user-surveys/${surveyId}`, true, 200, { language })
                 .expect((res) => {
                     const userSurvey = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
@@ -363,7 +363,7 @@ describe('user survey integration', () => {
         return function verifyTranslatedUserSurveyAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = { 'include-survey': true, language };
-            rrSuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
+            surveySuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
                 .expect((res) => {
                     const userSurveyAnswers = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
@@ -396,7 +396,7 @@ describe('user survey integration', () => {
         return function translateSurvey(done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            rrSuperTest.patch(`/surveys/text/${language}`, translation, 204)
+            surveySuperTest.patch(`/surveys/text/${language}`, translation, 204)
                 .expect(() => {
                     hxSurvey.translate(index, language, translation);
                 })
@@ -432,7 +432,7 @@ describe('user survey integration', () => {
                 language,
             };
             const key = getKey(userIndex, surveyIndex);
-            rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
+            surveySuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);

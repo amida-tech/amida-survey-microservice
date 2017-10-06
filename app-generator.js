@@ -38,7 +38,7 @@ const invalidEndpoint = {
 };
 const authorization = function (req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
-    const token = _.get(req, 'cookies.rr-jwt-token');
+    const token = _.get(req, 'cookies.auth-jwt-token');
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
 
     if (!token && !isAuth && !isDocs) {

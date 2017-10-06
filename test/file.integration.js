@@ -11,7 +11,7 @@ const chai = require('chai');
 
 const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const Answerer = require('./util/generator/answerer');
 const History = require('./util/history');
@@ -61,16 +61,16 @@ describe('answer file integration', function answerFileIntegration() {
     const userCount = 4;
     const surveyCount = 3;
 
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const answerer = new AnswererWithFile();
     const generator = new Generator({ answerer });
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const hxUser = new History();
     const hxQuestion = new History();
     const hxSurvey = new SurveyHistory();
-    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
-    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion); // eslint-disable-line max-len
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, {
+    const qxTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
+    const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion); // eslint-disable-line max-len
+    const answerTests = new answerCommon.IntegrationTests(surveySuperTest, {
         generator, hxUser, hxSurvey, hxQuestion,
     });
 
@@ -87,7 +87,7 @@ describe('answer file integration', function answerFileIntegration() {
         it(`post file ${index}`, function postFile() {
             const filename = `cat${index + 1}.jpeg`;
             const filepath = genFilepath(filename);
-            return rrSuperTest.postFile('/files', 'file', filepath, { filename }, 201)
+            return surveySuperTest.postFile('/files', 'file', filepath, { filename }, 201)
                 .then((res) => {
                     hxFiles.push({ userIndex: index, id: res.body.id, name: filename });
                     fileIds.push(res.body.id);
@@ -95,7 +95,7 @@ describe('answer file integration', function answerFileIntegration() {
         });
         it(`get file ${index}`, function getFile() {
             const id = fileIds[index];
-            return rrSuperTest.get(`/files/${id}`, true, 200)
+            return surveySuperTest.get(`/files/${id}`, true, 200)
                 .buffer()
                 .parse(binaryParser)
                 .then((res) => {
@@ -141,7 +141,7 @@ describe('answer file integration', function answerFileIntegration() {
             it(`verify ${userIndex} survey ${surveyIndex} file`, function verifyFile() {
                 const lastServer = answerTests.hxAnswer.getLastServer(userIndex, surveyIndex);
                 const fileValue = lastServer.find(r => r.answer.fileValue).answer.fileValue;
-                return rrSuperTest.get(`/files/${fileValue.id}`, true, 200)
+                return surveySuperTest.get(`/files/${fileValue.id}`, true, 200)
                     .buffer()
                     .parse(binaryParser)
                     .then((res) => {
@@ -159,7 +159,7 @@ describe('answer file integration', function answerFileIntegration() {
     _.range(2, 4).forEach((index) => {
         it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it('list files', function listFiles() {
-            return rrSuperTest.get('/files', true, 200)
+            return surveySuperTest.get('/files', true, 200)
                 .then((res) => {
                     const actual = res.body;
                     const expected = hxFiles.reduce((r, { userIndex, id, name }) => {

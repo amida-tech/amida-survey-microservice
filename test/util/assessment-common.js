@@ -50,22 +50,22 @@ const SpecTests = class AssessmentSpecTests {
 };
 
 const IntegrationTests = class AssessmentSpecTests {
-    constructor(rrSuperTest, generator, hxSurvey, hxAssessment) {
-        this.rrSuperTest = rrSuperTest;
+    constructor(surveySuperTest, generator, hxSurvey, hxAssessment) {
+        this.surveySuperTest = surveySuperTest;
         this.generator = generator;
         this.hxSurvey = hxSurvey;
         this.hxAssessment = hxAssessment;
     }
 
     createAssessmentFn(indices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
         return function createAssessment(done) {
             const surveyIds = indices.map(index => hxSurvey.id(index));
             const assessment = generator.newAssessment(surveyIds);
-            rrSuperTest.post('/assessments', assessment, 201)
+            surveySuperTest.post('/assessments', assessment, 201)
                 .expect((res) => {
                     hxAssessment.pushWithId(assessment, res.body.id);
                 })
@@ -74,11 +74,11 @@ const IntegrationTests = class AssessmentSpecTests {
     }
 
     getAssessmentFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxAssessment = this.hxAssessment;
         return function getAssessment(done) {
             const id = hxAssessment.id(index);
-            rrSuperTest.get(`/assessments/${id}`, true, 200)
+            surveySuperTest.get(`/assessments/${id}`, true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.server(index));
                 })
@@ -87,10 +87,10 @@ const IntegrationTests = class AssessmentSpecTests {
     }
 
     listAssessmentFn() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxAssessment = this.hxAssessment;
         return function listAssessment(done) {
-            rrSuperTest.get('/assessments', true, 200)
+            surveySuperTest.get('/assessments', true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.listServers());
                 })

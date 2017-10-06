@@ -11,7 +11,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const Answerer = require('./util/generator/answerer');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const QuestionGenerator = require('./util/generator/question-generator');
 const ConditionalSurveyGenerator = require('./util/generator/conditional-survey-generator');
 const Generator = require('./util/generator');
@@ -30,12 +30,12 @@ describe('survey (conditional questions) integration', () => {
 
     const surveyCount = surveyGenerator.numOfCases();
 
-    const rrSuperTest = new RRSuperTest();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const surveySuperTest = new SurveySuperTest();
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
-    const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+    const tests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
@@ -61,7 +61,7 @@ describe('survey (conditional questions) integration', () => {
             const survey = hxSurvey.server(surveyIndex);
             const clientSurvey = hxSurvey.client(surveyIndex);
             const newSurvey = ConditionalSurveyGenerator.newSurveyFromPrevious(clientSurvey, survey);
-            rrSuperTest.post('/surveys', newSurvey, 201)
+            surveySuperTest.post('/surveys', newSurvey, 201)
                 .expect((res) => {
                     const server = _.cloneDeep(hxSurvey.server(surveyIndex));
                     server.id = res.body.id;
@@ -74,7 +74,7 @@ describe('survey (conditional questions) integration', () => {
     const verifySurveyFn = function (index) {
         return function verifySurvey(done) {
             const survey = _.cloneDeep(hxSurvey.server(index));
-            rrSuperTest.get(`/surveys/${survey.id}`, true, 200)
+            surveySuperTest.get(`/surveys/${survey.id}`, true, 200)
                 .expect((res) => {
                     comparator.conditionalSurveyTwiceCreated(survey, res.body);
                 })
@@ -103,7 +103,7 @@ describe('survey (conditional questions) integration', () => {
                 surveyId: survey.id,
                 answers,
             };
-            rrSuperTest.post('/answers', input, 400)
+            surveySuperTest.post('/answers', input, 400)
                 .expect(res => shared.verifyErrorMessage(res, error))
                 .end(done);
         });

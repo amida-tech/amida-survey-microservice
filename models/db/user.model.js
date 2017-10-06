@@ -6,7 +6,7 @@ const moment = require('moment');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 module.exports = function User(sequelize, Sequelize, schema) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
@@ -123,7 +123,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         return bccompare(password, this.password)
             .then((result) => {
                 if (!result) {
-                    throw new RRError('authenticationError');
+                    throw new SurveyError('authenticationError');
                 }
             });
     };

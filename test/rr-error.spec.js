@@ -8,15 +8,15 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 
-const RRError = require('../lib/rr-error');
+const SurveyError = require('../lib/survey-error');
 const i18n = require('../i18n');
 
 const expect = chai.expect;
 
-describe('rr-error unit', () => {
+describe('survey-error unit', () => {
     const testFn = function (language, result) {
         return function test() {
-            const err = new RRError('test');
+            const err = new SurveyError('test');
             const req = {};
             const res = {};
             if (language) {
@@ -37,7 +37,7 @@ describe('rr-error unit', () => {
 
     const testParams1Fn = function (language, result) {
         return function test() {
-            const err = new RRError('testParams1', 'param');
+            const err = new SurveyError('testParams1', 'param');
             const req = {};
             const res = {};
             if (language) {
@@ -58,7 +58,7 @@ describe('rr-error unit', () => {
 
     const testParams2Fn = function (language, result) {
         return function test() {
-            const err = new RRError('testParams2', 'a', 'b');
+            const err = new SurveyError('testParams2', 'a', 'b');
             const req = {};
             const res = {};
             if (language) {
@@ -79,7 +79,7 @@ describe('rr-error unit', () => {
 
     const unknownFn = function (language, result) {
         return function unknown() {
-            const err = new RRError('not-existing', 'a', 'b');
+            const err = new SurveyError('not-existing', 'a', 'b');
             const req = {};
             const res = {};
             if (language) {
@@ -99,10 +99,10 @@ describe('rr-error unit', () => {
     it('unknown only spanish', unknownFn('es', 'Error interno desconocido.'));
 
     it('reject', function reject() {
-        return RRError.reject('test')
+        return SurveyError.reject('test')
             .then(() => { throw new Error('unexpected no error'); })
             .catch((err) => {
-                expect(err).to.be.instanceof(RRError);
+                expect(err).to.be.instanceof(SurveyError);
                 expect(err).to.be.instanceof(Error);
                 expect(err.code).to.equal('test');
                 expect(err.params).to.deep.equal([]);
@@ -111,7 +111,7 @@ describe('rr-error unit', () => {
 
     const testEnglishOnlyFn = function (language, result) {
         return function test() {
-            const err = new RRError('testEnglishOnly', 'param');
+            const err = new SurveyError('testEnglishOnly', 'param');
             const req = {};
             const res = {};
             if (language) {

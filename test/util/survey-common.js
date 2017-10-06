@@ -267,8 +267,8 @@ const SpecTests = class SurveySpecTests {
 };
 
 const IntegrationTests = class SurveyIntegrationTests {
-    constructor(rrSuperTest, generator, hxSurvey, hxQuestion) {
-        this.rrSuperTest = rrSuperTest;
+    constructor(surveySuperTest, generator, hxSurvey, hxQuestion) {
+        this.surveySuperTest = surveySuperTest;
         this.generator = generator;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion; // not updated in all creates.
@@ -276,11 +276,11 @@ const IntegrationTests = class SurveyIntegrationTests {
 
     createSurveyFn(options) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         return function createSurvey(done) {
             const survey = generator.newSurvey(options);
-            rrSuperTest.post('/surveys', survey, 201)
+            surveySuperTest.post('/surveys', survey, 201)
                 .expect((res) => {
                     hxSurvey.push(survey, res.body);
                 })
@@ -289,14 +289,14 @@ const IntegrationTests = class SurveyIntegrationTests {
     }
 
     createSurveyQxHxFn(questionIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const survey = generator.newSurveyQuestionIds(questionIds);
-            return rrSuperTest.post('/surveys', survey, 201)
+            return surveySuperTest.post('/surveys', survey, 201)
                 .then((res) => {
                     const fullSurvey = _.cloneDeep(survey);
                     fullSurvey.questions = questionIndices.map((qxIndex, index) => {
@@ -310,19 +310,19 @@ const IntegrationTests = class SurveyIntegrationTests {
     }
 
     getSurveyFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         return function getSurvey(done) {
             if (index === null || index === undefined) {
                 index = hxSurvey.lastIndex();
             }
             const id = hxSurvey.id(index);
-            rrSuperTest.get(`/surveys/${id}`, true, 200)
+            surveySuperTest.get(`/surveys/${id}`, true, 200)
                 .expect((res) => {
                     hxSurvey.reloadServer(res.body);
                     let expected = hxSurvey.client(index);
                     expected = _.cloneDeep(expected);
-                    expected.authorId = rrSuperTest.userId;
+                    expected.authorId = surveySuperTest.userId;
                     comparator.survey(expected, res.body);
                 })
                 .end(done);
@@ -330,11 +330,11 @@ const IntegrationTests = class SurveyIntegrationTests {
     }
 
     verifySurveyFn(index, { noSectionId } = {}) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         return function verifySurvey() {
             const server = hxSurvey.server(index);
-            return rrSuperTest.get(`/surveys/${server.id}`, true, 200)
+            return surveySuperTest.get(`/surveys/${server.id}`, true, 200)
                 .then((res) => {
                     if (noSectionId) {
                         removeSurveySectionIds(res.body);
@@ -345,11 +345,11 @@ const IntegrationTests = class SurveyIntegrationTests {
     }
 
     deleteSurveyFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         return function deleteSurvey(done) {
             const id = hxSurvey.id(index);
-            rrSuperTest.delete(`/surveys/${id}`, 204)
+            surveySuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
                     hxSurvey.remove(index);
                 })
@@ -358,10 +358,10 @@ const IntegrationTests = class SurveyIntegrationTests {
     }
 
     listSurveysFn(options = {}, count = -1) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         return function listSurveys() {
-            return rrSuperTest.get('/surveys', true, 200, options)
+            return surveySuperTest.get('/surveys', true, 200, options)
                 .then((res) => {
                     if (count >= 0) {
                         expect(res.body).to.have.length(count);

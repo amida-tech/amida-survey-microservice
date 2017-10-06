@@ -3,7 +3,7 @@
 // const _ = require('lodash');
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 const SPromise = require('../../lib/promise');
 // const ExportCSVConverter = require('../../export/csv-converter.js');
@@ -73,7 +73,7 @@ module.exports = class ChoiceSetDAO extends Base {
                 if (record) {
                     return record.id;
                 }
-                return RRError.reject('choiceSetNotFound', reference);
+                return SurveyError.reject('choiceSetNotFound', reference);
             });
     }
 };

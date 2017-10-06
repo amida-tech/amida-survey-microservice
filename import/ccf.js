@@ -6,7 +6,7 @@ const _ = require('lodash');
 const intoStream = require('into-stream');
 
 const SPromise = require('../lib/promise');
-const RRError = require('../lib/rr-error');
+const SurveyError = require('../lib/survey-error');
 
 const XLSXConverter = require('./xlsx-converter');
 
@@ -402,19 +402,19 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
         if (questionType === 'choice') {
             const questionChoiceId = answer.answers.reduce((p, a) => {
                 if ((a.questionChoiceType !== 'bool') || (typeof a.value !== 'boolean')) {
-                    throw new RRError('ccfInconsistentAnswerForType', 'choice', a.questionChoiceType);
+                    throw new SurveyError('ccfInconsistentAnswerForType', 'choice', a.questionChoiceType);
                 }
                 if (!a.value) {
                     return p;
                 }
                 if (p !== null) {
-                    throw new RRError('ccfMultipleSelectionsForChoice');
+                    throw new SurveyError('ccfMultipleSelectionsForChoice');
                 }
                 p = a.questionChoiceId;
                 return p;
             }, null);
             if (questionChoiceId === null) {
-                throw new RRError('ccfNoSelectionsForChoice');
+                throw new SurveyError('ccfNoSelectionsForChoice');
             }
             r.push({ userId, surveyId, createdAt, questionId, questionChoiceId });
             return r;

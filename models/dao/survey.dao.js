@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const answerCommon = require('./answer-common');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const importUtil = require('../../import/import-util');
@@ -18,13 +18,13 @@ const translateRuleChoices = function (ruleParent, choices) {
     const rawChoices = _.get(ruleParent, 'answer.choices');
     if (choiceText || rawChoices) {
         if (!choices) {
-            return RRError.reject('surveySkipChoiceForNonChoice');
+            return SurveyError.reject('surveySkipChoiceForNonChoice');
         }
         const p = ruleParent.answer;
         if (choiceText) {
             const serverChoice = choices.find(choice => choice.text === choiceText);
             if (!serverChoice) {
-                return RRError.reject('surveySkipChoiceNotFound');
+                return SurveyError.reject('surveySkipChoiceNotFound');
             }
             p.choice = serverChoice.id;
             delete p.choiceText;
@@ -33,7 +33,7 @@ const translateRuleChoices = function (ruleParent, choices) {
             p.choices.forEach((r) => {
                 const serverChoice = choices.find(choice => choice.text === r.text);
                 if (!serverChoice) {
-                    throw new RRError('surveySkipChoiceNotFound');
+                    throw new SurveyError('surveySkipChoiceNotFound');
                 }
                 r.id = serverChoice.id;
             });
@@ -128,10 +128,10 @@ module.exports = class SurveyDAO extends Translatable {
 
     flattenHierarchy({ sections, questions }) {
         if (questions && sections) {
-            throw new RRError('surveyBothQuestionsSectionsSpecified');
+            throw new SurveyError('surveyBothQuestionsSectionsSpecified');
         }
         if (!questions && !sections) {
-            throw new RRError('surveyNeitherQuestionsSectionsSpecified');
+            throw new SurveyError('surveyNeitherQuestionsSectionsSpecified');
         }
         const result = { sections: [], questions: [] };
         if (sections) {
@@ -287,7 +287,7 @@ module.exports = class SurveyDAO extends Translatable {
     updateSurveyTx(inputId, survey, transaction) {
         const { sections, questions } = this.flattenHierarchy(survey);
         if (!questions.length) {
-            return RRError.reject('surveyNoQuestions');
+            return SurveyError.reject('surveyNoQuestions');
         }
         const record = { id: inputId, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
@@ -349,7 +349,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.selectQuery(surveyPatchInfoQuery, replacements, transaction)
             .then((surveys) => {
                 if (!surveys.length) {
-                    return RRError.reject('surveyNotFound');
+                    return SurveyError.reject('surveyNotFound');
                 }
                 return surveys[0];
             });
@@ -359,7 +359,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.patchSurveyInformationTx(surveyId, surveyPatch, transaction)
             .then((survey) => {
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
-                    return RRError.reject('surveyRetiredStatusUpdate');
+                    return SurveyError.reject('surveyRetiredStatusUpdate');
                 }
                 return SPromise.resolve()
                     .then(() => {
@@ -368,10 +368,10 @@ module.exports = class SurveyDAO extends Translatable {
                             const fields = {};
                             if (status && (status !== survey.status)) {
                                 if (survey.status === 'draft' && status === 'retired') {
-                                    return RRError.reject('surveyDraftToRetiredUpdate');
+                                    return SurveyError.reject('surveyDraftToRetiredUpdate');
                                 }
                                 if (!forceStatus && (status === 'draft') && (survey.status === 'published')) { // eslint-disable-line max-len
-                                    return RRError.reject('surveyPublishedToDraftUpdate');
+                                    return SurveyError.reject('surveyPublishedToDraftUpdate');
                                 }
                                 fields.status = status;
                             }
@@ -409,7 +409,7 @@ module.exports = class SurveyDAO extends Translatable {
                         }
                         const { sections, questions } = this.flattenHierarchy(surveyPatch);
                         if (!questions) {
-                            return RRError.reject('surveyNoQuestionsInSections');
+                            return SurveyError.reject('surveyNoQuestionsInSections');
                         }
                         const questionIdSet = new Set();
                         questions.forEach((question) => {
@@ -426,7 +426,7 @@ module.exports = class SurveyDAO extends Translatable {
                         }, []);
                         if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) { // eslint-disable-line max-len
                             if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
-                                return RRError.reject('surveyChangeQuestionWhenPublished');
+                                return SurveyError.reject('surveyChangeQuestionWhenPublished');
                             }
                         }
                         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
@@ -461,7 +461,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.db.Survey.findById(originalId)
             .then((survey) => {
                 if (!survey) {
-                    return RRError.reject('surveyNotFound');
+                    return SurveyError.reject('surveyNotFound');
                 }
                 return survey;
             })
@@ -594,7 +594,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.db.Survey.findOne(opt)
             .then((survey) => {
                 if (!survey) {
-                    return RRError.reject('surveyNotFound');
+                    return SurveyError.reject('surveyNotFound');
                 }
                 if (survey.meta === null) {
                     delete survey.meta; // eslint-disable-line no-param-reassign
@@ -834,7 +834,7 @@ module.exports = class SurveyDAO extends Translatable {
                     if (value) {
                         const newValue = maps.sectionIdMap[value];
                         if (!newValue) {
-                            throw new RRError('surveyImportMissingSectionId', value);
+                            throw new SurveyError('surveyImportMissingSectionId', value);
                         }
                         newRecord[field] = newValue;
                     }
@@ -844,7 +844,7 @@ module.exports = class SurveyDAO extends Translatable {
                     if (value) {
                         const newValue = questionIdMap[value];
                         if (!newValue) {
-                            throw new RRError('surveyImportMissingQuestionId', value);
+                            throw new SurveyError('surveyImportMissingQuestionId', value);
                         }
                         newRecord[field] = newValue;
                     }
@@ -886,7 +886,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 const parentIndex = sectionMap.get(parentSectionId);
                                 if (parentIndex === undefined) {
                                     const errCode = 'surveyImportMissingParentSectionId';
-                                    throw new RRError(errCode, parentSectionId);
+                                    throw new SurveyError(errCode, parentSectionId);
                                 }
                                 section.parentIndex = parentIndex;
                             }

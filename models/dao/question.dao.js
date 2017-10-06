@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
@@ -143,13 +143,13 @@ module.exports = class QuestionDAO extends Translatable {
         return SurveyQuestion.count({ where: { questionId: parentId } })
             .then((count) => {
                 if (count) {
-                    return RRError.reject('qxReplaceWhenActiveSurveys');
+                    return SurveyError.reject('qxReplaceWhenActiveSurveys');
                 }
                 return this.transaction((transaction) => {
                     const px = Question.findById(parentId, { transaction });
                     return px.then((question) => {
                         if (!question) {
-                            return RRError.reject('qxNotFound');
+                            return SurveyError.reject('qxNotFound');
                         }
                         const version = question.version || 1;
                         const newQuestion = Object.assign({}, replacement, {
@@ -183,7 +183,7 @@ module.exports = class QuestionDAO extends Translatable {
         return Question.findById(qid, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
-                    return RRError.reject('qxNotFound');
+                    return SurveyError.reject('qxNotFound');
                 }
                 return cleanDBQuestion(question);
             })
@@ -280,7 +280,7 @@ module.exports = class QuestionDAO extends Translatable {
         return SurveyQuestion.count({ where: { questionId: id } })
             .then((count) => {
                 if (count) {
-                    return RRError.reject('qxReplaceWhenActiveSurveys');
+                    return SurveyError.reject('qxReplaceWhenActiveSurveys');
                 }
                 return Question.destroy({ where: { id } })
                         .then(() => SurveyQuestion.destroy({ where: { questionId: id } }));
@@ -358,7 +358,7 @@ module.exports = class QuestionDAO extends Translatable {
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
-                    return RRError.reject('qxNotFound');
+                    return SurveyError.reject('qxNotFound');
                 }
                 if (!questions.length) {
                     return questions;

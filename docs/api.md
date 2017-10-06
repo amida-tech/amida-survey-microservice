@@ -39,7 +39,7 @@ agent
     });
 ```
 
-Server responds with a `set-cookie` header which includes a [JSON Web Token](https://jwt.io/) (JWT) as value of a cookie named `rr-jwt-token`.
+Server responds with a `set-cookie` header which includes a [JSON Web Token](https://jwt.io/) (JWT) as value of a cookie named `auth-jwt-token`.
 
 ### Authorization
 <a name="authorization"/>

@@ -242,8 +242,8 @@ const SpecTests = class AnswerSpecTests {
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
-    constructor(rrSuperTest, options) {
-        this.rrSuperTest = rrSuperTest;
+    constructor(surveySuperTest, options) {
+        this.surveySuperTest = surveySuperTest;
         this.generator = options.generator;
         this.hxUser = options.hxUser;
         this.hxSurvey = options.hxSurvey;
@@ -252,7 +252,7 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     answerSurveyFn(userIndex, surveyIndex, qxIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
@@ -268,7 +268,7 @@ const IntegrationTests = class AnswerIntegrationTests {
             if (language) {
                 input.language = language;
             }
-            return rrSuperTest.post('/answers', input, 204)
+            return surveySuperTest.post('/answers', input, 204)
                 .expect(() => {
                     hxAnswer.push(userIndex, surveyIndex, answers, language);
                 })
@@ -277,12 +277,12 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     getAnswersFn(userIndex, surveyIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
         return function getAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
+            surveySuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
                 .expect((res) => {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     comparator.answers(expected, res.body);
@@ -295,11 +295,11 @@ const IntegrationTests = class AnswerIntegrationTests {
     verifyAnsweredSurveyFn(userIndex, surveyIndex) {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function verifyAnsweredSurvey(done) {
             const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
-            rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
+            surveySuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
                 .expect((res) => {
                     comparator.answeredSurvey(survey, answers, res.body);
                 })
@@ -308,12 +308,12 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     listAnswersForUserFn(userIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
         return function listAnswersForUser() {
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
-            return rrSuperTest.get('/answers/export', true, 200)
+            return surveySuperTest.get('/answers/export', true, 200)
                 .then((res) => {
                     expect(res.body).to.deep.equal(expected);
                     return res.body;
@@ -322,7 +322,7 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     listAnswersForUsersFn(userIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
@@ -336,7 +336,7 @@ const IntegrationTests = class AnswerIntegrationTests {
                 expected.push(...userExpected);
             });
             const query = { 'user-ids': userIds };
-            return rrSuperTest.get('/answers/multi-user-export', true, 200, query)
+            return surveySuperTest.get('/answers/multi-user-export', true, 200, query)
                 .then((res) => {
                     const actual = _.sortBy(res.body, ['userId', 'surveyId']);
                     expect(actual).to.deep.equal(expected);

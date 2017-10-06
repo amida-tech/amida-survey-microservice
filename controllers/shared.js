@@ -3,7 +3,7 @@
 const Sequelize = require('sequelize');
 
 const jsutil = require('../lib/jsutil');
-const RRError = require('../lib/rr-error');
+const SurveyError = require('../lib/survey-error');
 
 const sequelizeErrorMap = {
     SequelizeUniqueConstraintError: {
@@ -20,12 +20,12 @@ const transformSequelizeError = function transformSequelizeError(err) {
             const key = Object.keys(fields)[0];
             const code = topSpecification[key];
             if (code) {
-                return new RRError(code);
+                return new SurveyError(code);
             }
             const genericCode = topSpecification.generic;
             if (genericCode) {
                 const value = fields[key];
-                return new RRError(genericCode, key, value);
+                return new SurveyError(genericCode, key, value);
             }
         }
     }
@@ -37,7 +37,7 @@ exports.errToJSON = function errToJSON(err, res) {
     if (localErr instanceof Sequelize.Error) {
         localErr = transformSequelizeError(err);
     }
-    if (localErr instanceof RRError) {
+    if (localErr instanceof SurveyError) {
         const message = localErr.getMessage(res);
         const json = jsutil.errToJSON(localErr);
         json.message = message;
@@ -49,7 +49,7 @@ exports.errToJSON = function errToJSON(err, res) {
 exports.handleError = function handleErrorFn(res) {
     return function handleError(err) {
         const json = exports.errToJSON(err, res);
-        if (err instanceof RRError) {
+        if (err instanceof SurveyError) {
             const statusCode = err.statusCode || 400;
             return res.status(statusCode).json(json);
         }

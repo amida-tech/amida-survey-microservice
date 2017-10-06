@@ -4,7 +4,7 @@ const moment = require('moment');
 const _ = require('lodash');
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 const attributes = [
     'id', 'username', 'email', 'role', 'firstname', 'lastname', 'institution', 'createdAt',
@@ -19,7 +19,7 @@ module.exports = class UserDAO extends Base {
     createUser(newUser, transaction) {
         const options = transaction ? { transaction } : {};
         if (newUser.username === newUser.email) {
-            return RRError.reject('userIdenticalUsernameEmail');
+            return SurveyError.reject('userIdenticalUsernameEmail');
         }
         const user = Object.assign({}, newUser);
         if (!user.username) {
@@ -60,7 +60,7 @@ module.exports = class UserDAO extends Base {
                 const fields = Object.assign({}, userPatch);
                 if (user.username === user.email.toLowerCase()) {
                     if (Object.prototype.hasOwnProperty.call(fields, 'username')) {
-                        return RRError.reject('userNoUsernameChange');
+                        return SurveyError.reject('userNoUsernameChange');
                     }
                     if (Object.prototype.hasOwnProperty.call(fields, 'email')) {
                         fields.username = fields.email.toLowerCase();
@@ -84,7 +84,7 @@ module.exports = class UserDAO extends Base {
         return this.db.User.find({ where })
             .then((user) => {
                 if (!user) {
-                    return RRError.reject('invalidEmail');
+                    return SurveyError.reject('invalidEmail');
                 }
                 return user.updateResetPWToken();
             });
@@ -95,12 +95,12 @@ module.exports = class UserDAO extends Base {
         return User.find({ where: { resetPasswordToken } })
             .then((user) => {
                 if (!user) {
-                    return RRError.reject('invalidOrExpiredPWToken');
+                    return SurveyError.reject('invalidOrExpiredPWToken');
                 }
                 const expires = user.resetPasswordExpires;
                 const mExpires = moment.utc(expires);
                 if (moment.utc().isAfter(mExpires)) {
-                    return RRError.reject('invalidOrExpiredPWToken');
+                    return SurveyError.reject('invalidOrExpiredPWToken');
                 }
                 Object.assign(user, { password });
                 return user.save();

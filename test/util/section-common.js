@@ -72,19 +72,19 @@ const SpecTests = class SectionSpecTests {
 };
 
 const IntegrationTests = class SectionIntegrationTests {
-    constructor(rrSuperTest, generator, hxSection) {
-        this.rrSuperTest = rrSuperTest;
+    constructor(surveySuperTest, generator, hxSection) {
+        this.surveySuperTest = surveySuperTest;
         this.generator = generator;
         this.hxSection = hxSection;
     }
 
     createSectionFn(section) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSection = this.hxSection;
         return function createSection() {
             section = section || generator.newSection();
-            return rrSuperTest.post('/sections', section, 201)
+            return surveySuperTest.post('/sections', section, 201)
                 .expect((res) => {
                     hxSection.push(section, res.body);
                 });
@@ -92,12 +92,12 @@ const IntegrationTests = class SectionIntegrationTests {
     }
 
     getSectionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSection = this.hxSection;
         return function getSection() {
             index = (index === undefined) ? hxSection.lastIndex() : index;
             const id = hxSection.id(index);
-            return rrSuperTest.get(`/sections/${id}`, true, 200)
+            return surveySuperTest.get(`/sections/${id}`, true, 200)
                 .expect((res) => {
                     hxSection.reloadServer(res.body);
                     comparator.section(hxSection.client(index), res.body);
@@ -106,11 +106,11 @@ const IntegrationTests = class SectionIntegrationTests {
     }
 
     deleteSectionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSection = this.hxSection;
         return function deleteSection() {
             const id = hxSection.id(index);
-            return rrSuperTest.delete(`/sections/${id}`, 204)
+            return surveySuperTest.delete(`/sections/${id}`, 204)
                 .expect(() => {
                     hxSection.remove(index);
                 });
@@ -118,10 +118,10 @@ const IntegrationTests = class SectionIntegrationTests {
     }
 
     listSectionsFn() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSection = this.hxSection;
         return function listSections() {
-            return rrSuperTest.get('/sections', true, 200)
+            return surveySuperTest.get('/sections', true, 200)
                 .expect((res) => {
                     const expected = hxSection.listServers();
                     expect(res.body).to.deep.equal(expected);

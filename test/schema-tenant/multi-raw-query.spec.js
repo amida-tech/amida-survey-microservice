@@ -12,7 +12,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const RRSuperTest = require('../util/rr-super-test');
+const SurveySupertest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const MultiQuestionGenerator = require('../util/generator/multi-question-generator');
 const History = require('../util/history');
@@ -25,9 +25,9 @@ const expect = chai.expect;
 
 describe('multi tenant (for raw query)', function multiTenant4Raw() {
     const schemas = _.range(3).map(index => `schema_${index}`);
-    const rrSuperTests = schemas.map(schema => new RRSuperTest(`/${schema}`));
+    const SurveySupertests = schemas.map(schema => new SurveySupertest(`/${schema}`));
     const generator = new Generator();
-    const shareds = rrSuperTests.map(r => new SharedIntegration(r, generator));
+    const shareds = SurveySupertests.map(r => new SharedIntegration(r, generator));
     const configClone = _.cloneDeep(config);
     configClone.db.schema = schemas.join('~');
     const options = { config: configClone, generatedb: true };
@@ -67,16 +67,16 @@ describe('multi tenant (for raw query)', function multiTenant4Raw() {
         });
     });
 
-    it('setup database', SharedIntegration.setUpMultiFn(rrSuperTests, options));
+    it('setup database', SharedIntegration.setUpMultiFn(SurveySupertests, options));
 
     _.range(3).forEach((schemaIndex) => {
         const shared = shareds[schemaIndex];
-        const rrSuperTest = rrSuperTests[schemaIndex];
+        const SurveySupertest = SurveySupertests[schemaIndex];
 
         it('login as super', shared.loginFn(config.superUser));
 
         const hxQuestion = new History();
-        const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+        const tests = new questionCommon.IntegrationTests(SurveySupertest, { generator, hxQuestion });
 
         _.range(3).forEach((index) => {
             it(`create question ${index}`, tests.createQuestionFn());
@@ -109,7 +109,7 @@ describe('multi tenant (for raw query)', function multiTenant4Raw() {
 
     const multiCountFn = function (index) {
         return function multiCount() {
-            return rrSuperTests[index].get('/questions-multi-count', true, 200)
+            return SurveySupertests[index].get('/questions-multi-count', true, 200)
                 .then(res => expect(res.body.count).to.equal(`${index + 1}`));
         };
     };
@@ -124,6 +124,6 @@ describe('multi tenant (for raw query)', function multiTenant4Raw() {
     });
 
     it('close connections', function closeSequelize() {
-        return rrSuperTests[0].shutDown();
+        return SurveySupertests[0].shutDown();
     });
 });

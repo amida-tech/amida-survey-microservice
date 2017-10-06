@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
@@ -225,7 +225,7 @@ const choiceValueToDBFormat = {
             const numKeys = keys.length;
             if (numKeys > 1) {
                 keys.sort();
-                throw new RRError('answerMultipleTypeChoice', keys.join(', '));
+                throw new SurveyError('answerMultipleTypeChoice', keys.join(', '));
             }
             if (numKeys === 0) {
                 return { questionChoiceId, value: 'true' };
@@ -233,7 +233,7 @@ const choiceValueToDBFormat = {
             const key = keys[0];
             const fn = answerValueToDBFormat[key];
             if (!fn) {
-                throw new RRError('answerAnswerNotUnderstood', key);
+                throw new SurveyError('answerAnswerNotUnderstood', key);
             }
             return Object.assign({ questionChoiceId }, fn(r[key]));
         });
@@ -248,7 +248,7 @@ const prepareAnswerForDB = function (answer) {
         return answer.map((singleAnswer) => {
             const multipleIndex = singleAnswer.multipleIndex;
             if (multipleIndex === undefined) {
-                throw new RRError('answerNoMultiQuestionIndex');
+                throw new SurveyError('answerNoMultiQuestionIndex');
             }
             const valuePiece = _.omit(singleAnswer, 'multipleIndex');
             const dbObject = prepareAnswerForDB(valuePiece)[0];
@@ -260,7 +260,7 @@ const prepareAnswerForDB = function (answer) {
     const numKeys = keys.length;
     if (numKeys > 1) {
         keys.sort();
-        throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
+        throw new SurveyError('answerMultipleTypeAnswers', keys.join(', '));
     }
     const key = keys[0];
     if (key === 'fileValue') {
@@ -276,7 +276,7 @@ const prepareAnswerForDB = function (answer) {
     }
     fn = answerValueToDBFormat[key];
     if (!fn) {
-        throw new RRError('answerAnswerNotUnderstood', key);
+        throw new SurveyError('answerAnswerNotUnderstood', key);
     }
     return [fn(answer[key])];
 };

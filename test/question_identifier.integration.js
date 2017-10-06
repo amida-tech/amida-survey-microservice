@@ -10,7 +10,7 @@ const _ = require('lodash');
 
 const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const TypedIndexSet = require('./util/typed-index-set');
 const QuestionIdentifierGenerator = require('./util/generator/question-identifier-generator');
@@ -18,14 +18,14 @@ const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 
 describe('question identifier integration', function questionIdentifierIntegration() {
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const hxQuestion = new History();
     const idGenerator = new QuestionIdentifierGenerator();
     const hxIdentifiers = {};
     const qxCommonOptions = { generator, hxQuestion, idGenerator, hxIdentifiers };
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, qxCommonOptions);
+    const tests = new questionCommon.IntegrationTests(surveySuperTest, qxCommonOptions);
     const qxIndexSet = new TypedIndexSet();
     const answerIndexSet = new TypedIndexSet();
     let questionCount = 0;
@@ -54,7 +54,7 @@ describe('question identifier integration', function questionIdentifierIntegrati
     it('error: cannot specify same type/value identifier', function errorSame() {
         const question = hxQuestion.server(5);
         const allIdentifiers = idGenerator.newIdentifiers(question, 'federated');
-        return rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400);
+        return surveySuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400);
     });
 
     it('reset identifier generator', tests.resetIdentifierGeneratorFn());

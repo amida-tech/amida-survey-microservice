@@ -10,7 +10,7 @@ const _ = require('lodash');
 
 const config = require('../config');
 
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const SharedIntegration = require('./util/shared-integration');
 const Generator = require('./util/generator');
 const SurveyHistory = require('./util/survey-history');
@@ -24,12 +24,12 @@ describe('assessment integration', () => {
     const hxSurvey = new SurveyHistory();
     const hxAssessment = new History(['id', 'name']);
 
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
 
-    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
-    const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
+    const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey);
+    const assessmentTests = new assessmentCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxAssessment);
 
     before(shared.setUpFn());
 

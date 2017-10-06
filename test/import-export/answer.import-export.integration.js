@@ -15,7 +15,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const RRSuperTest = require('../util/rr-super-test');
+const SurveySupertest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
 const History = require('../util/history');
@@ -25,14 +25,14 @@ const answerCommon = require('../util/answer-common');
 const expect = chai.expect;
 
 describe('answer import-export integration', function answerIOIntegration() {
-    const rrSuperTest = new RRSuperTest();
+    const SurveySupertest = new SurveySupertest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(SurveySupertest, generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
-    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+    const surveyTests = new surveyCommon.IntegrationTests(SurveySupertest, generator, hxSurvey);
     const opt = { generator, hxUser, hxSurvey };
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
+    const answerTests = new answerCommon.IntegrationTests(SurveySupertest, opt);
 
     before(shared.setUpFn());
 
@@ -69,7 +69,7 @@ describe('answer import-export integration', function answerIOIntegration() {
     it('login as super', shared.loginFn(config.superUser));
 
     it('export questions to csv', (done) => {
-        rrSuperTest.get('/questions/csv', true, 200)
+        SurveySupertest.get('/questions/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -78,7 +78,7 @@ describe('answer import-export integration', function answerIOIntegration() {
     });
 
     it('export surveys to csv', (done) => {
-        rrSuperTest.get('/surveys/csv', true, 200)
+        SurveySupertest.get('/surveys/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'survey.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -117,7 +117,7 @@ describe('answer import-export integration', function answerIOIntegration() {
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
     it('export user 0 answers to csv', (done) => {
-        rrSuperTest.get('/answers/csv', true, 200)
+        SurveySupertest.get('/answers/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'answer.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -131,7 +131,7 @@ describe('answer import-export integration', function answerIOIntegration() {
 
     it('export users 1, 3 answers to csv', (done) => {
         const userIds = [hxUser.id(1), hxUser.id(3)];
-        rrSuperTest.get('/answers/multi-user-csv', true, 200, { 'user-ids': userIds })
+        SurveySupertest.get('/answers/multi-user-csv', true, 200, { 'user-ids': userIds })
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'answer-multi.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -155,7 +155,7 @@ describe('answer import-export integration', function answerIOIntegration() {
 
     it('import question csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'question.csv');
-        rrSuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
+        SurveySupertest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
             .expect((res) => {
                 questionIdMap = res.body;
             })
@@ -167,7 +167,7 @@ describe('answer import-export integration', function answerIOIntegration() {
     it('import survey csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'survey.csv');
         const questionidmap = JSON.stringify(questionIdMap);
-        rrSuperTest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap }, 201)
+        SurveySupertest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap }, 201)
             .expect((res) => {
                 surveyIdMap = res.body;
             })
@@ -186,12 +186,12 @@ describe('answer import-export integration', function answerIOIntegration() {
         const filepath = path.join(generatedDirectory, 'answer.csv');
         const questionidmap = JSON.stringify(questionIdMap);
         const surveyidmap = JSON.stringify(surveyIdMap);
-        rrSuperTest.postFile('/answers/csv', 'answercsv', filepath, { questionidmap, surveyidmap }, 204)
+        SurveySupertest.postFile('/answers/csv', 'answercsv', filepath, { questionidmap, surveyidmap }, 204)
             .end(done);
     });
 
     it('list imported answers and verify', function verifyUser0Answers() {
-        return rrSuperTest.get('/answers/export', true, 200)
+        return SurveySupertest.get('/answers/export', true, 200)
             .then((res) => {
                 const maps = { questionIdMap };
                 answerCommon.compareImportedAnswers(res.body, user0Answers, maps);
@@ -213,13 +213,13 @@ describe('answer import-export integration', function answerIOIntegration() {
         const surveyidmap = JSON.stringify(surveyIdMap);
         const useridmap = JSON.stringify(userIdMap);
         const maps = { useridmap, surveyidmap, questionidmap };
-        return rrSuperTest.postFile('/answers/multi-user-csv', 'answercsv', filepath, maps, 204);
+        return SurveySupertest.postFile('/answers/multi-user-csv', 'answercsv', filepath, maps, 204);
     });
 
     it('list imported user 1, 3 answers and verify', function verifyUser1And3Answers() {
         const userIds = [hxUser.id(1), hxUser.id(2)];
         const query = { 'user-ids': userIds };
-        return rrSuperTest.get('/answers/multi-user-export', true, 200, query)
+        return SurveySupertest.get('/answers/multi-user-export', true, 200, query)
              .then((res) => {
                  const maps = { userIdMap, questionIdMap };
                  const actual = _.sortBy(res.body, ['userId', 'surveyId']);

@@ -72,19 +72,19 @@ const SpecTests = class ChoiceSetSpecTests {
 };
 
 const IntegrationTests = class ChoiceSetIntegrationTests {
-    constructor(rrSuperTest, generator, hxChoiceSet) {
-        this.rrSuperTest = rrSuperTest;
+    constructor(surveySuperTest, generator, hxChoiceSet) {
+        this.surveySuperTest = surveySuperTest;
         this.generator = generator;
         this.hxChoiceSet = hxChoiceSet;
     }
 
     createChoiceSetFn(overrideChoiceSet) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function createChoiceSet(done) {
             const choiceSet = overrideChoiceSet || generator.newChoiceSet();
-            rrSuperTest.post('/choice-sets', choiceSet, 201)
+            surveySuperTest.post('/choice-sets', choiceSet, 201)
                 .expect((res) => {
                     hxChoiceSet.push(choiceSet, res.body);
                 })
@@ -93,11 +93,11 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
     }
 
     getChoiceSetFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function getChoiceSet(done) {
             const id = hxChoiceSet.id(index);
-            rrSuperTest.get(`/choice-sets/${id}`, true, 200)
+            surveySuperTest.get(`/choice-sets/${id}`, true, 200)
                 .expect((res) => {
                     hxChoiceSet.updateServer(index, res.body);
                     comparator.choiceSet(hxChoiceSet.client(index), res.body);
@@ -107,11 +107,11 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
     }
 
     verifyChoiceSetFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function verifyChoiceSet() {
             const expected = hxChoiceSet.server(index);
-            return rrSuperTest.get(`/choice-sets/${expected.id}`, true, 200)
+            return surveySuperTest.get(`/choice-sets/${expected.id}`, true, 200)
                 .then((res) => {
                     expect(res.body).to.deep.equal(expected);
                 });
@@ -119,11 +119,11 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
     }
 
     deleteChoiceSetFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function deleteChoiceSet(done) {
             const id = hxChoiceSet.id(index);
-            rrSuperTest.delete(`/choice-sets/${id}`, 204)
+            surveySuperTest.delete(`/choice-sets/${id}`, 204)
                 .expect(() => {
                     hxChoiceSet.remove(index);
                 })
@@ -132,10 +132,10 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
     }
 
     listChoiceSetsFn() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function listChoiceSets(done) {
-            rrSuperTest.get('/choice-sets', true, 200)
+            surveySuperTest.get('/choice-sets', true, 200)
                 .expect((res) => {
                     const expected = hxChoiceSet.listServers(['id', 'reference']);
                     expect(res.body).to.deep.equal(expected);

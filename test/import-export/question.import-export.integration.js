@@ -15,7 +15,7 @@ const mkdirp = require('mkdirp');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const RRSuperTest = require('../util/rr-super-test');
+const SurveySupertest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const History = require('../util/history');
 const questionCommon = require('../util/question-common');
@@ -23,11 +23,11 @@ const questionCommon = require('../util/question-common');
 const expect = chai.expect;
 
 describe('question integration unit', () => {
-    const rrSuperTest = new RRSuperTest();
+    const SurveySupertest = new SurveySupertest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(SurveySupertest, generator);
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const tests = new questionCommon.IntegrationTests(SurveySupertest, { generator, hxQuestion });
 
     before(shared.setUpFn());
 
@@ -64,7 +64,7 @@ describe('question integration unit', () => {
     });
 
     it('export questions to csv', (done) => {
-        rrSuperTest.get('/questions/csv', true, 200)
+        SurveySupertest.get('/questions/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
@@ -80,7 +80,7 @@ describe('question integration unit', () => {
 
     it('import csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'question.csv');
-        rrSuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
+        SurveySupertest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
             .expect((res) => {
                 idMap = res.body;
             })
@@ -90,7 +90,7 @@ describe('question integration unit', () => {
     it('list imported questions and verify', () => {
         const query = { scope: 'export' };
         return function listImported(done) {
-            rrSuperTest.get('/questions', true, 200, query)
+            SurveySupertest.get('/questions', true, 200, query)
                 .expect((res) => {
                     const fields = questionCommon.getFieldsForList('export');
                     const expected = hxQuestion.listServers(fields);
