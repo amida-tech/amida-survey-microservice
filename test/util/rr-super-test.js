@@ -7,11 +7,13 @@ const path = require('path');
 const session = require('supertest-session');
 const supertest = require('supertest');
 const _ = require('lodash');
+const AuthService = require('./mock_auth_service');
 
 module.exports = class RRSupertest {
     constructor(addlPath) {
         this.server = null;
         this.baseUrl = '/api/v1.0';
+        this.authService = new AuthService();
         if (addlPath) {
             this.baseUrl += addlPath;
         }
@@ -43,10 +45,13 @@ module.exports = class RRSupertest {
             this.userId = user.id;
             this.userRole = user.role;
         }
-        return this.server
-            .get(`${this.baseUrl}/auth/basic`)
-            .auth(user.username, user.password)
-            .expect(status);
+        this.authService.addUser(user);
+        const token = this.authService.getJWT(user);
+        this.server = session(this.app, {
+            before(req) {
+                req.set('Cookie', `rr-jwt-token=${token};`);
+            },
+        });
     }
 
     resetAuth() {
