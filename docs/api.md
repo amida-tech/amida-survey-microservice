@@ -22,7 +22,7 @@ Snippets in later stages of the document can depend on variables that are define
 
 ##### Seed Data
 
-Survey Service installations come with a super user who has `admin` priviledges.  In this document it is assumed that the username and password are `super` and `Am!d@2017PW` respectively.
+Survey Service installations come with a super user.  In this document it is assumed that the username and password are `super` and `Am!d@2017PW` respectively.
 
 ### Authentication
 <a name="authentication"/>
@@ -56,13 +56,12 @@ When server responds with an error status, an error object is always included in
 
 Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.
 
-This section discusses administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
+This section discusses administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with survey service specific system initialization scripts.  In addition the input format of resources (questions, surveys, etc.) are exemplified.
 
-All API requests in this section requires `admin` authorization.
 
 ##### Questions
 
-Questions can be created either individually or as part of a [survey](#admin-surveys).  Either way they are stored independently than surveys and can be shared.
+Questions can be created either individually or as part of a survey.  Either way they are stored independently than surveys and can be shared.
 
 There are four basic types of questions: `text`, `bool`, `choice` and `choices`.
 
@@ -323,7 +322,7 @@ Surveys can be soft deleted by `/surveys/{id}` resource.  It is also possible re
 
 ### Questions
 
-A list of all questions is available to admins using resource `/questions`
+A list of all questions is available using resource `/questions`
 
 ```js
 agent
@@ -516,7 +515,7 @@ agent
 ### Surveys
 <a name="surveys"/>
 
-A list of all surveys in the registry is available to authorized participants and admins using resource `/surveys`
+A list of all surveys available using resource `/surveys`
 
 ```js
 agent
@@ -1111,9 +1110,9 @@ This API follows an English first approach where every newly created resource is
 
 ##### Languages
 
-This section describes preloaded language definitions and how to add a new language to the system. All [GET] operations in this section is available to both participants and admins while only admins are authorized for other operations.
+This section describes preloaded language definitions and how to add a new language to the system.
 
-Recruitment Registry installations are preloaded with languages that can be listed by `/languages` resource
+Survey Service installations are preloaded with languages that can be listed by `/languages` resource
 
 ```js
 agent
@@ -1468,5 +1467,4 @@ Note that all questions that are not yet translated is shown in English.
 
 This API keeps track of the language the Questions are in when participants answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
 
-- `/profiles` [POST] and [PATCH]
 - `/answers` [POST]
