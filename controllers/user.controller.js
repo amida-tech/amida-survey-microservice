@@ -4,8 +4,6 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
-const sendMail = require('../lib/email');
-
 exports.createNewUser = function createNewUser(req, res) {
     const newUser = req.body;
     if (!newUser.role) {
@@ -13,7 +11,6 @@ exports.createNewUser = function createNewUser(req, res) {
     }
     return req.models.user.createUser(newUser)
         .then(({ id }) => {
-            sendMail(newUser, 'new_contact', {});
             res.status(201).json({ id });
         })
         .catch(shared.handleError(res));

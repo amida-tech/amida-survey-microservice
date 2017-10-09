@@ -10,11 +10,11 @@ module.exports = {
         origin: '*',
     },
     db: {
-        name: 'recregtest',
+        name: 'surveyServicetest',
         poolIdle: 1000,
     },
     tmpDirectory: path.join(__dirname, '../test/generated'),
-    cohortBucket: 'recregtest',
+    cohortBucket: 'surveyService',
     constantContact: {
         baseApiUrl: 'http://turnip.test',
         token: 'turnip',
