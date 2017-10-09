@@ -47,14 +47,8 @@ const authorization = function (req, res, next) {
     } else if (token && !isAuth) {
         jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
             if (!err) {
-                return req.models.auth.getUser(payload)
-                .then((user) => {
-                    if (user) {
-                        req.user = user;
-                        _.set(req, 'headers.authorization', `Bearer ${token}`);
-                    }
-                    return next();
-                });
+                req.user = payload;
+                return next();
             }
             res.statusCode = 401;
             res.send(invalidAuth);

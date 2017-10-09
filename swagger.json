@@ -24,32 +24,6 @@
         "application/json"
     ],
     "paths": {
-      "/auth/basic": {
-            "x-swagger-router-controller": "auth.controller",
-            "get": {
-                "summary": "Gets authorization token (JWT)",
-                "operationId": "authenticateBasic",
-                "parameters": [{
-                    "name": "Authorization",
-                    "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
-                    "in": "header",
-                    "required": true,
-                    "type": "string"
-                }],
-                "description": "Returns JWT token that can be used as API key.  Prefix with 'Bearer ' before pasting.",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/users": {
             "x-swagger-router-controller": "user.controller",
             "get": {

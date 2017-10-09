@@ -1,7 +1,6 @@
 'use strict';
 
 const UserDAO = require('./user.dao');
-const AuthDAO = require('./auth.dao');
 const QuestionChoiceDAO = require('./question-choice.dao');
 const QuestionDAO = require('./question.dao');
 const AnswerDAO = require('./answer.dao');
@@ -29,7 +28,6 @@ const doasPerSchema = function (db, daosGenerator) {
     const answerIdentifier = new AnswerIdentifierDAO(db);
     const surveyIdentifier = new SurveyIdentifierDAO(db);
     const user = new UserDAO(db, {});
-    const auth = new AuthDAO(db);
     const section = new SectionDAO(db);
     const surveySectionQuestion = new SurveySectionQuestionDAO(db);
     const surveySection = new SurveySectionDAO(db, { section, surveySectionQuestion });
@@ -64,7 +62,6 @@ const doasPerSchema = function (db, daosGenerator) {
     return {
         sequelize: db.sequelize,
         user,
-        auth,
         section,
         surveySection,
         questionChoice,

@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
     jwt: {
-        secret: 'this is a secret',
+        secret: '0a6b944d-d2fb-46fc-a85e-0295c986cd9f',
     },
     cors: {
         origin: '*',
