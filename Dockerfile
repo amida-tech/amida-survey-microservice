@@ -1,13 +1,5 @@
 # Dockerfile
-FROM quay.io/aptible/nodejs:v6.9.x
-
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install python2.7 -y && \
-    apt-get install make -y && \
-    apt-get install build-essential g++ -y && \
-    apt-get install zip -y
-
-ENV PYTHON /usr/bin/python2.7
+FROM node:6.9.1
 
 # Add package.json before rest of repo, for Docker caching purposes
 # See http://ilikestuffblog.com/2014/01/06/
@@ -21,10 +13,25 @@ RUN npm install --production
 # RUN bower install --allow-root
 
 ADD . /app
-RUN touch .env
+
+# set up dotenv
+RUN echo "NODE_ENV=${NODE_ENV}\n" >> .env &&\
+    echo "RECREG_DB_NAME=${RECREG_DB_NAME}\n" >> .env &&\
+    echo "RECREG_DB_PORT=${RECREG_DB_PORT}\n" >> .env &&\
+    echo "RECREG_DB_HOST=${RECREG_DB_HOST}\n" >> .env &&\
+    echo "RECREG_DB_USER=${RECREG_DB_USERPG_USER}\n" >> .env &&\
+    echo "RECREG_DB_PASS=${RECREG_DB_PASS}\n" >> .env &&\
+    echo "RECREG_DB_DIALECT=${RECREG_DB_DIALECT}\n" >> .env &&\
+    echo "RECREG_DB_POOL_MAX=${RECREG_DB_POOL_MAX}\n" >> .env &&\
+    echo "RECREG_DB_POOL_MIN=${RECREG_DB_POOL_MIN}\n" >> .env &&\
+    echo "RECREG_DB_POOL_IDLE=${RECREG_DB_POOL_IDLE}\n" >> .env\
+    echo "RECREG_LOGGING_LEVEL=${RECREG_LOGGING_LEVEL}\n" >> .env\
+    echo "RECREG_CORS_ORIGIN=${RECREG_CORS_ORIGIN}\n" >> .env\
+
 
 # Run any additional build commands here...
 # RUN grunt some:task
 
 ENV PORT 9005
 EXPOSE 9005
+CMD [ "node", "--harmony", "index.js" ]
