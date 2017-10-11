@@ -12,7 +12,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
 const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
@@ -28,9 +28,9 @@ const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question
 const expect = chai.expect;
 
 describe('question integration', () => {
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const user = generator.newUser();
     const hxUser = new History();
 
@@ -39,7 +39,7 @@ describe('question integration', () => {
 
     it('error: create question unauthorized', (done) => {
         const question = generator.newQuestion();
-        rrSuperTest.post('/questions', question, 401).end(done);
+        surveySuperTest.post('/questions', question, 401).end(done);
     });
 
     it('login as super', shared.loginFn(config.superUser));
@@ -52,7 +52,7 @@ describe('question integration', () => {
 
     // it('error: create question as non admin', (done) => {
     //     const question = generator.newQuestion();
-    //     rrSuperTest.post('/questions', question, 403).end(done);
+    //     surveySuperTest.post('/questions', question, 403).end(done);
     // });
 
     it('logout as user', shared.logoutFn());
@@ -62,7 +62,7 @@ describe('question integration', () => {
     const invalidQuestionJSONFn = function (index) {
         return function invalidQuestionJSON(done) {
             const question = invalidQuestionsJSON[index];
-            rrSuperTest.post('/questions', question, 400)
+            surveySuperTest.post('/questions', question, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'jsonSchemaFailed', 'newQuestion'))
                 .end(done);
         };
@@ -75,7 +75,7 @@ describe('question integration', () => {
     const invalidQuestionSwaggerFn = function (index) {
         return function invalidQuestionSwagger(done) {
             const question = invalidQuestionsSwagger[index];
-            rrSuperTest.post('/questions', question, 400)
+            surveySuperTest.post('/questions', question, 400)
                 .expect((res) => {
                     expect(Boolean(res.body.message)).to.equal(true);
                 })
@@ -90,7 +90,7 @@ describe('question integration', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
     const hxSurvey = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const tests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     _.range(10).forEach((i) => {
@@ -103,12 +103,12 @@ describe('question integration', () => {
 
 
     it('error: get with non-existent id', function getNonExistant() {
-        return rrSuperTest.get('/questions/9999', true, 400)
+        return surveySuperTest.get('/questions/9999', true, 400)
             .expect(res => shared.verifyErrorMessage(res, 'qxNotFound'));
     });
 
     it('error: get with non-existent id in spanish', function getNonExistantSpanish() {
-        return rrSuperTest.get('/questions/9999', true, 400, { language: 'es' })
+        return surveySuperTest.get('/questions/9999', true, 400, { language: 'es' })
             .expect(res => shared.verifyErrorMessageLang(res, 'es', 'qxNotFound'));
     });
 
@@ -122,7 +122,7 @@ describe('question integration', () => {
             if (instruction) {
                 update.instruction = `Updated ${clientQuestion.instruction}`;
             }
-            rrSuperTest.patch('/questions/text/en', update, 204).end(done);
+            surveySuperTest.patch('/questions/text/en', update, 204).end(done);
         };
     };
 
@@ -137,7 +137,7 @@ describe('question integration', () => {
                 cmp.instruction = `Updated ${clientQuestion.instruction}`;
             }
             const updatedQuestion = Object.assign({}, clientQuestion, cmp);
-            rrSuperTest.get(`/questions/${id}`, true, 200)
+            surveySuperTest.get(`/questions/${id}`, true, 200)
                 .expect((res) => {
                     comparator.question(updatedQuestion, res.body);
                 })
@@ -155,7 +155,7 @@ describe('question integration', () => {
             if (instruction) {
                 update.instruction = instruction;
             }
-            rrSuperTest.patch('/questions/text/en', update, 204).end(done);
+            surveySuperTest.patch('/questions/text/en', update, 204).end(done);
         };
     };
 
@@ -177,7 +177,7 @@ describe('question integration', () => {
         return function translateQuestion(done) {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
-            rrSuperTest.patch(`/questions/text/${language}`, translation, 204)
+            surveySuperTest.patch(`/questions/text/${language}`, translation, 204)
                 .expect(() => {
                     hxQuestion.translate(index, language, translation);
                 })
@@ -188,7 +188,7 @@ describe('question integration', () => {
     const getTranslatedQuestionFn = function (index, language) {
         return function getTranslatedQuestion(done) {
             const id = hxQuestion.id(index);
-            rrSuperTest.get(`/questions/${id}`, true, 200, { language })
+            surveySuperTest.get(`/questions/${id}`, true, 200, { language })
                 .expect((res) => {
                     const expected = hxQuestion.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
@@ -199,7 +199,7 @@ describe('question integration', () => {
 
     const listTranslatedQuestionsFn = function (language) {
         return function getTranslatedQuestion(done) {
-            rrSuperTest.get('/questions', true, 200, { scope: 'complete', language })
+            surveySuperTest.get('/questions', true, 200, { scope: 'complete', language })
                 .expect((res) => {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
@@ -242,7 +242,7 @@ describe('question integration', () => {
         it(`restore updated question ${i} text`, restoreUpdatedUpdatedQxFn(i));
     });
 
-    it('list common questions', () => rrSuperTest.get('/questions', true, 200, { 'common-only': true })
+    it('list common questions', () => surveySuperTest.get('/questions', true, 200, { 'common-only': true })
             .then((res) => {
                 let expected = hxQuestion.listServers();
                 expected = expected.filter(q => q.common);
@@ -256,7 +256,7 @@ describe('question integration', () => {
         return function createSurvey(done) {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
-            rrSuperTest.post('/surveys', clientSurvey, 201)
+            surveySuperTest.post('/surveys', clientSurvey, 201)
                 .expect((res) => {
                     hxSurvey.push(clientSurvey, res.body);
                 })
@@ -273,7 +273,7 @@ describe('question integration', () => {
         it(`list survey ${index} questions`, function listSurveyQuestions() {
             const surveyId = hxSurvey.id(index);
             const query = { scope: 'complete', 'survey-id': surveyId };
-            return rrSuperTest.get('/questions', true, 200, query)
+            return surveySuperTest.get('/questions', true, 200, query)
                 .then((res) => {
                     const expected = hxQuestion.listServers(null, questionIndices);
                     expect(res.body).to.deep.equal(expected);
@@ -284,7 +284,7 @@ describe('question integration', () => {
     const deleteQuestionWhenOnSurveyFn = function (index) {
         return function deleteQuestionWhenOnSurvey(done) {
             const id = hxQuestion.id(index);
-            rrSuperTest.delete(`/questions/${id}`, 400)
+            surveySuperTest.delete(`/questions/${id}`, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'qxReplaceWhenActiveSurveys'))
                 .end(done);
         };
@@ -297,7 +297,7 @@ describe('question integration', () => {
     const deleteSurveyFn = function (index) {
         return function deleteSurvey(done) {
             const id = hxSurvey.id(index);
-            rrSuperTest.delete(`/surveys/${id}`, 204)
+            surveySuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
                     hxSurvey.remove(index);
                 })
@@ -324,7 +324,7 @@ describe('question integration', () => {
     it('error: replace a non-existent question', (done) => {
         const replacement = generator.newQuestion();
         replacement.parentId = 999;
-        rrSuperTest.post('/questions', replacement, 400)
+        surveySuperTest.post('/questions', replacement, 400)
             .expect(res => shared.verifyErrorMessage(res, 'qxNotFound'))
             .end(done);
     });
@@ -341,7 +341,7 @@ describe('question integration', () => {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            rrSuperTest.post('/questions', replacement, 400)
+            surveySuperTest.post('/questions', replacement, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'qxReplaceWhenActiveSurveys'))
                 .end(done);
         };
@@ -364,7 +364,7 @@ describe('question integration', () => {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            rrSuperTest.post('/questions', replacement, 201)
+            surveySuperTest.post('/questions', replacement, 201)
                 .expect((res) => {
                     hxQuestion.replace(questionIndex, replacement, res.body);
                 })

@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const queryrize = require('../../lib/queryrize');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 const Translatable = require('./translatable');
 
@@ -62,7 +62,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
                         return this.shiftLines(line, questionId, choiceSetId, transaction)
                             .then(() => line);
                     }
-                    return RRError.reject('qxChoiceInvalidBeforeId');
+                    return SurveyError.reject('qxChoiceInvalidBeforeId');
                 });
         }
         const attributes = this.fnCol('max', 'question_choice', 'line');
@@ -81,10 +81,10 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     createQuestionChoice(choice) {
         const { questionId, choiceSetId } = choice;
         if (!(questionId || choiceSetId)) {
-            return RRError.reject('qxChoiceNoParent');
+            return SurveyError.reject('qxChoiceNoParent');
         }
         if (questionId && choiceSetId) {
-            return RRError.reject('qxChoiceMultipleParent');
+            return SurveyError.reject('qxChoiceMultipleParent');
         }
         return this.transaction(transaction => this.findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction)   // eslint-disable-line max-len
             .then((line) => {
@@ -98,10 +98,10 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     patchQuestionChoice(id, choicePatch) {
         const { questionId, choiceSetId } = choicePatch;
         if (!(questionId || choiceSetId)) {
-            return RRError.reject('qxChoiceNoParent');
+            return SurveyError.reject('qxChoiceNoParent');
         }
         if (questionId && choiceSetId) {
-            return RRError.reject('qxChoiceMultipleParent');
+            return SurveyError.reject('qxChoiceMultipleParent');
         }
         return this.transaction((transaction) => {
             if (choicePatch.before) {
@@ -178,14 +178,14 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return this.db.Answer.count({ where: { questionChoiceId: id } })
             .then((count) => {
                 if (count > 0) {
-                    return RRError.reject('qxChoiceNoDeleteAnswered');
+                    return SurveyError.reject('qxChoiceNoDeleteAnswered');
                 }
                 return null;
             })
             .then(() => this.db.FilterAnswer.count({ where: { questionChoiceId: id } }))
             .then((count) => {
                 if (count > 0) {
-                    return RRError.reject('qxChoiceNoDeleteInFilter');
+                    return SurveyError.reject('qxChoiceNoDeleteInFilter');
                 }
                 return null;
             })
@@ -199,7 +199,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
                 if (result && result.length) {
                     return result[0].id;
                 }
-                return RRError.reject('questionChoiceCodeNotFound');
+                return SurveyError.reject('questionChoiceCodeNotFound');
             });
     }
 };

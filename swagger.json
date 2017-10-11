@@ -2,8 +2,8 @@
     "swagger": "2.0",
     "info": {
         "version": "1.0",
-        "title": "Recruitment Registry",
-        "description": "Survey Based Match of Participants to Clinical Trials",
+        "title": "Survey Service",
+        "description": "Microservice for designing and administering surveys.",
         "contact": {
             "name": "Amida Technology Solutions",
             "url": "http://www.amida.com",
@@ -2251,21 +2251,6 @@
         }
     },
     "securityDefinitions": {
-        "admin": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
-        "participant": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
-        "clinician": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
         "self": {
             "type": "apiKey",
             "in": "header",

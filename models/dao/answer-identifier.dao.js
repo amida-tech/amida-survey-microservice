@@ -1,7 +1,7 @@
 'use strict';
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 module.exports = class QuestionIdentifierDAO extends Base {
     createAnswerIdentifier(answerIdentifier, transaction) {
@@ -19,7 +19,7 @@ module.exports = class QuestionIdentifierDAO extends Base {
         })
             .then((ids) => {
                 if (!ids) {
-                    return RRError.reject('answerIdentifierNotFound');
+                    return SurveyError.reject('answerIdentifierNotFound');
                 }
                 if (ids.questionChoiceId === null) {
                     delete ids.questionChoiceId; // eslint-disable-line no-param-reassign

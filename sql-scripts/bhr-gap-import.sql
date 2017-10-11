@@ -46,7 +46,7 @@ WITH
 		INSERT INTO
 			user_assessment (user_id, assessment_id, sequence, status, meta, created_at)
 		SELECT
-			registry_user.id as user_id,
+			user.id as user_id,
 			assessment.id as assessment_id,
 			user_assessment_row.sequence AS sequence,
 			user_assessment_row.status::enum_user_assessment_status,
@@ -54,7 +54,7 @@ WITH
 			NOW()
 		FROM
 			user_assessment_row
-			LEFT JOIN registry_user ON (registry_user.username = user_assessment_row.username)
+			LEFT JOIN user ON (user.username = user_assessment_row.username)
 			LEFT JOIN assessment ON (assessment.name = user_assessment_row.assessment_name)
 		RETURNING id, (meta->'bhr_source_line_index')::text::int AS line_index
 	),
@@ -62,7 +62,7 @@ WITH
 		INSERT INTO
 			answer (user_id, survey_id, language_code, question_id, question_choice_id, value, multiple_index, meta, created_at, deleted_at)
 		SELECT
-			registry_user.id as user_id,
+			user.id as user_id,
 			:survey_id as survey_id,
 			'en' as language_code,
 			staging_bhr_gap.question_id as question_id,
@@ -77,7 +77,7 @@ WITH
 			END
 		FROM
 			staging_bhr_gap
-			LEFT JOIN registry_user ON registry_user.username = staging_bhr_gap.username
+			LEFT JOIN user ON user.username = staging_bhr_gap.username
 		WHERE
 			question_id IS NOT NULL
 		RETURNING id, (meta->'bhr_source_line_index')::text::int AS line_index

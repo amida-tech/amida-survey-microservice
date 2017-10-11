@@ -1,7 +1,7 @@
 'use strict';
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 
 module.exports = class QuestionIdentifierDAO extends Base {
     createQuestionIdentifier(questionIdentifier, transaction) {
@@ -17,7 +17,7 @@ module.exports = class QuestionIdentifierDAO extends Base {
         })
             .then((ids) => {
                 if (!ids) {
-                    return RRError.reject('questionIdentifierNotFound');
+                    return SurveyError.reject('questionIdentifierNotFound');
                 }
                 return ids;
             });

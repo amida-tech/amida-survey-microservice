@@ -1,6 +1,6 @@
-# Recruitment Registry API
+# Survey Service API
 
-Recruitment Registry API
+Survey Service API
 
 ## Features
 
@@ -19,8 +19,8 @@ Recruitment Registry API
 	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
 
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
-2. Create database recreg:
-`createdb recreg`
+2. Create database surveyService:
+`createdb surveyService`
 3. Install Grunt:
 `npm install -g grunt`
 4. Install npm dependencies:
@@ -52,57 +52,51 @@ Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/la
 
 A minimal sample `.env` file is below.  Change according to your database
 ```
-RECREG_DB_NAME=recreg
-RECREG_DB_USER=postgres
-RECREG_DB_PASS=postgres
-RECREG_DB_HOST=localhost
-RECREG_DB_PORT=5432
-RECREG_DB_DIALECT=postgres
-RECREG_DB_POOL_MAX=5
-RECREG_DB_POOL_MIN=0
-RECREG_DB_POOL_IDLE=10000
-RECREG_LOGGING_LEVEL=emerg
-RECREG_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
-RECREG_CORS_ORIGIN=http://localhost:4000
-RECREG_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
-RECREG_ZIP_API_KEY=xxx
-RECREG_ZIP_DISTANCE=50
-RECREG_ZIP_UNITS=mile
+SURVEY_SERVICE_DB_NAME=surveyService
+SURVEY_SERVICE_DB_USER=postgres
+SURVEY_SERVICE_DB_PASS=postgres
+SURVEY_SERVICE_DB_HOST=localhost
+SURVEY_SERVICE_DB_PORT=5432
+SURVEY_SERVICE_DB_DIALECT=postgres
+SURVEY_SERVICE_DB_POOL_MAX=5
+SURVEY_SERVICE_DB_POOL_MIN=0
+SURVEY_SERVICE_DB_POOL_IDLE=10000
+SURVEY_SERVICE_LOGGING_LEVEL=emerg
+SURVEY_SERVICE_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
+SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000
+SURVEY_SERVICE_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
+SURVEY_SERVICE_ZIP_API_KEY=xxx
+SURVEY_SERVICE_ZIP_DISTANCE=50
+SURVEY_SERVICE_ZIP_UNITS=mile
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
 
-- RECREG_CLIENT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
-- RECREG_PORT: Port for the API server (9005).
-- RECREG_DB_NAME: Database name (recreg for development and production, recregtest for test).
-- RECREG_DB_USER: Database user (no default).
-- RECREG_DB_PASS: Database password (no default).
-- RECREG_DB_HOST: Database host ip (localhost).
-- RECREG_DB_PORT: Database host port (5432).
-- RECREG_DB_SCHEMA: Database schema in postgres sense.  This can be either a single schema name or '~' delimited string of multi tenant schema names.
-- RECREG_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
-- RECREG_DB_POOL_MAX: Maximum number of connections in pool.
-- RECREG_DB_POOL_MIN: Minimum number of connections in pool.
-- RECREG_DB_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
-- RECREG_DB_SSL: Use secure connections with SSL.
-- RECREG_SUPER_USER_USERNAME: Super user username (super).
-- RECREG_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
-- RECREG_SUPER_USER_EMAIL: Super user email (rr_demo@amida.com).
-- RECREG_LOGGING_LEVEL: Logging level (info).
-- RECREG_CRYPT_HASHROUNDS: Number of rounds for hashing user passwords (10).
-- RECREG_CRYPT_RESET_TOKEN_LENGTH: Length for reset password token (20).
-- RECREG_CRYPT_RESET_PASSWORD_LENGTH: Length for temporary random password during reset (10).
-- RECREG_CRYPT_RESET_EXPIRES: Reset password expires value in seconds (3600).
-- RECREG_CLIENT_BASE_URL: Base client url for password reset (no default).
-- RECREG_CORS_ORIGIN: Client URIs that the API CORS setup will accept. Delimited by spaces for multiple URIs e.g. "http://localhost:4000 https://www.example.com"
-- RECREG_CONSTANT_CONSTANT_TOKEN: Access token for Constant Contact API.
-- RECREG_CONSTANT_CONTACT_KEY: API key for Constant Contact API.
-- RECREG_CONSTANT_CONTACT_LIST_ID: Unique identifier for Constant Contact list
-- RECREG_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
-- RECREG_ZIP_API_KEY: API key for Zipwise.
-- RECREG_JWT_<registry name>: JWT for remote registries for federated search.
-- RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID.
-- RECREG_AWS_SECRET: Amazon Web Service secret access key.
+- SURVEY_SERVICE_CLIENT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
+- SURVEY_SERVICE_PORT: Port for the API server (9005).
+- SURVEY_SERVICE_DB_NAME: Database name (surveyService for development and production, surveyServicetest for test).
+- SURVEY_SERVICE_DB_USER: Database user (no default).
+- SURVEY_SERVICE_DB_PASS: Database password (no default).
+- SURVEY_SERVICE_DB_HOST: Database host ip (localhost).
+- SURVEY_SERVICE_DB_PORT: Database host port (5432).
+- SURVEY_SERVICE_DB_SCHEMA: Database schema in postgres sense.  This can be either a single schema name or '~' delimited string of multi tenant schema names.
+- SURVEY_SERVICE_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
+- SURVEY_SERVICE_DB_POOL_MAX: Maximum number of connections in pool.
+- SURVEY_SERVICE_DB_POOL_MIN: Minimum number of connections in pool.
+- SURVEY_SERVICE_DB_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
+- SURVEY_SERVICE_DB_SSL: Use secure connections with SSL.
+- SURVEY_SERVICE_SUPER_USER_USERNAME: Super user username (super).
+- SURVEY_SERVICE_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
+- SURVEY_SERVICE_SUPER_USER_EMAIL: Super user email (rr_demo@amida.com).
+- SURVEY_SERVICE_LOGGING_LEVEL: Logging level (info).
+- SURVEY_SERVICE_CRYPT_HASHROUNDS: Number of rounds for hashing user passwords (10).
+- SURVEY_SERVICE_CRYPT_RESET_TOKEN_LENGTH: Length for reset password token (20).
+- SURVEY_SERVICE_CRYPT_RESET_PASSWORD_LENGTH: Length for temporary random password during reset (10).
+- SURVEY_SERVICE_CRYPT_RESET_EXPIRES: Reset password expires value in seconds (3600).
+- SURVEY_SERVICE_CLIENT_BASE_URL: Base client url for password reset (no default).
+- SURVEY_SERVICE_CORS_ORIGIN: Client URIs that the API CORS setup will accept. Delimited by spaces for multiple URIs e.g. "http://localhost:4000 https://www.example.com"
+- SURVEY_SERVICE_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
+- SURVEY_SERVICE_ZIP_API_KEY: API key for Zipwise.
 
 ## Commands
 
@@ -124,7 +118,7 @@ A list of full environment variable settings is below.  They can be either manua
 
 ## Multitenant Support
 
-Multitenancy is supported through postgres schemas.  Multiple schemas are specified using RECREG_DB_SCHEMA as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
+Multitenancy is supported through postgres schemas.  Multiple schemas are specified using SURVEY_SERVICE_DB_SCHEMA as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
 
 ## Tests
 
@@ -132,7 +126,7 @@ This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.c
 
 All tests are located in `test` directory in a mostly flat directory structure.  All API entries both get a HTTP integration test and an equivalent model test.  Unit tests for other utility modules are also included in the root directory.  In addition `test/use-cases` directory includes informative tests designed to instruct how to use the API from a client.
 
-Individual test suites can be run using mocha. In order to run the tests, make sure you first run `createdb recregtest`.
+Individual test suites can be run using mocha. In order to run the tests, make sure you first run `createdb surveyServicetest`.
 
 ```
 $ mocha test/survey.model.spec.js --bail
@@ -146,7 +140,7 @@ Most API resources are documented in snippets in the [integration document](./do
 
 File [swagger.json](./swagger.json) describes the API.  There are various [swagger](http://swagger.io/) tools such as [swagger-codegen](https://github.com/swagger-api/swagger-codegen) that can be used view or generate reports based on this file.
 
-When the recruitment-registry api server is running `/docs` resource serves Swagger-UI as the API user interface (`localhost:9005/docs` for default settings).  However due to current limited support for JWT, Swagger-UI mostly works as documentation and resources that require authorization can not be run.
+When the survey-service api server is running `/docs` resource serves Swagger-UI as the API user interface (`localhost:9005/docs` for default settings).  However due to current limited support for JWT, Swagger-UI mostly works as documentation and resources that require authorization can not be run.
 
 Detailed description of the API with working examples is provided in the [integration document](./docs/api.md).
 

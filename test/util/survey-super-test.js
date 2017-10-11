@@ -9,7 +9,7 @@ const supertest = require('supertest');
 const _ = require('lodash');
 const AuthService = require('./mock_auth_service');
 
-module.exports = class RRSupertest {
+module.exports = class SurveySupertest {
     constructor(addlPath) {
         this.server = null;
         this.baseUrl = '/api/v1.0';
@@ -49,7 +49,7 @@ module.exports = class RRSupertest {
         const token = this.authService.getJWT(user);
         this.server = session(this.app, {
             before(req) {
-                req.set('Cookie', `rr-jwt-token=${token};`);
+                req.set('Cookie', `auth-jwt-token=${token};`);
             },
         });
     }
@@ -62,7 +62,7 @@ module.exports = class RRSupertest {
     }
 
     getJWT() {
-        const jwt = _.find(this.server.cookies, cookie => cookie.name === 'rr-jwt-token');
+        const jwt = _.find(this.server.cookies, cookie => cookie.name === 'auth-jwt-token');
         return jwt;
     }
 

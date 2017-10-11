@@ -8,19 +8,19 @@ const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration.js');
 const config = require('../config');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 const filterCommon = require('./util/filter-common');
 
 describe('filter integration', function filterIntegration() {
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
     const hxQuestion = new History();
-    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
-    const tests = new filterCommon.IntegrationTests(rrSuperTest, hxQuestion);
+    const qxTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
+    const tests = new filterCommon.IntegrationTests(surveySuperTest, hxQuestion);
     let count = 0;
 
     before(shared.setUpFn());
@@ -53,7 +53,7 @@ describe('filter integration', function filterIntegration() {
             name: 'name',
             questions: [{ id }],
         };
-        return rrSuperTest.post('/filters', filter, 400);
+        return surveySuperTest.post('/filters', filter, 400);
     });
 
     it('error: create filter without answers (empty array)', function errorCreateEmptyAnswers() {
@@ -62,7 +62,7 @@ describe('filter integration', function filterIntegration() {
             name: 'name',
             questions: [{ id, answers: [] }],
         };
-        return rrSuperTest.post('/filters', filter, 400);
+        return surveySuperTest.post('/filters', filter, 400);
     });
 
     _.range(20).forEach((index) => {

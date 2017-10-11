@@ -12,7 +12,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const translator = require('./util/translator');
@@ -21,11 +21,11 @@ const choiceSetCommon = require('./util/choice-set-common');
 const expect = chai.expect;
 
 describe('choice set integration', () => {
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const hxChoiceSet = new History();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
-    const tests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
+    const shared = new SharedIntegration(surveySuperTest, generator);
+    const tests = new choiceSetCommon.IntegrationTests(surveySuperTest, generator, hxChoiceSet);
 
     before(shared.setUpFn());
 
@@ -42,7 +42,7 @@ describe('choice set integration', () => {
         return function translateChoiceSet(done) {
             const server = hxChoiceSet.server(index);
             const translation = translator.translateChoiceSet(server, language);
-            rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.choices, 204)
+            surveySuperTest.patch(`/question-choices/multi-text/${language}`, translation.choices, 204)
                 .expect(() => {
                     hxChoiceSet.translate(index, language, translation);
                 })
@@ -53,7 +53,7 @@ describe('choice set integration', () => {
     const getTranslatedChoiceSetFn = function (index, language, notTranslated) {
         return function getTranslatedChoiceSet(done) {
             const id = hxChoiceSet.id(index);
-            rrSuperTest.get(`/choice-sets/${id}`, true, 200, { language })
+            surveySuperTest.get(`/choice-sets/${id}`, true, 200, { language })
                 .expect((res) => {
                     const expected = hxChoiceSet.translatedServer(index, language);
                     if (!notTranslated) {
@@ -84,7 +84,7 @@ describe('choice set integration', () => {
             const choiceId = server.choices[0].id;
             const client = hxChoiceSet.client(index);
             client.choices.shift(0);
-            rrSuperTest.delete(`/question-choices/${choiceId}`, 204).end(done);
+            surveySuperTest.delete(`/question-choices/${choiceId}`, 204).end(done);
         };
     };
 

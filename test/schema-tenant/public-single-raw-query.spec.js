@@ -12,7 +12,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const RRSuperTest = require('../util/rr-super-test');
+const SurveySuperTest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const MultiQuestionGenerator = require('../util/generator/multi-question-generator');
 const History = require('../util/history');
@@ -23,9 +23,9 @@ const expect = chai.expect;
 const swaggerObject = require('../../swagger.json');
 
 describe('tenant single schema public (for raw query)', function tenantPublic4Raw() {
-    const rrSuperTest = new RRSuperTest();
+    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
 
     const options = { generatedb: true };
 
@@ -58,7 +58,7 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
     it('login as super', shared.loginFn(config.superUser));
 
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const tests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
 
     _.range(3).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
@@ -80,7 +80,7 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
     it('list questions (complete)', tests.listQuestionsFn('complete'));
 
     const multiCount = function () {
-        return rrSuperTest.get('/questions-multi-count', true, 200)
+        return surveySuperTest.get('/questions-multi-count', true, 200)
             .then(res => expect(res.body.count).to.equal('2'));
     };
 
@@ -89,6 +89,6 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
     it('logout as super', shared.logoutFn());
 
     it('close connections', function closeSequelize() {
-        return rrSuperTest.shutDown();
+        return surveySuperTest.shutDown();
     });
 });

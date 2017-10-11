@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const logger = require('../../logger');
 const queryrize = require('../../lib/queryrize');
 
@@ -245,7 +245,7 @@ module.exports = class AnswerDAO extends Base {
                             }
                             if (r.ignore) {
                                 if (answer) {
-                                    throw new RRError('answerToBeSkippedAnswered');
+                                    throw new SurveyError('answerToBeSkippedAnswered');
                                 }
                                 r.required = false;
                                 answers.push({ questionId });
@@ -263,7 +263,7 @@ module.exports = class AnswerDAO extends Base {
                 answers.forEach((answer) => {
                     const qx = qxMap[answer.questionId];
                     if (!qx) {
-                        throw new RRError('answerQxNotInSurvey');
+                        throw new SurveyError('answerQxNotInSurvey');
                     }
                 });
                 return qxMap;
@@ -287,7 +287,7 @@ module.exports = class AnswerDAO extends Base {
                                 const questionIds = records.map(record => record.questionId);
                                 const existingRequired = new Set(questionIds);
                                 if (existingRequired.size !== remainingRequired.size) {
-                                    throw new RRError('answerRequiredMissing');
+                                    throw new SurveyError('answerRequiredMissing');
                                 }
                             });
                     }
@@ -526,7 +526,7 @@ module.exports = class AnswerDAO extends Base {
 
         const questionIds = criteria.questions.map(question => question.id);
         if (questionIds.length !== new Set(questionIds).size) {
-            return RRError.reject('searchQuestionRepeat');
+            return SurveyError.reject('searchQuestionRepeat');
         }
 
         return this.db.Question.findAll({

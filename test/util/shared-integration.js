@@ -11,41 +11,41 @@ const config = require('../../config');
 
 const appgen = require('../../app-generator');
 const models = require('../../models');
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
 
 const expect = chai.expect;
-const unknownError = new RRError('unknown');
+const unknownError = new SurveyError('unknown');
 const i18n = require('../../i18n');
 
 class SharedIntegration {
-    constructor(rrSuperTest, generator) {
+    constructor(surveySuperTest, generator) {
         this.generator = generator || new Generator();
-        this.rrSuperTest = rrSuperTest;
+        this.surveySuperTest = surveySuperTest;
     }
 
     setUpFn(options) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function setup(done) {
             appgen.generate(options || { models }, (err, app) => {
                 if (err) {
                     return done(err);
                 }
-                rrSuperTest.initialize(app);
+                surveySuperTest.initialize(app);
                 return done();
             });
         };
     }
 
-    static setUpMultiFn(rrSuperTests, options = {}) {
+    static setUpMultiFn(surveySuperTests, options = {}) {
         return function setupMulti(done) {
             appgen.generate(options, (err, app) => {
                 if (err) {
                     return done(err);
                 }
-                rrSuperTests.forEach(rrSuperTest => rrSuperTest.initialize(app));
+                surveySuperTests.forEach(surveySuperTest => surveySuperTest.initialize(app));
                 return done();
             });
         };
@@ -63,10 +63,10 @@ class SharedIntegration {
     }
 
     loginFn(user) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function login() {
             const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
-            return rrSuperTest.authBasic(fullUser);
+            return surveySuperTest.authBasic(fullUser);
         };
     }
 
@@ -76,35 +76,35 @@ class SharedIntegration {
             const user = _.cloneDeep(hxUser.client(index));
             user.username = user.username || user.email.toLowerCase();
             user.id = hxUser.id(index);
-            return self.rrSuperTest.authBasic(user);
+            return self.surveySuperTest.authBasic(user);
         };
     }
 
     logoutFn() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function logout() {
-            rrSuperTest.resetAuth();
+            surveySuperTest.resetAuth();
         };
     }
 
     badLoginFn(login) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function badLogin() {
-            return rrSuperTest.authBasic(login, 401);
+            return surveySuperTest.authBasic(login, 401);
         };
     }
 
     createProfileSurveyFn(hxSurvey) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function createProfileSurvey(done) {
             const clientSurvey = generator.newSurvey();
-            rrSuperTest.post('/profile-survey', clientSurvey, 201)
+            surveySuperTest.post('/profile-survey', clientSurvey, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
-                    const userId = rrSuperTest.userId;
+                    const userId = surveySuperTest.userId;
                     const server = { id: res.body.id, authorId: userId };
                     Object.assign(server, clientSurvey);
                     hxSurvey.push(clientSurvey, server);
@@ -114,9 +114,9 @@ class SharedIntegration {
     }
 
     verifyProfileSurveyFn(hxSurvey, index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function verifyProfileSurvey(done) {
-            rrSuperTest.get('/profile-survey', false, 200)
+            surveySuperTest.get('/profile-survey', false, 200)
                 .expect((res) => {
                     expect(res.body.exists).to.equal(true);
                     const survey = res.body.survey;
@@ -132,12 +132,12 @@ class SharedIntegration {
 
     createUserFn(history, user, override) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function createUser() {
             if (!user) {
                 user = generator.newUser(override);
             }
-            return rrSuperTest.post('/users', user, 201)
+            return surveySuperTest.post('/users', user, 201)
                 .then((res) => {
                     history.push(user, { id: res.body.id });
                 });
@@ -146,7 +146,7 @@ class SharedIntegration {
 
     createSurveyFn(hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function createSurvey(done) {
             const inputSurvey = generator.newSurvey();
             delete inputSurvey.sections;
@@ -156,7 +156,7 @@ class SharedIntegration {
                     required: false,
                 }));
             }
-            rrSuperTest.post('/surveys', inputSurvey, 201)
+            surveySuperTest.post('/surveys', inputSurvey, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -168,9 +168,9 @@ class SharedIntegration {
     }
 
     createSurveyProfileFn(survey) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function createSurveyProfile(done) {
-            rrSuperTest.post('/profile-survey', survey, 201)
+            surveySuperTest.post('/profile-survey', survey, 201)
                 .expect((res) => {
                     expect(!!res.body.id).to.equal(true);
                 })
@@ -179,11 +179,11 @@ class SharedIntegration {
     }
 
     createConsentTypeFn(history) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         return function createConsentType(done) {
             const cst = generator.newConsentType();
-            rrSuperTest.post('/consent-types', cst, 201)
+            surveySuperTest.post('/consent-types', cst, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -195,12 +195,12 @@ class SharedIntegration {
     }
 
     createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         return function createConsent(done) {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            rrSuperTest.post('/consents', clientConsent, 201)
+            surveySuperTest.post('/consents', clientConsent, 201)
                 .expect((res) => {
                     hxConsent.pushWithId(clientConsent, res.body.id);
                 })
@@ -209,10 +209,10 @@ class SharedIntegration {
     }
 
     verifyConsentFn(hxConsent, index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function verifyConsent(done) {
             const id = hxConsent.id(index);
-            rrSuperTest.get(`/consents/${id}`, true, 200)
+            surveySuperTest.get(`/consents/${id}`, true, 200)
                 .expect((res) => {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
@@ -222,30 +222,30 @@ class SharedIntegration {
     }
 
     signConsentTypeFn(hxConsentDocument, userIndex, typeIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function signConsentType(done) {
             const consentDocumentId = hxConsentDocument.id(typeIndex);
             hxConsentDocument.sign(typeIndex, userIndex);
-            rrSuperTest.post('/consent-signatures', { consentDocumentId }, 201).end(done);
+            surveySuperTest.post('/consent-signatures', { consentDocumentId }, 201).end(done);
         };
     }
 
     bulkSignConsentTypeFn(hxConsentDocument, userIndex, typeIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function bulkSignConsentType(done) {
             const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
             typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
-            rrSuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
+            surveySuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
         };
     }
 
     createConsentDocumentFn(history, typeIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         return function createConsentDocument(done) {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            rrSuperTest.post('/consent-documents', cs, 201)
+            surveySuperTest.post('/consent-documents', cs, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -257,11 +257,11 @@ class SharedIntegration {
     }
 
     translateConsentTypeFn(index, language, hxType) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function translateConsentType(done) {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            rrSuperTest.patch(`/consent-types/text/${language}`, translation, 204)
+            surveySuperTest.patch(`/consent-types/text/${language}`, translation, 204)
                 .end((err) => {
                     if (err) {
                         return done(err);
@@ -273,11 +273,11 @@ class SharedIntegration {
     }
 
     translateConsentDocumentFn(index, language, history) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         return function translateConsentDocument(done) {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
+            surveySuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
                 .end((err) => {
                     if (err) {
                         return done(err);
@@ -289,19 +289,19 @@ class SharedIntegration {
     }
 
     verifyUserAudit() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         it('login as super', this.loginFn(config.superUser));
 
         it('verify user audit', function vua() {
-            const userAudit = rrSuperTest.getUserAudit();
-            return rrSuperTest.get('/users', true, 200, { role: 'all' })
+            const userAudit = surveySuperTest.getUserAudit();
+            return surveySuperTest.get('/users', true, 200, { role: 'all' })
                 .then(res => new Map(res.body.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
                     const userId = userMap.get(username);
                     return { userId, operation, endpoint };
                 }))
                 .then((expected) => {
-                    const px = rrSuperTest.get('/user-audits', true, 200);
+                    const px = surveySuperTest.get('/user-audits', true, 200);
                     return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
                 });
         });
@@ -313,7 +313,7 @@ class SharedIntegration {
         const req = {};
         const response = {};
         i18n.init(req, response);
-        const expected = (new RRError(code, ...params)).getMessage(response);
+        const expected = (new SurveyError(code, ...params)).getMessage(response);
         expect(expected).to.not.equal(code);
         expect(expected).to.not.equal(unknownError.getMessage(response));
         expect(res.body.message).to.equal(expected);
@@ -323,7 +323,7 @@ class SharedIntegration {
         const req = { url: `http://aaa.com/anything?language=${language}` };
         const response = {};
         i18n.init(req, response);
-        const expected = (new RRError(code, ...params)).getMessage(response);
+        const expected = (new SurveyError(code, ...params)).getMessage(response);
         expect(expected).to.not.equal(code);
         expect(expected).to.not.equal(unknownError.getMessage(response));
         expect(res.body.message).to.equal(expected);

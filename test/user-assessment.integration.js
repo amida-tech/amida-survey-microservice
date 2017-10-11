@@ -11,7 +11,7 @@ const _ = require('lodash');
 
 const config = require('../config');
 
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const SharedIntegration = require('./util/shared-integration');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
@@ -35,12 +35,12 @@ describe('user assessment integration', () => {
     const hxAssessment = new History(['id', 'name']);
     const hxUserAssessment = new MultiIndexHistory();
 
-    const rrSuperTest = new RRSuperTest();
-    const shared = new SharedIntegration(rrSuperTest, generator);
-    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
-    const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
+    const surveySuperTest = new SurveySuperTest();
+    const shared = new SharedIntegration(surveySuperTest, generator);
+    const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey);
+    const assessmentTests = new assessmentCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxAssessment);
     const opt = { generator, hxUser, hxSurvey };
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
+    const answerTests = new answerCommon.IntegrationTests(surveySuperTest, opt);
     const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn());
@@ -67,7 +67,7 @@ describe('user assessment integration', () => {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
-            rrSuperTest.post('/user-assessments', userAssessment, 201)
+            surveySuperTest.post('/user-assessments', userAssessment, 201)
                 .expect((res) => {
                     hxUserAssessment.pushWithId([userIndex, assessmentIndex, timeIndex], userAssessment, res.body.id);
                 })
@@ -80,7 +80,7 @@ describe('user assessment integration', () => {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const query = { 'user-id': userId, 'assessment-id': assessmentId };
-            rrSuperTest.delete('/user-assessments', 204, query).end(done);
+            surveySuperTest.delete('/user-assessments', 204, query).end(done);
         };
     };
 
@@ -143,7 +143,7 @@ describe('user assessment integration', () => {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const query = { 'user-id': userId, 'assessment-id': assessmentId };
-            rrSuperTest.get('/user-assessments', true, 200, query)
+            surveySuperTest.get('/user-assessments', true, 200, query)
                 .expect((res) => {
                     const expected = _.range(3).map((index) => {
                         const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
@@ -163,7 +163,7 @@ describe('user assessment integration', () => {
                 r[surveyIndex] = 0;
                 return r;
             }, {});
-            rrSuperTest.get(`/user-assessments/${id}/answers`, true, 200)
+            surveySuperTest.get(`/user-assessments/${id}/answers`, true, 200)
                 .expect((res) => {
                     const expected = hxAnswer.store.reduce((r, record) => {
                         if (record.userIndex !== userIndex) {

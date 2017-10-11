@@ -245,35 +245,35 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
 };
 
 const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
-    constructor(rrSuperTest, helpers) {
+    constructor(surveySuperTest, helpers) {
         super(helpers);
-        this.rrSuperTest = rrSuperTest;
+        this.surveySuperTest = surveySuperTest;
     }
 
     createQuestionFn(options = {}) {
         const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxQuestion = this.hxQuestion;
         const self = this;
         return function createQuestion() {
             const question = options.question || generator.newQuestion(options);
             self.sanityCheckOptions(question, options);
-            return rrSuperTest.post('/questions', question, 201)
+            return surveySuperTest.post('/questions', question, 201)
                 .then((res) => {
                     hxQuestion.push(question, res.body);
                 });
         };
     }
     getQuestionPx(id, query) {
-        return this.rrSuperTest.get(`/questions/${id}`, true, 200, query).then(res => res.body);
+        return this.surveySuperTest.get(`/questions/${id}`, true, 200, query).then(res => res.body);
     }
 
     verifyQuestionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxQuestion = this.hxQuestion;
         return function verifyQuestion() {
             const question = hxQuestion.server(index);
-            return rrSuperTest.get(`/questions/${question.id}`, true, 200)
+            return surveySuperTest.get(`/questions/${question.id}`, true, 200)
                 .then((res) => {
                     expect(res.body).to.deep.equal(question);
                 });
@@ -281,11 +281,11 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
     }
 
     deleteQuestionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxQuestion = this.hxQuestion;
         return function deleteQuestion() {
             const id = hxQuestion.id(index);
-            return rrSuperTest.delete(`/questions/${id}`, 204)
+            return surveySuperTest.delete(`/questions/${id}`, 204)
                 .then(() => {
                     hxQuestion.remove(index);
                 });
@@ -293,21 +293,21 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
     }
 
     listQuestionsPx(query) {
-        return this.rrSuperTest.get('/questions', true, 200, query).then(res => res.body);
+        return this.surveySuperTest.get('/questions', true, 200, query).then(res => res.body);
     }
 
     addIdentifierPx(questionId, allIdentifiers) {
-        return this.rrSuperTest.post(`/questions/${questionId}/identifiers`, allIdentifiers, 204);
+        return this.surveySuperTest.post(`/questions/${questionId}/identifiers`, allIdentifiers, 204);
     }
 
     getQuestionIdByIdentifierPx(type, identifier) {
-        return this.rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
+        return this.surveySuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
             .then(res => res.body);
     }
 
     getIdsByAnswerIdentifierPx(type, answerIdentifier) {
         const endpoint = `/answer-identifiers/${type}/${answerIdentifier}`;
-        return this.rrSuperTest.get(endpoint, false, 200).then(res => res.body);
+        return this.surveySuperTest.get(endpoint, false, 200).then(res => res.body);
     }
 };
 

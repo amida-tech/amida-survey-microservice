@@ -10,9 +10,9 @@ module.exports = function (locals) {
         username: 'smtp@example.com',
         password: 'pw',
         host: 'localhost',
-        from: 'admin@rr.com',
+        from: 'admin@survey.com',
         otherOptions: {},
-        subject: 'Registry Admin',
+        subject: 'Admin',
         content: 'Click on this: ${link}', // eslint-disable-line no-template-curly-in-string
     };
 

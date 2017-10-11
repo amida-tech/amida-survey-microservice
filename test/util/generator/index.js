@@ -30,7 +30,6 @@ class Generator {
         this.zipCodeApiIndex = 0;
         this.stateIndex = 0;
         this.sectionIndex = -1;
-        this.registryIndex = -1;
     }
 
     updateSurveyGenerator(SurveyGeneratorClass) {
@@ -241,17 +240,6 @@ class Generator {
         return result;
     }
 
-    newRegistry() {
-        this.registryIndex += 1;
-        const index = this.registryIndex;
-        const registry = { name: `name_${index}` };
-        if (index % 2) {
-            registry.url = `https://example.com/api_${index}`;
-        } else {
-            registry.schema = `schema_${index}`;
-        }
-        return registry;
-    }
 }
 
 module.exports = Generator;

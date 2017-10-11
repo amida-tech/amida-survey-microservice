@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
@@ -38,7 +38,7 @@ module.exports = class SectionDAO extends Translatable {
         return this.db.Section.findById(id, { raw: true, attributes: ['id', 'meta'] })
             .then((section) => {
                 if (!section) {
-                    return RRError.reject('sectionNotFound');
+                    return SurveyError.reject('sectionNotFound');
                 }
                 const r = _.omitBy(section, _.isNil);
                 return this.updateText(r, options.language);

@@ -9,7 +9,7 @@ const request = require('request');
 
 const models = require('../../models');
 
-const RRError = require('../../lib/rr-error');
+const SurveyError = require('../../lib/survey-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
@@ -169,10 +169,10 @@ class SharedSpec {
 
     expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
         return function expectedErrorHandler(err) {
-            if (!(err instanceof RRError)) {
+            if (!(err instanceof SurveyError)) {
                 console.log(err); // eslint-disable-line no-console
             }
-            expect(err).to.be.instanceof(RRError);
+            expect(err).to.be.instanceof(SurveyError);
             expect(err.code).to.equal(code);
             expect(err.params).to.deep.equal(params);
             return err;

@@ -1,5 +1,5 @@
 {
-  "name": "recruitment-registry",
+  "name": "survey-service",
   "version": "0.0.2",
   "description": "",
   "main": "index.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amida-tech/recruitment-registry.git"
+    "url": "git+https://github.com/amida-tech/amida-survey-microservice.git"
   },
   "author": "Amida",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/amida-tech/recruitment-registry/issues"
+    "url": "https://github.com/amida-tech/amida-survey-microservice/issues"
   },
-  "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
+  "homepage": "https://github.com/amida-tech/amida-survey-microservice#readme",
   "dependencies": {
     "ajv": "^4.7.6",
     "aws-sdk": "^2.74.0",

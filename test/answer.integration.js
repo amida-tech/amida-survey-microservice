@@ -12,7 +12,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 const Generator = require('./util/generator');
 const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
 const Answerer = require('./util/generator/answerer');
@@ -27,8 +27,8 @@ const expect = chai.expect;
 
 describe('answer integration', () => {
     const generator = new Generator();
-    const rrSuperTest = new RRSuperTest();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const surveySuperTest = new SurveySuperTest();
+    const shared = new SharedIntegration(surveySuperTest, generator);
 
     const testQuestions = answerCommon.testQuestions;
 
@@ -39,9 +39,9 @@ describe('answer integration', () => {
     const hxChoiceSet = new History();
 
     const opt = { generator, hxUser, hxSurvey, hxQuestion };
-    const tests = new answerCommon.IntegrationTests(rrSuperTest, opt);
+    const tests = new answerCommon.IntegrationTests(surveySuperTest, opt);
 
-    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
@@ -153,12 +153,12 @@ describe('answer integration', () => {
             .then((ans) => { answers = ans; }));
     it('user 2 gets answers to survey 12', tests.getAnswersFn(2, 12));
     // it('error: search as user 2', (done) => {
-    //     rrSuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 403).end(done);
+    //     surveySuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 403).end(done);
     // });
     it('logout as user 2', shared.logoutFn());
 
     const verifySearch = function verifySearch(done) {
-        rrSuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 200)
+        surveySuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 200)
             .expect((res) => {
                 expect(res.body).to.have.all.keys('count');
                 expect(res.body.count).to.equal(1);

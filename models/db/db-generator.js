@@ -36,7 +36,6 @@ const answerIdentifier = require('./answer-identifier.model');
 const surveyIdentifier = require('./survey-identifier.model');
 const stagingBhrGap = require('./staging-bhr-gap.model');
 const userAudit = require('./user-audit.model');
-const registry = require('./registry.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const file = require('./file.model');
@@ -106,7 +105,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyIdentifier = surveyIdentifier(sequelize, Sequelize, schema);
     const StagingBhrGap = stagingBhrGap(sequelize, Sequelize, schema);
     const UserAudit = userAudit(sequelize, Sequelize, schema);
-    const Registry = registry(sequelize, Sequelize, schema);
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const File = file(sequelize, Sequelize, schema);
@@ -212,7 +210,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         ChoiceSet,
         StagingBhrGap,
         UserAudit,
-        Registry,
         Filter,
         FilterAnswer,
         File,

@@ -110,29 +110,29 @@ const SpecTests = class FilterSpecTests extends FilterTests {
 };
 
 const IntegrationTests = class FilterIntegrationTests extends FilterTests {
-    constructor(rrSuperTest, hxQuestion) {
+    constructor(surveySuperTest, hxQuestion) {
         super(hxQuestion);
-        this.rrSuperTest = rrSuperTest;
+        this.surveySuperTest = surveySuperTest;
     }
 
     createFilterFn() {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const filterGenerator = this.filterGenerator;
         const hxFilter = this.hxFilter;
         const hxQuestion = this.hxQuestion;
         return function createFilter() {
             const filter = filterGenerator.newFilter(hxQuestion);
-            return rrSuperTest.post('/filters', filter, 201)
+            return surveySuperTest.post('/filters', filter, 201)
                 .then(res => hxFilter.push(filter, res.body));
         };
     }
 
     getFilterFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxFilter = this.hxFilter;
         return function getFilter() {
             const id = hxFilter.id(index);
-            return rrSuperTest.get(`/filters/${id}`, true, 200)
+            return surveySuperTest.get(`/filters/${id}`, true, 200)
                 .then((res) => {
                     hxFilter.updateServer(index, res.body);
                     comparator.filter(hxFilter.client(index), res.body);
@@ -141,10 +141,10 @@ const IntegrationTests = class FilterIntegrationTests extends FilterTests {
     }
 
     listFiltersFn(count) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxFilter = this.hxFilter;
         return function listFilter() {
-            return rrSuperTest.get('/filters', true, 200)
+            return surveySuperTest.get('/filters', true, 200)
                 .then((res) => {
                     const filters = res.body;
                     expect(filters.length).to.equal(count);
@@ -156,26 +156,26 @@ const IntegrationTests = class FilterIntegrationTests extends FilterTests {
     }
 
     deleteFilterFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxFilter = this.hxFilter;
         return function deleteFilter() {
             const id = hxFilter.id(index);
-            return rrSuperTest.delete(`/filters/${id}`, 204)
+            return surveySuperTest.delete(`/filters/${id}`, 204)
                 .then(() => hxFilter.remove(index));
         };
     }
 
     patchFilterPx(id, filterPatch) {
-        const rrSuperTest = this.rrSuperTest;
-        return rrSuperTest.patch(`/filters/${id}`, filterPatch, 204);
+        const surveySuperTest = this.surveySuperTest;
+        return surveySuperTest.patch(`/filters/${id}`, filterPatch, 204);
     }
 
     verifyFilterFn(index) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxFilter = this.hxFilter;
         return function verifyFilter() {
             const id = hxFilter.id(index);
-            return rrSuperTest.get(`/filters/${id}`, true, 200)
+            return surveySuperTest.get(`/filters/${id}`, true, 200)
                 .then((res) => {
                     const expected = hxFilter.server(index);
                     expect(res.body).to.deep.equal(expected);

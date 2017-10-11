@@ -11,7 +11,7 @@ const _ = require('lodash');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
-const RRSuperTest = require('../util/rr-super-test');
+const SurveySuperTest = require('../util/survey-super-test');
 const Generator = require('../util/generator');
 const MultiQuestionGenerator = require('../util/generator/multi-question-generator');
 const History = require('../util/history');
@@ -19,9 +19,9 @@ const questionCommon = require('../util/question-common');
 const models = require('../../models');
 
 describe('tenant single schema path named', function tenantPathNamed() {
-    const rrSuperTest = new RRSuperTest('/named');
+    const surveySuperTest = new SurveySuperTest('/named');
     const generator = new Generator();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedIntegration(surveySuperTest, generator);
 
     const configClone = _.cloneDeep(config);
     configClone.db.schema = 'named';
@@ -42,7 +42,7 @@ describe('tenant single schema path named', function tenantPathNamed() {
     it('login as super', shared.loginFn(config.superUser));
 
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const tests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
 
     _.range(3).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
@@ -66,6 +66,6 @@ describe('tenant single schema path named', function tenantPathNamed() {
     it('logout as super', shared.logoutFn());
 
     it('close connections', function closeSequelize() {
-        return rrSuperTest.shutDown();
+        return surveySuperTest.shutDown();
     });
 });
