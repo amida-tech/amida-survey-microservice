@@ -15,14 +15,14 @@ WITH
 		SELECT
 			user_assessment.id AS user_assessment_id,
 			assessment.name AS assessment_name,
-			registry_user.username AS username,
+			user.username AS username,
 			user_assessment.status AS status,
 			(user_assessment.meta->'bhr_days_after_baseline')::text::int AS days_after_baseline,
 			user_assessment.id IN (SELECT id FROM user_assessment_last) AS last_answer
 		FROM
 			user_assessment
 			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
-			LEFT JOIN registry_user ON registry_user.id = user_assessment.user_id
+			LEFT JOIN user ON user.id = user_assessment.user_id
 		WHERE
 			user_assessment.assessment_id IN (SELECT assessment_id FROM assessment_survey WHERE survey_id = :survey_id)
 	),

@@ -2,7 +2,7 @@
 
 /* eslint no-param-reassign: 0, max-len: 0 */
 
-const gapDemoSurvey1 = {
+const demoSurvey1 = {
     name: 'Basic Questions',
     questions: [
         {
@@ -40,7 +40,7 @@ const gapDemoSurvey1 = {
         }],
 };
 
-const gapDemoSurvey2 = {
+const demoSurvey2 = {
     name: 'Additional Basic Questions',
     questions: [
         {
@@ -75,7 +75,7 @@ const gapDemoSurvey2 = {
             type: 'integer',
         }],
 };
-const gapDemoSurvey3 = {
+const demoSurvey3 = {
     name: 'Advanced Survey',
     questions: [
         {
@@ -96,7 +96,7 @@ const gapDemoSurvey3 = {
             ],
         }],
 };
-const gapDemoSurvey4 = {
+const demoSurvey4 = {
     name: 'Advanced Sectioned Survey',
     sections: [
         {
@@ -142,13 +142,13 @@ const gapDemoSurvey4 = {
     ],
 };
 
-const gapDemoSurveys = [
-    gapDemoSurvey1,
-    gapDemoSurvey2,
-    gapDemoSurvey3,
-    gapDemoSurvey4,
+const demoSurveys = [
+    demoSurvey1,
+    demoSurvey2,
+    demoSurvey3,
+    demoSurvey4,
 ];
 
 module.exports = {
-    gapDemoSurveys,
+    demoSurveys,
 };

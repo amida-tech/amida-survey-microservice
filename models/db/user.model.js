@@ -19,7 +19,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         context: crypto,
     });
 
-    const tableName = 'registry_user';
+    const tableName = 'user';
     const modelName = `${schema}_${tableName}`;
     const Table = sequelize.define(modelName, {
         username: {
@@ -93,7 +93,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{
-            name: 'registry_user_lower_email_key',
+            name: 'user_lower_email_key',
             unique: true,
             fields: [sequelize.fn('lower', sequelize.col('email'))],
         }],
