@@ -123,6 +123,9 @@ class SharedIntegration {
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     const expected = _.cloneDeep(hxSurvey.server(index));
+                    if (surveySuperTest.userRole !== 'admin') {
+                        delete expected.authorId;
+                    }
                     comparator.survey(expected, survey);
                     hxSurvey.updateServer(index, survey);
                 })
@@ -140,29 +143,6 @@ class SharedIntegration {
             return surveySuperTest.post('/users', user, 201)
                 .then((res) => {
                     history.push(user, { id: res.body.id });
-                });
-        };
-    }
-
-    createSurveyFn(hxSurvey, hxQuestion, qxIndices) {
-        const generator = this.generator;
-        const surveySuperTest = this.surveySuperTest;
-        return function createSurvey(done) {
-            const inputSurvey = generator.newSurvey();
-            delete inputSurvey.sections;
-            if (hxQuestion) {
-                inputSurvey.questions = qxIndices.map(index => ({
-                    id: hxQuestion.server(index).id,
-                    required: false,
-                }));
-            }
-            surveySuperTest.post('/surveys', inputSurvey, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxSurvey.push(inputSurvey, res.body);
-                    return done();
                 });
         };
     }
