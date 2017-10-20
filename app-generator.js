@@ -85,13 +85,7 @@ const userAudit = function (req, res, next) {
         }
         if (endpoint !== '/user-audits') {
             req.models.userAudit.createUserAudit({ userId, endpoint, operation })
-                .then(() => next(() => {
-                    if (endpoint.indefOf('/user-surveys?languge') >= 0) {
-                        console.log('in userAudit');
-                        console.log(endpoint);
-                        console.log(operation);
-                    }
-                }))
+                .then(() => { next(); })
                 .catch(err => next(err));
             return;
         }

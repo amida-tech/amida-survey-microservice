@@ -47,7 +47,6 @@ module.exports = class UserSurveyDAO extends Base {
     listUserSurveys(userId, options) {
         return this.survey.listSurveys(options)
             .then((surveys) => {
-
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);
 
@@ -57,7 +56,6 @@ module.exports = class UserSurveyDAO extends Base {
                         attributes: ['surveyId', 'status'],
                     })
                         .then((userSurveys) => {
-
                             const mapInput = userSurveys.map(r => [r.surveyId, r.status]);
                             const map = new Map(mapInput);
 
@@ -65,13 +63,10 @@ module.exports = class UserSurveyDAO extends Base {
                                 r.status = map.get(r.id) || 'new';
                             });
 
-                            if(options.userSurveyStatus) {
-                                return surveys.filter((r) => {return r.status === options.userSurveyStatus});
-                            } else {
-                                return surveys;
+                            if (options.userSurveyStatus) {
+                                return surveys.filter(r => r.status === options.userSurveyStatus);
                             }
-
-
+                            return surveys;
                         });
                 }
                 return surveys;
