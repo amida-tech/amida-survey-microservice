@@ -19,7 +19,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         context: crypto,
     });
 
-    const tableName = 'user';
+    const tableName = 'survey_user';
     const modelName = `${schema}_${tableName}`;
     const Table = sequelize.define(modelName, {
         username: {
