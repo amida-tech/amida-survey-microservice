@@ -887,6 +887,36 @@ Server responds with the list of user surveys in the body
 
 ```
 
+A parameter called "user-survey-status" can be added to filter by status
+
+```js
+agent
+    .get('http://localhost:9005/api/v1.0/user-surveys?user-survey-status=complete')
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // survey list with status with answers
+    });
+```
+
+Server responds with the list of user surveys in the body, filtered by status
+
+```js
+[
+    {
+        "id": 3,
+        "name": "Completed3",
+        "status": "completed"
+    },
+    {
+        "id": 4,
+        "name": "Completed4",
+        "status": "completed"
+    }
+]
+
+```
+
+
 Status can be changed when answering the survey using resource `/user-surveys/{id}/answers`.  If status is set to `in-progress` required questions can be left unanswered
 
 ```js
