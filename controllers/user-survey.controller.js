@@ -46,7 +46,9 @@ exports.getUserSurvey = function getUserSurvey(req, res) {
 exports.listUserSurveys = function listUserSurveys(req, res) {
     const userId = req.user.id;
     const language = _.get(req, 'swagger.params.language.value');
-    const options = { language };
+    const userSurveyStatus = _.get(req, 'swagger.params.userSurveyStatus.value');
+    const options = { language,userSurveyStatus };
+
     req.models.userSurvey.listUserSurveys(userId, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));

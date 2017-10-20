@@ -1279,6 +1279,13 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                },
+                {
+                    "name": "userSurveyStatus",
+                    "in": "query",
+                    "description": "User status of survey completion",
+                    "required": false,
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {

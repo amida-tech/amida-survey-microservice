@@ -301,8 +301,15 @@ class SharedIntegration {
                     return { userId, operation, endpoint };
                 }))
                 .then((expected) => {
+                    console.log("expected\n\n\n\n\n\n\n\n\n\n\n")
+                    console.log(expected)
+
                     const px = surveySuperTest.get('/user-audits', true, 200);
-                    return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
+                    return px.then(resAudit => {
+                        console.log("body\n\n\n\n\n\n\n\n\n\n\n");
+                        console.log(resAudit.body);
+                        expect(resAudit.body).to.deep.equal(expected);
+                    });
                 });
         });
 
