@@ -4,7 +4,7 @@ const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
 const surveyStatus = require('./survey-status.model');
-const user = require('./survey_user.model');
+const user = require('./user.model');
 const questionType = require('./question-type.model');
 const question = require('./question.model');
 const choiceSet = require('./choice-set.model');

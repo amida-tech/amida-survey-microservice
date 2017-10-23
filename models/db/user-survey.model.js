@@ -11,7 +11,7 @@ module.exports = function userSurvey(sequelize, Sequelize, schema) {
             references: {
                 model: {
                     schema,
-                    tableName: 'user',
+                    tableName: 'survey_user',
                 },
                 key: 'id',
             },
