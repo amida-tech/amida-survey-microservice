@@ -93,7 +93,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{
-            name: 'user_lower_email_key',
+            name: 'survey_user_lower_email_key',
             unique: true,
             fields: [sequelize.fn('lower', sequelize.col('email'))],
         }],

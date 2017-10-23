@@ -4,7 +4,7 @@ const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
 const surveyStatus = require('./survey-status.model');
-const surveyUser = require('./survey_user.model');
+const user = require('./survey_user.model');
 const questionType = require('./question-type.model');
 const question = require('./question.model');
 const choiceSet = require('./choice-set.model');
@@ -73,7 +73,7 @@ const questionChoiceBelongsTo = function () {
 
 const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
-    const SurveyUser = surveyUser(sequelize, Sequelize, schema);
+    const User = user(sequelize, Sequelize, schema);
     const QuestionType = questionType(sequelize, Sequelize, schema);
     const Question = question(sequelize, Sequelize, schema);
     const ChoiceSet = choiceSet(sequelize, Sequelize, schema);
