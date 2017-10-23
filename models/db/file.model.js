@@ -12,7 +12,7 @@ module.exports = function File(sequelize, Sequelize, schema) {
             references: {
                 model: {
                     schema,
-                    tableName: 'user',
+                    tableName: 'survey_user',
                 },
                 key: 'id',
             },

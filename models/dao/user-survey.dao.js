@@ -58,10 +58,14 @@ module.exports = class UserSurveyDAO extends Base {
                         .then((userSurveys) => {
                             const mapInput = userSurveys.map(r => [r.surveyId, r.status]);
                             const map = new Map(mapInput);
+
                             surveys.forEach((r) => {
                                 r.status = map.get(r.id) || 'new';
                             });
 
+                            if (options.userSurveyStatus) {
+                                return surveys.filter(r => r.status === options.userSurveyStatus);
+                            }
                             return surveys;
                         });
                 }

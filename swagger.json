@@ -29,9 +29,6 @@
             "get": {
                 "operationId": "listUsers",
                 "summary": "List users",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "role",
                     "in": "query",
@@ -55,9 +52,6 @@
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "user",
                     "in": "body",
@@ -88,9 +82,6 @@
             "get": {
                 "operationId": "getUser",
                 "summary": "Gets user",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -106,9 +97,6 @@
             "patch": {
                 "operationId": "patchUser",
                 "summary": "Patches user",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "userPatch",
                     "in": "body",
@@ -202,9 +190,6 @@
             "post": {
                 "summary": "Creates new survey",
                 "operationId": "createSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newSurvey",
                     "in": "body",
@@ -227,9 +212,6 @@
                 "summary": "Lists surveys",
                 "description": "Only returns id and name fields.",
                 "operationId": "listSurveys",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "scope",
                     "in": "query",
@@ -271,9 +253,6 @@
                 "summary": "Exports surveys as csv file",
                 "operationId": "exportSurveys",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -290,9 +269,6 @@
                 "summary": "Imports survey csv file",
                 "operationId": "importSurveys",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "surveycsv",
                     "in": "formData",
@@ -330,9 +306,6 @@
             "get": {
                 "summary": "Gets survey",
                 "operationId": "getSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -356,9 +329,6 @@
             "patch": {
                 "summary": "Updates survey",
                 "operationId": "patchSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "surveyPatch",
                     "in": "body",
@@ -379,9 +349,6 @@
             "delete": {
                 "summary": "Deletes survey",
                 "operationId": "deleteSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -397,9 +364,6 @@
             "patch": {
                 "summary": "Updates or translates survey text fields",
                 "operationId": "patchSurveyText",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -430,9 +394,6 @@
             "get": {
                 "summary": "Get survey with answers",
                 "operationId": "getAnsweredSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "id",
                     "in": "path",
@@ -465,9 +426,6 @@
                 "description": "This persists answers to survey questions.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
                 "summary": "Creates answers",
                 "operationId": "createAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "surveyAnswers",
                     "in": "body",
@@ -489,9 +447,6 @@
             "get": {
                 "summary": "Gets answers",
                 "operationId": "getAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "survey-id",
                     "in": "query",
@@ -518,9 +473,6 @@
                 "summary": "Exports answers as csv file",
                 "operationId": "exportAnswers",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -537,9 +489,6 @@
                 "summary": "Imports answer csv file",
                 "operationId": "importAnswers",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "answercsv",
                     "in": "formData",
@@ -575,9 +524,6 @@
                 "summary": "Exports answers as csv file",
                 "operationId": "exportMultiUserAnswers",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "user-ids",
                     "in": "query",
@@ -604,9 +550,6 @@
                 "summary": "Imports answer csv file",
                 "operationId": "importMultiUserAnswers",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "answercsv",
                     "in": "formData",
@@ -647,9 +590,6 @@
             "get": {
                 "summary": "List answers export ready",
                 "operationId": "listAnswersExport",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -671,9 +611,6 @@
             "get": {
                 "summary": "List answers multi user export ready",
                 "operationId": "listAnswersMultiUserExport",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "user-ids",
                     "in": "query",
@@ -705,9 +642,6 @@
             "post": {
                 "summary": "Searches all answers and returns count of matching users",
                 "operationId": "searchAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -734,9 +668,6 @@
             "post": {
                 "summary": "Searches all answers and returns count of matching users using identifiers",
                 "operationId": "countParticipantsIdentifiers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -763,9 +694,6 @@
             "post": {
                 "summary": "Searches all answers and returns user ids",
                 "operationId": "searchParticipants",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -803,9 +731,6 @@
             "post": {
                 "summary": "Searches all answers and returns user ids",
                 "operationId": "searchParticipantsIdentifiers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -843,9 +768,6 @@
             "post": {
                 "summary": "Searches all answers and returns federated answers",
                 "operationId": "federatedListAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -875,9 +797,6 @@
             "post": {
                 "summary": "Searches all answers and returns count of matching users",
                 "operationId": "federatedSearchAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -928,9 +847,6 @@
             "post": {
                 "summary": "Creates new question",
                 "operationId": "createQuestion",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newQuestion",
                     "in": "body",
@@ -952,9 +868,6 @@
             "get": {
                 "summary": "Lists questions",
                 "operationId": "listQuestions",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "scope",
                     "in": "query",
@@ -1008,9 +921,6 @@
                 "summary": "Exports questions as csv file",
                 "operationId": "exportQuestions",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1027,9 +937,6 @@
                 "summary": "Imports question csv file",
                 "operationId": "importQuestions",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "questioncsv",
                     "in": "formData",
@@ -1061,9 +968,6 @@
             "get": {
                 "summary": "Gets question",
                 "operationId": "getQuestion",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1093,9 +997,6 @@
             "delete": {
                 "summary": "Deletes question",
                 "operationId": "deleteQuestion",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -1111,9 +1012,6 @@
             "patch": {
                 "summary": "Updates or translates question text fields",
                 "operationId": "updateQuestionText",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -1150,9 +1048,6 @@
             "post": {
                 "summary": "Add identifiers for question",
                 "operationId": "addQuestionIdentifiers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newQuestionIdentifiers",
                     "in": "body",
@@ -1177,9 +1072,6 @@
             "post": {
                 "summary": "Creates new language",
                 "operationId": "createLanguage",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "body",
@@ -1201,9 +1093,6 @@
             "get": {
                 "summary": "Gets all languages",
                 "operationId": "listLanguages",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1228,9 +1117,6 @@
             "get": {
                 "summary": "Gets language",
                 "operationId": "getLanguage",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1246,9 +1132,6 @@
             "patch": {
                 "summary": "Updates language fields",
                 "operationId": "patchLanguage",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "languageUpdate",
                     "in": "body",
@@ -1270,9 +1153,6 @@
             "delete": {
                 "summary": "Deletes language",
                 "operationId": "deleteLanguage",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -1295,9 +1175,6 @@
             "post": {
                 "summary": "Update smtp settings",
                 "operationId": "createSmtp",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newSmtpSpec",
                     "in": "body",
@@ -1319,9 +1196,6 @@
             "get": {
                 "summary": "Gets smtp setting",
                 "operationId": "getSmtp",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1345,9 +1219,6 @@
             "delete": {
                 "summary": "Deletes smtp setting",
                 "operationId": "deleteSmtp",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response"
@@ -1370,9 +1241,6 @@
             "patch": {
                 "summary": "Updates or translates reset password text fields",
                 "operationId": "updateSmtpText",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -1404,9 +1272,6 @@
                 "summary": "Lists user surveys",
                 "description": "Only returns id, name and status fields.",
                 "operationId": "listUserSurveys",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1414,6 +1279,13 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                },
+                {
+                    "name": "user-survey-status",
+                    "in": "query",
+                    "description": "User status of survey completion",
+                    "required": false,
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -1440,9 +1312,6 @@
             "get": {
                 "summary": "Gets answered survey and its status",
                 "operationId": "getUserSurvey",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1476,9 +1345,6 @@
             "get": {
                 "summary": "Gets survey status",
                 "operationId": "getUserSurveyStatus",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1487,7 +1353,7 @@
                             "required": ["status"],
                             "properties": {
                                 "status": {
-                                    "$ref": "#/definitions/userSurveyStatus"
+                                    "$ref": "#/definitions/user-survey-status"
                                 }
                             },
                             "additionalProperties": false
@@ -1511,9 +1377,6 @@
             "post": {
                 "summary": "Create answers and set status for survey",
                 "operationId": "createUserSurveyAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "userSurveyAnswers",
                     "in": "body",
@@ -1535,9 +1398,6 @@
             "get": {
                 "summary": "Gets survey answers and status",
                 "operationId": "getUserSurveyAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1570,9 +1430,6 @@
             "post": {
                 "summary": "Creates new assessment",
                 "operationId": "createAssessment",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newAssessment",
                     "in": "body",
@@ -1594,9 +1451,6 @@
             "get": {
                 "summary": "List assessments",
                 "operationId": "listAssessments",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -1621,9 +1475,6 @@
             "get": {
                 "summary": "Gets assessment",
                 "operationId": "getAssessment",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -1642,9 +1493,6 @@
             "post": {
                 "summary": "Opens new user assessment",
                 "operationId": "openUserAssessment",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newAssessment",
                     "in": "body",
@@ -1666,9 +1514,6 @@
             "get": {
                 "summary": "List user assessmentd",
                 "operationId": "listUserAssessments",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "user-id",
                     "in": "query",
@@ -1699,9 +1544,6 @@
             "delete": {
                 "summary": "Close active user assessment",
                 "operationId": "closeUserAssessment",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "user-id",
                     "in": "query",
@@ -1738,9 +1580,6 @@
             "get": {
                 "summary": "List user assesment answers",
                 "operationId": "listUserAssessmentAnswers",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1762,9 +1601,6 @@
             "get": {
                 "summary": "Gets question id from identifier",
                 "operationId": "getQuestionIdByIdentifier",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "type",
                     "in": "path",
@@ -1798,9 +1634,6 @@
             "get": {
                 "summary": "Gets question id from identifier",
                 "operationId": "getIdsByAnswerIdentifier",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "type",
                     "in": "path",
@@ -1834,9 +1667,6 @@
             "post": {
                 "summary": "Creates new choice set",
                 "operationId": "createChoiceSet",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newChoiceSet",
                     "in": "body",
@@ -1858,9 +1688,6 @@
             "get": {
                 "summary": "Lists choice sets",
                 "operationId": "listChoiceSets",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1893,9 +1720,6 @@
             "get": {
                 "summary": "Gets choice set",
                 "operationId": "getChoiceSet",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1919,9 +1743,6 @@
             "delete": {
                 "summary": "Deletes choice set",
                 "operationId": "deleteChoiceSet",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -1937,9 +1758,6 @@
             "patch": {
                 "summary": "Updates or translates question choice textx",
                 "operationId": "updateMultipleChoiceTexts",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -1970,9 +1788,6 @@
             "post": {
                 "operationId": "createQuestionChoice",
                 "summary": "Creates new question choice",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "newQuestionChoice",
                     "in": "body",
@@ -2003,9 +1818,6 @@
             "patch": {
                 "summary": "Patches question choice",
                 "operationId": "patchQuestionChoice",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "questionChoicePatch",
                     "in": "body",
@@ -2026,9 +1838,6 @@
             "delete": {
                 "summary": "Deletes question choice",
                 "operationId": "deleteQuestionChoice",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -2045,9 +1854,6 @@
                 "summary": "Stores file in database",
                 "operationId": "createFile",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "file",
                     "in": "formData",
@@ -2073,9 +1879,6 @@
             "get": {
                 "summary": "Gets all files",
                 "operationId": "listFiles",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2101,9 +1904,6 @@
                 "summary": "Get contents of file",
                 "operationId": "getFile",
                 "produces": ["application/octet-stream"],
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2122,9 +1922,6 @@
             "get": {
                 "operationId": "listUserAudits",
                 "summary": "List user audits",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2143,9 +1940,6 @@
             "get": {
                 "operationId": "listFilters",
                 "summary": "List filters",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2161,9 +1955,6 @@
             "post": {
                 "operationId": "createFilter",
                 "summary": "Creates new filter",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "filter",
                     "in": "body",
@@ -2194,9 +1985,6 @@
             "get": {
                 "operationId": "getFilter",
                 "summary": "Gets filter",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -2212,9 +2000,6 @@
             "patch": {
                 "operationId": "patchFilter",
                 "summary": "Patches filter",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "filterPatch",
                     "in": "body",
@@ -2236,9 +2021,6 @@
             "delete": {
                 "operationId": "deleteFilter",
                 "summary": "Deletes filter",
-                "security": [{
-                    "any": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successul response"
@@ -2252,11 +2034,6 @@
     },
     "securityDefinitions": {
         "self": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
-        "any": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
@@ -3005,7 +2782,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/user-survey-status"
                 }
             },
             "additionalProperties": false
@@ -3976,7 +3753,7 @@
             },
             "additionalProperties": false
         },
-        "userSurveyStatus": {
+        "user-survey-status": {
             "type": "string",
             "enum": ["new", "in-progress", "completed"]
         },
@@ -3985,7 +3762,7 @@
             "required": ["status", "survey"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/user-survey-status"
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
@@ -3998,7 +3775,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/user-survey-status"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -4015,7 +3792,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/user-survey-status"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
