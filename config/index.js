@@ -16,7 +16,7 @@ const all = {
         origin: 'http://localhost:4000',
     },
     db: {
-        name: 'surveyService',
+        name: 'recreg',
         host: 'localhost',
         port: '5432',
         dialect: 'postgres',
