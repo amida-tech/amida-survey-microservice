@@ -37,14 +37,14 @@ const invalidEndpoint = {
     statusCode: 404,
 };
 const authorization = function (req, res, next) {
-    const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.auth-jwt-token');
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
+    const isHealthCheck = req.url.indexOf('/health-check') >= 0;
 
-    if (!token && !isAuth && !isDocs) {
+    if (!token && !isDocs && !isHealthCheck) {
         res.statusCode = 401;
         res.send(noAuth);
-    } else if (token && !isAuth) {
+    } else if (token) {
         jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
             if (!err) {
                 req.user = payload;
@@ -54,7 +54,7 @@ const authorization = function (req, res, next) {
             res.send(invalidAuth);
             return null;
         });
-    } else {
+    } else if (isDocs || isHealthCheck) {
         next();
     }
 };
@@ -85,7 +85,7 @@ const userAudit = function (req, res, next) {
         }
         if (endpoint !== '/user-audits') {
             req.models.userAudit.createUserAudit({ userId, endpoint, operation })
-                .then(next())
+                .then(() => next())
                 .catch(err => next(err));
             return;
         }
