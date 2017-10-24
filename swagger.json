@@ -1451,9 +1451,6 @@
             "get": {
                 "summary": "List assessments",
                 "operationId": "listAssessments",
-                "security": [{
-                    "any": []
-                }],
                 "parameters": [{
                     "name": "group",
                     "in": "query",
