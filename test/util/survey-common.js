@@ -2,8 +2,6 @@
 
 /* eslint no-param-reassign: 0, max-len: 0 */
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -205,13 +203,13 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
-    createSurveyQxHxFn(questionIndices) {
+    createSurveyQxHxFn(questionIndices, options = {}) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
-            const survey = generator.newSurveyQuestionIds(questionIds);
+            const survey = generator.newSurveyQuestionIds(questionIds, options);
             return models.survey.createSurvey(survey)
                 .then((id) => {
                     const fullSurvey = _.cloneDeep(survey);
@@ -288,14 +286,14 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    createSurveyQxHxFn(questionIndices) {
+    createSurveyQxHxFn(questionIndices, options = {}) {
         const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
-            const survey = generator.newSurveyQuestionIds(questionIds);
+            const survey = generator.newSurveyQuestionIds(questionIds, options);
             return surveySuperTest.post('/surveys', survey, 201)
                 .then((res) => {
                     const fullSurvey = _.cloneDeep(survey);
