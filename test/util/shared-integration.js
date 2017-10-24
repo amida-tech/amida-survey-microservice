@@ -282,7 +282,9 @@ class SharedIntegration {
                 }))
                 .then((expected) => {
                     const px = surveySuperTest.get('/user-audits', true, 200);
-                    return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
+                    return px.then((resAudit) => {
+                        expect(resAudit.body).to.deep.equal(expected);
+                    });
                 });
         });
 

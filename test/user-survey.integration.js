@@ -90,18 +90,33 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'new'));
     it('logout as user 1', shared.logoutFn());
 
-    const verifyUserSurveyListFn = function (statusList) {
+    const verifyUserSurveyListFn = function (statusList, userSurveyStatus = '') {
         return function verifyUserSurveyList(done) {
-            surveySuperTest.get('/user-surveys', true, 200)
+            let listRequest;
+            if (userSurveyStatus !== '') {
+                const query = { 'user-survey-status': userSurveyStatus };
+                listRequest = surveySuperTest.get('/user-surveys', true, 200, query);
+            } else {
+                listRequest = surveySuperTest.get('/user-surveys', true, 200);
+            }
+
+            listRequest
                 .expect((res) => {
                     const userSurveys = res.body;
-                    const expected = _.cloneDeep(hxSurvey.listServers());
+                    let expected = _.cloneDeep(hxSurvey.listServers());
+
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
                         if (userSurvey.description === undefined) {
                             delete userSurvey.description;
                         }
                     });
+
+
+                    if (userSurveyStatus !== '') {
+                        expected = expected.filter(userSurvey => userSurvey.status === userSurveyStatus);
+                    }
+
                     expect(userSurveys).to.deep.equal(expected);
                 })
                 .end(done);
@@ -110,9 +125,16 @@ describe('user survey integration', () => {
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(['new', 'new', 'new'], 'new'));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(['new', 'new', 'new'], 'completed'));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(['new', 'new', 'new'], 'in-progress'));
     it('logout as user 0', shared.logoutFn());
+
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(['new', 'new', 'new'], 'new'));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(['new', 'new', 'new'], 'completed'));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(['new', 'new', 'new'], 'in-progress'));
     it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
@@ -271,6 +293,9 @@ describe('user survey integration', () => {
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'new', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(['completed', 'new', 'new'], 'new'));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(['completed', 'new', 'new'], 'completed'));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(['completed', 'new', 'new'], 'in-progress'));
     it('logout as user 0', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -280,6 +305,9 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'new'));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'completed'));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'in-progress'));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -289,6 +317,9 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'new'));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'completed'));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'in-progress'));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
@@ -298,6 +329,10 @@ describe('user survey integration', () => {
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'in-progress', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(['completed', 'in-progress', 'new'], 'new'));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(['completed', 'in-progress', 'new'], 'completed'));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(['completed', 'in-progress', 'new'], 'in-progress'));
+
     it('logout as user 0', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -307,6 +342,9 @@ describe('user survey integration', () => {
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'new'));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'completed'));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(['new', 'in-progress', 'new'], 'in-progress'));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
@@ -316,6 +354,10 @@ describe('user survey integration', () => {
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'completed', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(['completed', 'completed', 'new'], 'new'));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(['completed', 'completed', 'new'], 'completed'));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(['completed', 'completed', 'new'], 'in-progress'));
+
     it('logout as user 0', shared.logoutFn());
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
