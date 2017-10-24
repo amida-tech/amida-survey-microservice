@@ -30,6 +30,7 @@ class Generator {
         this.zipCodeApiIndex = 0;
         this.stateIndex = 0;
         this.sectionIndex = -1;
+        this.registryIndex = -1;
     }
 
     updateSurveyGenerator(SurveyGeneratorClass) {
@@ -79,8 +80,8 @@ class Generator {
         return this.surveyGenerator.newSurvey(options);
     }
 
-    newSurveyQuestionIds(questionIds) {
-        return this.surveyGenerator.newSurveyQuestionIds(questionIds);
+    newSurveyQuestionIds(questionIds, options) {
+        return this.surveyGenerator.newSurveyQuestionIds(questionIds, options);
     }
 
     answerQuestion(question) {
@@ -144,10 +145,12 @@ class Generator {
         this.assessmentIndex += 1;
         const index = this.assessmentIndex;
         const name = `name_${index}`;
-        const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';
-        const lookback = (index % 2 === 1);
-        const surveys = surveyIds.map(id => ({ id, lookback }));
-        return { name, sequenceType, surveys };
+        const surveys = surveyIds.map(id => ({ id }));
+        const record = { name, surveys };
+        if (index % 3 !== 0) {
+            record.stage = index;
+        }
+        return record;
     }
 
     newChoiceSet() {
@@ -240,6 +243,17 @@ class Generator {
         return result;
     }
 
+    newRegistry() {
+        this.registryIndex += 1;
+        const index = this.registryIndex;
+        const registry = { name: `name_${index}` };
+        if (index % 2) {
+            registry.url = `https://example.com/api_${index}`;
+        } else {
+            registry.schema = `schema_${index}`;
+        }
+        return registry;
+    }
 }
 
 module.exports = Generator;

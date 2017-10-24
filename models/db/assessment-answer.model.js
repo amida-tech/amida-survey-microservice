@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
-    const tableName = 'assessment_survey';
+module.exports = function assessmentAnswer(sequelize, Sequelize, schema) {
+    const tableName = 'assessment_answer';
     const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         assessmentId: {
@@ -16,17 +16,9 @@ module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
-        surveyId: {
-            type: Sequelize.INTEGER,
+        status: {
+            type: Sequelize.ENUM('new', 'in-progress', 'completed'),
             allowNull: false,
-            field: 'survey_id',
-            references: {
-                model: {
-                    schema,
-                    tableName: 'survey',
-                },
-                key: 'id',
-            },
         },
         createdAt: {
             type: Sequelize.DATE,
@@ -43,10 +35,7 @@ module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{
-            fields: ['assessment_id'],
-            where: { deleted_at: { $eq: null } },
-        }],
         paranoid: true,
+        indexes: [{ unique: true, fields: ['assessment_id'], where: { deleted_at: { $eq: null } } }],
     });
 };

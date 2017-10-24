@@ -6,6 +6,7 @@ const Base = require('./base');
 const SurveyError = require('../../lib/survey-error');
 const logger = require('../../logger');
 const queryrize = require('../../lib/queryrize');
+const SPromise = require('../../lib/promise');
 
 const answerCommon = require('./answer-common');
 
@@ -142,7 +143,7 @@ module.exports = class AnswerDAO extends Base {
 
     saveFiles(userId, answers, transaction) {
         if (answers.length < 1) {
-            return answers;
+            return SPromise.resolve(answers);
         }
         const fileValues = answers.reduce((r, p) => {
             if (p.answers) {
@@ -163,7 +164,7 @@ module.exports = class AnswerDAO extends Base {
             return r;
         }, []);
         if (fileValues.length < 1) {
-            return answers;
+            return SPromise.resolve(answers);
         }
         const records = fileValues.map((fileValue) => {
             const content = new Buffer(fileValue.content, 'base64');
@@ -177,8 +178,7 @@ module.exports = class AnswerDAO extends Base {
             .then(() => answers);
     }
 
-
-    fileAnswer({ userId, surveyId, language, answers }, transaction) {
+    fileAnswer({ userId, surveyId, assessmentId, language, answers }, transaction) {
         const Answer = this.db.Answer;
         const records = answers.reduce((r, p) => {
             const questionId = p.questionId;
@@ -188,6 +188,7 @@ module.exports = class AnswerDAO extends Base {
                 const value = {
                     userId,
                     surveyId,
+                    assessmentId,
                     language,
                     questionId,
                     questionChoiceId: v.questionChoiceId || null,
@@ -202,7 +203,7 @@ module.exports = class AnswerDAO extends Base {
         return Answer.bulkCreate(records, { transaction });
     }
 
-    updateStatus(userId, surveyId, status, transaction) {
+    updateStatus({ userId, surveyId }, status, transaction) {
         const UserSurvey = this.db.UserSurvey;
         return UserSurvey.findOne({
             where: { userId, surveyId },
@@ -222,8 +223,9 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateAnswers(userId, surveyId, answers, status) {
+    validateAnswers(masterId, answers, status) {
         const Answer = this.db.Answer;
+        const surveyId = masterId.surveyId;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
             .then((surveyQuestions) => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
@@ -278,9 +280,10 @@ module.exports = class AnswerDAO extends Base {
                     });
                     if (remainingRequired.size) {
                         const ids = [...remainingRequired];
+                        const where = Object.assign({ questionId: { $in: ids } }, masterId);
                         return Answer.findAll({
                             raw: true,
-                            where: { userId, surveyId, questionId: { $in: ids } },
+                            where,
                             attributes: ['questionId'],
                         })
                             .then((records) => {
@@ -296,41 +299,46 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateCreate(userId, surveyId, answers, status) {
-        return this.validateAnswers(userId, surveyId, answers, status);
+    validateCreate(masterId, answers, status) {
+        return this.validateAnswers(masterId, answers, status);
     }
 
-    createAnswersTx(inputRecord, transaction) {
-        const { userId, surveyId } = inputRecord;
-        const answers = _.cloneDeep(inputRecord.answers);
-        const status = inputRecord.status || 'completed';
-        return this.validateCreate(userId, surveyId, answers, status, transaction)
-            .then(() => this.updateStatus(userId, surveyId, status, transaction))
+    prepareAndFileAnswer({ masterId, answers, language }, transaction) {
+        const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+        const userId = masterId.userId;
+        return this.saveFiles(userId, filteredAnswers, transaction)
             .then(() => {
-                const ids = _.map(answers, 'questionId');
-                const where = { questionId: { $in: ids }, surveyId, userId };
-                return this.db.Answer.destroy({ where, transaction });
-            })
-            .then(() => {
-                const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
-                return filteredAnswers;
-            })
-            .then(filteredAnswers => this.saveFiles(userId, filteredAnswers, transaction))
-            .then((filteredAnswers) => {
                 if (filteredAnswers.length) {
-                    const language = inputRecord.language || 'en';
-                    const record = { userId, surveyId, language, answers: filteredAnswers };
+                    const record = { language, answers: filteredAnswers };
+                    Object.assign(record, masterId);
                     return this.fileAnswer(record, transaction);
                 }
                 return null;
             });
     }
 
+    createAnswersTx(inputRecord, transaction) {
+        const answers = _.cloneDeep(inputRecord.answers);
+        const status = inputRecord.status || 'completed';
+        const language = inputRecord.language || 'en';
+        const { userId, surveyId } = inputRecord;
+        const masterId = { userId, surveyId, assessmentId: null };
+        return this.validateCreate(masterId, answers, status, transaction)
+            .then(() => this.updateStatus(masterId, status, transaction))
+            .then(() => {
+                const ids = _.map(answers, 'questionId');
+                const where = { questionId: { $in: ids } };
+                Object.assign(where, masterId);
+                return this.db.Answer.destroy({ where, transaction });
+            })
+            .then(() => this.prepareAndFileAnswer({ masterId, answers, language }, transaction));
+    }
+
     createAnswers(input) {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, history, ids, userIds }) {
+    listAnswers({ userId, scope, surveyId, assessmentId, history, ids, userIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -348,17 +356,20 @@ module.exports = class AnswerDAO extends Base {
         if (surveyId) {
             where.surveyId = surveyId;
         }
+        if (assessmentId) {
+            where.assessmentId = assessmentId;
+        }
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
-        if (scope === 'export' || !surveyId) {
+        if (scope === 'export' || (scope !== 'assessment' && !surveyId)) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
             attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
         }
-        if (userIds) {
+        if (userIds || assessmentId) {
             attributes.push('userId');
         }
         const include = [
@@ -428,8 +439,8 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    getAnswers({ userId, surveyId }) {
-        return this.listAnswers({ userId, surveyId });
+    getAnswers(masterId) {
+        return this.listAnswers(masterId);
     }
 
     exportForUser(userId) {
