@@ -22,6 +22,7 @@ const UserAuditDAO = require('./user-audit.dao');
 const FilterDAO = require('./filter.dao');
 const FilterAnswerDAO = require('./filter-answer.dao');
 const FileDAO = require('./file.dao');
+const AssessmentAnswerDAO = require('./assessment-answer.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
     const questionIdentifier = new QuestionIdentifierDAO(db);
@@ -58,6 +59,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
     const file = new FileDAO(db);
+    const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, assessment });
 
     return {
         sequelize: db.sequelize,
@@ -82,6 +84,7 @@ const doasPerSchema = function (db, daosGenerator) {
         filter,
         filterAnswer,
         file,
+        assessmentAnswer,
     };
 };
 

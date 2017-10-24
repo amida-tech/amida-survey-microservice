@@ -521,7 +521,9 @@ module.exports = class SurveyDAO extends Translatable {
             attributes.push('groupId');
             attributes.push('version');
         }
-        attributes.push('authorId');
+        if (scope !== 'export') {
+            attributes.push('authorId');
+        }
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
         if (groupId || version || (status !== 'all') || ids) {
             options.where = {};

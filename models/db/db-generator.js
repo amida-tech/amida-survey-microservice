@@ -40,6 +40,7 @@ const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const file = require('./file.model');
 const smtpType = require('./smtp-type.model');
+const assessmentAnswer = require('./assessment-answer.model');
 
 const questionBelongsTo = function () {
     const result = {
@@ -109,6 +110,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const File = file(sequelize, Sequelize, schema);
     const SmtpType = smtpType(sequelize, Sequelize, schema);
+    const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
@@ -213,6 +215,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Filter,
         FilterAnswer,
         File,
+        AssessmentAnswer,
         SmtpType,
         schema,
     };
