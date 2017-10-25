@@ -2263,7 +2263,6 @@
                     "type": "integer"
                 }
             }
-
         },
       "resetPasswordInfo": {
           "type": "object",
