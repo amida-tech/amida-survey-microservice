@@ -60,17 +60,15 @@ exports.listSurveys = function listSurveys(req, res) {
 };
 
 exports.listSurveysByIds = function listSurveysByIds(req, res) {
-    console.log(`REQUEST IS:  ${req.body[0]}`);
-
     const scope = 'export';
     const language = _.get(req, 'swagger.params.language.value');
-    const ids = _.get(req, 'swagger.params.ids.value');
+    const ids = req.body
 
     const options = { scope, language, ids };
     req.models.survey.listSurveys(options)
         .then((surveys) => {
-        res.status(200).json(surveys);
-})
+            res.status(200).json(surveys);
+        })
     .catch(shared.handleError(res));
 }
 
