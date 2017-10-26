@@ -558,30 +558,29 @@ module.exports = class SurveyDAO extends Translatable {
                 if (scope === 'export') {
                     return this.updateSurveyListExport(surveys);
                 }
-
                 return surveys;
             });
     }
 
     updateSurveyListExport(surveys) {
         const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
-        console.log(`SURVEY MAP IS: ${surveyMap.get(2)}`);
         return this.db.SurveyQuestion.findAll({
             raw: true,
             attributes: ['surveyId', 'questionId', 'required'],
             order: 'line',
         })
             .then((surveyQuestions) => {
-            console.log(`SURVEY QUESTIONS: ${surveyQuestions}`)
                 surveyQuestions.forEach(({ surveyId, questionId, required }) => {
                     const survey = surveyMap.get(surveyId);
-                    const questions = survey.questions;
-                    const question = { id: questionId, required };
-                    if (questions) {
-                        console.log(`I GOT IN QUESTIONS`)
-                        questions.push(question);
-                    } else {
-                        survey.questions = [question];
+
+                    if (survey) {
+                        const questions = survey.questions;
+                        const question = {id: questionId, required};
+                        if (questions) {
+                            questions.push(question);
+                        } else {
+                            survey.questions = [question];
+                        }
                     }
                 });
                 return surveys;
