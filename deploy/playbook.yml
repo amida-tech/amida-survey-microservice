@@ -44,6 +44,6 @@
     nginx_upstreams:
       - name: api
         servers:
-          - '127.0.0.1:4000'
+          - '127.0.0.1:9005'
         keepalive: 8
     nginx_proxy_cache_path: '/var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=24h max_size=1g'
