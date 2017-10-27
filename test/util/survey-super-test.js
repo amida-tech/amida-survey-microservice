@@ -39,8 +39,9 @@ module.exports = class SurveySupertest {
         return this.app.locals.models.sequelize.close();
     }
 
-    authBasic(user, status = 200) {
+    authBasic(user, status = 200, method = "cookie") {
         if (status === 200) {
+            console.log("yes?")
             this.username = user.username;
             this.userId = user.id;
             this.userRole = user.role;
@@ -49,10 +50,17 @@ module.exports = class SurveySupertest {
         const token = this.authService.getJWT(user);
         this.server = session(this.app, {
             before(req) {
-                req.set('Cookie', `auth-jwt-token=${token};`);
+                method === "cookie" ?
+                req.set('Cookie', `auth-jwt-token=${token};`) :
+                req.set('Header', `auth-jwt-token=${token}`);
             },
         });
+        console.log("in auth basic")
+        console.log(user)
+        console.log(user.username)
+        console.log(this.username)
     }
+
 
     resetAuth() {
         this.server = session(this.app);
@@ -62,7 +70,11 @@ module.exports = class SurveySupertest {
     }
 
     getJWT() {
-        const jwt = _.find(this.server.cookies, cookie => cookie.name === 'auth-jwt-token');
+        const cookieJwt = _.find(this.server.cookies, cookie => cookie.name === 'auth-jwt-token');
+        const headerJwt = _.find(this.server.headers, header => header.name === 'auth-jwt-token');
+
+        const jwt = cookieJwt? cookieJwt : headerJwt;
+
         return jwt;
     }
 
@@ -71,7 +83,9 @@ module.exports = class SurveySupertest {
     }
 
     update(operation, endpoint, payload, status, header, validationError) {
+        console.log("ow abot this?")
         if (status < 401 && this.username && !validationError) {
+            console.log("this happening?")
             this.userAudit.push({ username: this.username, operation, endpoint });
         }
         const r = this.server[operation](this.baseUrl + endpoint);
