@@ -1,0 +1,16 @@
+---
+- name: Make source folder
+  sudo: yes
+  file: path=/CloudWatch state=directory
+
+- name: Download CloudWatch Monitoring Scripts
+  sudo: yes
+  command: chdir=/CloudWatch curl http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip -O
+
+- name: Unzip CloudWatch Monitoring Scripts Package
+  sudo: yes
+  command: chdir=/CloudWatch unzip CloudWatchMonitoringScripts-1.2.1.zip
+
+- name: Remove Zip File
+  sudo: yes
+  command: chdir=/CloudWatch rm -rf CloudWatchMonitoringScripts-1.2.1.zip
