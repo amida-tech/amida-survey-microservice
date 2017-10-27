@@ -1,0 +1,41 @@
+---
+- name: Make source folder
+  file: path={{ src_dir }} state=directory
+
+- name: Move API code to correct location
+  command: mv /tmp/app {{ src_dir }}
+
+- name: Install Patch
+  sudo: yes
+  yum:
+    name: patch
+    state: latest
+
+- name: Install yarn
+  sudo: yes
+  command: npm install -g yarn
+
+- name: Install grunt
+  sudo: yes
+  command: npm install -g grunt
+
+- name: Copy systemd service
+  sudo: yes
+  template:
+    src: express.service.j2
+    dest: /etc/systemd/system/express.service
+
+- name: Copy env file
+  template:
+    src: env.service.j2
+    dest: /home/centos/api/app/.env
+
+- name: Install api npm packages
+  command: chdir={{ src_dir }}/app /.nvm/versions/node/v{{ node_version }}/lib/node_modules/yarn/bin/yarn
+
+- name: Seed Database
+  command: chdir={{ src_dir }}/app node seed.js
+
+- name: Start application in express service
+  sudo: yes
+  service: name=express state=started enabled=yes
