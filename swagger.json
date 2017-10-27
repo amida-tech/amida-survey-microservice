@@ -24,6 +24,18 @@
         "application/json"
     ],
     "paths": {
+        "/health-check": {
+            "x-swagger-router-controller": "healthCheck.controller",
+            "get": {
+                "summary": "returns health check status",
+                "operationId": "healthCheck",
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/healthCheckSuccess"
+                     }
+                }
+            }
+        },
         "/users": {
             "x-swagger-router-controller": "user.controller",
             "get": {
@@ -2231,9 +2243,27 @@
             "schema": {
                 "$ref": "#/definitions/id"
             }
+        },
+        "healthCheckSuccess": {
+            "description": "health check Success",
+            "schema": {
+                "$ref": "#/definitions/healthCheckResponse"
+            }
         }
     },
     "definitions": {
+        "healthCheckResponse": {
+            "description": "health check response",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                }
+            }
+        },
       "resetPasswordInfo": {
           "type": "object",
           "required": [
