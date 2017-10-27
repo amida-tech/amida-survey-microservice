@@ -22,39 +22,23 @@ describe('header/cookie login integration', () => {
     const surveySuperTest = new SurveySuperTest();
     const shared = new SharedIntegration(surveySuperTest);
     const hxUser = new History();
-    const setup = shared.setUpFn();
 
     before(shared.setUpFn());
 
-    const verifyJWT = function(index,supertest) {
-        return function(end) {
+    const verifyJWT = function (index) {
+        return function vJWT(end) {
             const token = surveySuperTest.getJWT();
             const user = _.cloneDeep(hxUser.client(index));
 
             jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-                expect(!err).to.equal(true)
+                expect(!err).to.equal(true);
                 expect(payload).to.deep.equal(user);
             });
             end();
-        }
-    }
+        };
+    };
 
-    it('login as super', shared.loginFn(config.superUser, "cookie"));
-
-    _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(hxUser));
-    });
-
-    it('logout as super', shared.logoutFn());
-
-    _.range(4).forEach((i) => {
-        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i, "cookie"));
-        it(`verify login of user ${i}`, verifyJWT(i, surveySuperTest));
-        it(`logout as  user ${i}`, shared.logoutFn());
-    });
-
-
-    it('login as super', shared.loginFn(config.superUser, "header"));
+    it('login as super', shared.loginFn(config.superUser, 'cookie'));
 
     _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
@@ -63,9 +47,23 @@ describe('header/cookie login integration', () => {
     it('logout as super', shared.logoutFn());
 
     _.range(4).forEach((i) => {
-        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i, "header"));
-        it(`verify login of user ${i}`, verifyJWT(i,surveySuperTest));
+        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i, 'cookie'));
+        it(`verify login of user ${i}`, verifyJWT(i));
         it(`logout as  user ${i}`, shared.logoutFn());
     });
 
+
+    it('login as super', shared.loginFn(config.superUser, 'header'));
+
+    _.range(4).forEach((i) => {
+        it(`create user ${i}`, shared.createUserFn(hxUser));
+    });
+
+    it('logout as super', shared.logoutFn());
+
+    _.range(4).forEach((i) => {
+        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i, 'header'));
+        it(`verify login of user ${i}`, verifyJWT(i));
+        it(`logout as  user ${i}`, shared.logoutFn());
+    });
 });

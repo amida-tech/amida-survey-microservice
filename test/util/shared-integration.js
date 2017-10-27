@@ -62,22 +62,22 @@ class SharedIntegration {
         };
     }
 
-    loginFn(user, method="cookie") {
+    loginFn(user, method = 'cookie') {
         const surveySuperTest = this.surveySuperTest;
         return function login() {
             const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
-            return surveySuperTest.authBasic(fullUser, method);
+            return surveySuperTest.authBasic(fullUser, 200, method);
         };
     }
 
 
-    loginIndexFn(hxUser, index, method="cookie") {
+    loginIndexFn(hxUser, index, method = 'cookie') {
         const self = this;
         return function loginIndex() {
             const user = _.cloneDeep(hxUser.client(index));
             user.username = user.username || user.email.toLowerCase();
             user.id = hxUser.id(index);
-            return self.surveySuperTest.authBasic(user, method);
+            return self.surveySuperTest.authBasic(user, 200, method);
         };
     }
 
@@ -276,9 +276,7 @@ class SharedIntegration {
         it('verify user audit', function vua() {
             const userAudit = surveySuperTest.getUserAudit();
             return surveySuperTest.get('/users', true, 200, { role: 'all' })
-                .then(res => {
-                    return new Map(res.body.map(user => [user.username, user.id]))
-                })
+                .then(res => new Map(res.body.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
                     const userId = userMap.get(username);
                     return { userId, operation, endpoint };
