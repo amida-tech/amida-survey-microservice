@@ -39,7 +39,7 @@ module.exports = class SurveySupertest {
         return this.app.locals.models.sequelize.close();
     }
 
-    authBasic(user, status = 200) {
+    authBasic(user, status = 200, method = 'cookie') {
         if (status === 200) {
             this.username = user.username;
             this.userId = user.id;
@@ -49,11 +49,15 @@ module.exports = class SurveySupertest {
         const token = this.authService.getJWT(user);
         this.server = session(this.app, {
             before(req) {
-                req.set('Cookie', `auth-jwt-token=${token};`);
+                if (method === 'cookie') {
+                    req.set('Cookie', `auth-jwt-token=${token};`);
+                } else {
+                    req.set('authorization', `Bearer ${token}`);
+                }
             },
         });
     }
-
+    
     resetAuth() {
         this.server = session(this.app);
         this.username = null;
@@ -62,7 +66,11 @@ module.exports = class SurveySupertest {
     }
 
     getJWT() {
-        const jwt = _.find(this.server.cookies, cookie => cookie.name === 'auth-jwt-token');
+        const cookieJwt = _.find(this.server.cookies, cookie => cookie.name === 'auth-jwt-token');
+        const headerJwt = _.find(this.server.headers, header => header.name === 'auth-jwt-token');
+
+        const jwt = cookieJwt || headerJwt;
+
         return jwt;
     }
 

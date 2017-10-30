@@ -37,9 +37,16 @@ const invalidEndpoint = {
     statusCode: 404,
 };
 const authorization = function (req, res, next) {
-    const token = _.get(req, 'cookies.auth-jwt-token');
+    const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
     const isHealthCheck = req.url.indexOf('/health-check') >= 0;
+    const cookieToken = _.get(req, 'cookies.auth-jwt-token');
+    let authToken = _.get(req, 'headers.authorization');
+
+    if (authToken) {
+        authToken = authToken.substring(7);
+    }
+    const token = cookieToken || authToken;
 
     if (!token && !isDocs && !isHealthCheck) {
         res.statusCode = 401;

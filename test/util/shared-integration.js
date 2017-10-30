@@ -62,21 +62,22 @@ class SharedIntegration {
         };
     }
 
-    loginFn(user) {
+    loginFn(user, method = 'cookie') {
         const surveySuperTest = this.surveySuperTest;
         return function login() {
             const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
-            return surveySuperTest.authBasic(fullUser);
+            return surveySuperTest.authBasic(fullUser, 200, method);
         };
     }
 
-    loginIndexFn(hxUser, index) {
+
+    loginIndexFn(hxUser, index, method = 'cookie') {
         const self = this;
         return function loginIndex() {
             const user = _.cloneDeep(hxUser.client(index));
             user.username = user.username || user.email.toLowerCase();
             user.id = hxUser.id(index);
-            return self.surveySuperTest.authBasic(user);
+            return self.surveySuperTest.authBasic(user, 200, method);
         };
     }
 
