@@ -57,8 +57,7 @@ module.exports = class SurveySupertest {
             },
         });
     }
-
-
+    
     resetAuth() {
         this.server = session(this.app);
         this.username = null;
