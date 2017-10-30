@@ -52,7 +52,7 @@ module.exports = class SurveySupertest {
                 if (method === 'cookie') {
                     req.set('Cookie', `auth-jwt-token=${token};`);
                 } else {
-                    req.set('auth-jwt-token', `${token}`);
+                    req.set('authorization', `Bearer ${token}`);
                 }
             },
         });

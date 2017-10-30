@@ -40,8 +40,12 @@ const authorization = function (req, res, next) {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
     const cookieToken = _.get(req, 'cookies.auth-jwt-token');
-    const headerToken = _.get(req, 'headers.auth-jwt-token');
-    const token = cookieToken ? cookieToken : headerToken;
+    let authToken = _.get(req, 'headers.authorization');
+
+    if (authToken) {
+        authToken = authToken.substring(7);
+    }
+    const token = cookieToken || authToken;
 
     if (!token && !isAuth && !isDocs) {
         res.statusCode = 401;
