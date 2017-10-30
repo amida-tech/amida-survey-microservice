@@ -558,7 +558,6 @@ module.exports = class SurveyDAO extends Translatable {
                 if (scope === 'export') {
                     return this.updateSurveyListExport(surveys);
                 }
-
                 return surveys;
             });
     }
@@ -573,12 +572,15 @@ module.exports = class SurveyDAO extends Translatable {
             .then((surveyQuestions) => {
                 surveyQuestions.forEach(({ surveyId, questionId, required }) => {
                     const survey = surveyMap.get(surveyId);
-                    const questions = survey.questions;
-                    const question = { id: questionId, required };
-                    if (questions) {
-                        questions.push(question);
-                    } else {
-                        survey.questions = [question];
+
+                    if (survey) {
+                        const questions = survey.questions;
+                        const question = {id: questionId, required};
+                        if (questions) {
+                            questions.push(question);
+                        } else {
+                            survey.questions = [question];
+                        }
                     }
                 });
                 return surveys;

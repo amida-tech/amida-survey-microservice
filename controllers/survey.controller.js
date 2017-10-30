@@ -50,6 +50,7 @@ exports.listSurveys = function listSurveys(req, res) {
     const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
     const status = _.get(req, 'swagger.params.status.value');
+
     const options = { scope, language, status };
     req.models.survey.listSurveys(options)
         .then((surveys) => {
@@ -57,6 +58,19 @@ exports.listSurveys = function listSurveys(req, res) {
         })
         .catch(shared.handleError(res));
 };
+
+exports.listSurveysByIds = function listSurveysByIds(req, res) {
+    const scope = 'export';
+    const language = _.get(req, 'swagger.params.language.value');
+    const ids = req.body
+
+    const options = { scope, language, ids };
+    req.models.survey.listSurveys(options)
+        .then((surveys) => {
+            res.status(200).json(surveys);
+        })
+    .catch(shared.handleError(res));
+}
 
 exports.getAnsweredSurvey = function getAnsweredSurvey(req, res) {
     const userId = req.user.id;

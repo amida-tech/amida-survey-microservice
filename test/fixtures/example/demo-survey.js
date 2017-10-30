@@ -96,57 +96,11 @@ const demoSurvey3 = {
             ],
         }],
 };
-const demoSurvey4 = {
-    name: 'Advanced Sectioned Survey',
-    sections: [
-        {
-            id: 0,
-            name: 'section 1',
-            questions: [
-                {
-                    text: 'Do you have memory problems?',
-                    required: true,
-                    type: 'bool',
-                },
-                {
-                    text: 'What is your gender?',
-                    required: true,
-                    type: 'choice',
-                    choices: [
-                { text: 'Female' },
-                { text: 'Male' },
-                { text: 'Non-binary' },
-                    ],
-                }],
-        },
-        {
-            id: 1,
-            name: 'section 2',
-            questions: [
-                {
-                    text: 'Do you have balance problems?',
-                    required: true,
-                    type: 'bool',
-                },
-                {
-                    text: 'What is your gender?',
-                    required: true,
-                    type: 'choice',
-                    choices: [
-                  { text: 'Female' },
-                  { text: 'Male' },
-                  { text: 'Other' },
-                    ],
-                }],
-        },
-    ],
-};
 
 const demoSurveys = [
     demoSurvey1,
     demoSurvey2,
     demoSurvey3,
-    demoSurvey4,
 ];
 
 module.exports = {
