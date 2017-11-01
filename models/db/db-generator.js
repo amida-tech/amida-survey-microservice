@@ -114,17 +114,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
-    Answer.belongsTo(User, {
-        as: 'user',
-        foreignKey: {
-            fieldName: 'userId',
-            field: 'user_id',
-            references: {
-                model: 'user',
-                key: 'id',
-            },
-        },
-    });
 
     QuestionIdentifier.belongsTo(Question, questionBelongsTo());
     AnswerIdentifier.belongsTo(Question, questionBelongsTo());
