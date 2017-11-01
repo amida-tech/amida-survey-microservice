@@ -37,7 +37,6 @@ const invalidEndpoint = {
     statusCode: 404,
 };
 const authorization = function (req, res, next) {
-    const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const isDocs = req.url.indexOf('/docs') >= 0 || req.url.indexOf('/api-docs') >= 0;
     const isHealthCheck = req.url.indexOf('/health-check') >= 0;
     const cookieToken = _.get(req, 'cookies.auth-jwt-token');
