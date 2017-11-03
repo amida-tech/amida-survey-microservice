@@ -8,13 +8,6 @@ module.exports = function userAudit(sequelize, Sequelize, schema) {
             type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
-            references: {
-                model: {
-                    schema,
-                    tableName: 'survey_user',
-                },
-                key: 'id',
-            },
         },
         endpoint: {
             type: Sequelize.TEXT,

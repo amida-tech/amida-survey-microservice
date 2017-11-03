@@ -18,7 +18,7 @@ const initializeData = function (m) {
 
 const sschema = Array.isArray(schema) ? schema[0] : schema;
 
-models.sequelize.query(`SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema = '${sschema}' AND table_name = 'survey_user'`, { type: models.sequelize.QueryTypes.SELECT })
+models.sequelize.query(`SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema = '${sschema}'`, { type: models.sequelize.QueryTypes.SELECT })
     .then((result) => {
         if (result[0].count === '0') {
             return models.sequelize.sync({ force: true })

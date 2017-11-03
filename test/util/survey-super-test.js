@@ -80,7 +80,7 @@ module.exports = class SurveySupertest {
 
     update(operation, endpoint, payload, status, header, validationError) {
         if (status < 401 && this.username && !validationError) {
-            this.userAudit.push({ username: this.username, operation, endpoint });
+            this.userAudit.push({ userId: this.userId, operation, endpoint });
         }
         const r = this.server[operation](this.baseUrl + endpoint);
 
@@ -96,7 +96,7 @@ module.exports = class SurveySupertest {
 
     postFile(endpoint, field, filepath, payload, status) {
         if (status < 401 && this.username) {
-            this.userAudit.push({ username: this.username, operation: 'post', endpoint });
+            this.userAudit.push({ userId: this.userId, operation: 'post', endpoint });
         }
         const filename = path.basename(filepath);
         const request = this.server
@@ -122,7 +122,7 @@ module.exports = class SurveySupertest {
 
     delete(endpoint, status, query) {
         if (status < 401 && this.username) {
-            this.userAudit.push({ username: this.username, operation: 'delete', endpoint });
+            this.userAudit.push({ userId: this.userId, operation: 'delete', endpoint });
         }
         let r = this.server.delete(this.baseUrl + endpoint);
         if (query) {
@@ -132,8 +132,8 @@ module.exports = class SurveySupertest {
     }
 
     get(endpoint, auth, status, query) {
-        if (status < 401 && this.username) {
-            this.userAudit.push({ username: this.username, operation: 'get', endpoint });
+        if (status < 401 && this.username && endpoint !== '/user-audits') {
+            this.userAudit.push({ userId: this.userId, operation: 'get', endpoint });
         }
 
         let r = this.server.get(this.baseUrl + endpoint);
