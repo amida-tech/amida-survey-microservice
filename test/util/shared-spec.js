@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const sinon = require('sinon');
 const request = require('request');
-
+const AuthService = require('./mock_auth_service');
 const models = require('../../models');
 
 const SurveyError = require('../../lib/survey-error');
@@ -20,6 +20,7 @@ class SharedSpec {
     constructor(generator, inputModels) {
         this.models = inputModels || models;
         this.generator = generator || new Generator();
+        this.authService = new AuthService();
     }
 
     setUpFn(force = true) {
@@ -30,14 +31,12 @@ class SharedSpec {
     }
 
     createUserFn(hxUser, override) {
-        const m = this.models;
         const generator = this.generator;
+        const authService = this.authService;
         return function createUser() {
             const user = generator.newUser(override);
-            return m.user.createUser(user)
-                .then(({ id }) => {
-                    hxUser.push(user, { id });
-                });
+            authService.addUser(user);
+            hxUser.push(user, { id: hxUser.clients.length + 2 });
         };
     }
 

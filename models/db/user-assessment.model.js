@@ -8,13 +8,6 @@ module.exports = function userAssessment(sequelize, Sequelize, schema) {
             type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
-            references: {
-                model: {
-                    schema,
-                    tableName: 'survey_user',
-                },
-                key: 'id',
-            },
         },
         assessmentId: {
             type: Sequelize.INTEGER,
