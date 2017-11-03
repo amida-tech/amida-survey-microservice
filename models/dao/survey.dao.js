@@ -130,17 +130,17 @@ module.exports = class SurveyDAO extends Translatable {
         if (questions && sections) {
             throw new SurveyError('surveyBothQuestionsSectionsSpecified');
         }
-        if (!questions && !sections) {
-            throw new SurveyError('surveyNeitherQuestionsSectionsSpecified');
-        }
         const result = { sections: [], questions: [] };
         if (sections) {
             return this.flattenSectionsHieararchy(sections, result, null);
         }
-        this.flattenQuestionsHierarchy(questions, result);
-        if (result.sections.length === 0) {
-            delete result.sections;
+        if (questions) {
+            this.flattenQuestionsHierarchy(questions, result);
+            if (result.sections.length === 0) {
+                delete result.sections;
+            }
         }
+
         return result;
     }
 
@@ -286,9 +286,7 @@ module.exports = class SurveyDAO extends Translatable {
 
     updateSurveyTx(inputId, survey, transaction) {
         const { sections, questions } = this.flattenHierarchy(survey);
-        if (!questions.length) {
-            return SurveyError.reject('surveyNoQuestions');
-        }
+
         const record = { id: inputId, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
             .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
@@ -404,13 +402,8 @@ module.exports = class SurveyDAO extends Translatable {
                         return null;
                     })
                     .then(() => {
-                        if (!(surveyPatch.questions || surveyPatch.sections)) {
-                            return null;
-                        }
                         const { sections, questions } = this.flattenHierarchy(surveyPatch);
-                        if (!questions) {
-                            return SurveyError.reject('surveyNoQuestionsInSections');
-                        }
+
                         const questionIdSet = new Set();
                         questions.forEach((question) => {
                             const questionId = question.id;
@@ -418,12 +411,16 @@ module.exports = class SurveyDAO extends Translatable {
                                 questionIdSet.add(questionId);
                             }
                         });
+                        if(!survey.questionIds) {
+                            survey.questionIds = [];
+                        }
                         const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
                             if (!questionIdSet.has(questionId)) {
                                 r.push(questionId);
                             }
                             return r;
                         }, []);
+
                         if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) { // eslint-disable-line max-len
                             if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
                                 return SurveyError.reject('surveyChangeQuestionWhenPublished');
