@@ -17,7 +17,7 @@ exports.createAssessmentAnswers = function createAssessmentAnswers(req, res) {
 exports.getAssessmentAnswers = function getAssessmentAnswers(req, res) {
     const assessmentId = _.get(req, 'swagger.params.id.value');
     const userId = req.user.id;
-    req.models.assessmentAnswer.getAssessmentAnswers({ userId, assessmentId })
+    req.models.assessmentAnswer.getAssessmentAnswers({ userId, assessmentId})
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
@@ -39,7 +39,8 @@ exports.getAssessmentAnswersStatus = function getAssessmentAnswersStatus(req, re
 
 exports.getAssessmentAnswersList = function getAssessmentAnswersStatus(req, res) {
     const group = _.get(req, 'swagger.params.group.value');
-    const options = group ? { group } : {};
+    const assessmentAnswersStatus = _.get(req, 'swagger.params.assessment-answers-status.value');
+    const options = {group, assessmentAnswersStatus };
     req.models.assessmentAnswer.getAssessmentAnswersList(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));

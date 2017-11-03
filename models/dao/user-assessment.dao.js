@@ -84,7 +84,7 @@ module.exports = class AssessmentDAO extends Base {
         });
     }
 
-    listUserAssessments(userId, assessmentId) {
+    listUserAssessments(userId, assessmentId, options) {
         return this.db.UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'version'],
