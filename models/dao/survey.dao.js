@@ -402,6 +402,9 @@ module.exports = class SurveyDAO extends Translatable {
                         return null;
                     })
                     .then(() => {
+                        if (!(surveyPatch.questions || surveyPatch.sections)) {
+                            return null;
+                        }
                         const { sections, questions } = this.flattenHierarchy(surveyPatch);
 
                         const questionIdSet = new Set();
@@ -411,17 +414,20 @@ module.exports = class SurveyDAO extends Translatable {
                                 questionIdSet.add(questionId);
                             }
                         });
-                        if(!survey.questionIds) {
-                            survey.questionIds = [];
-                        }
-                        const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
-                            if (!questionIdSet.has(questionId)) {
-                                r.push(questionId);
-                            }
-                            return r;
-                        }, []);
 
-                        if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) { // eslint-disable-line max-len
+                        const noQuestionIds = !survey.questionIds;
+                        let removedQuestionIds = [];
+                        if (!noQuestionIds) {
+                            removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
+                                if (!questionIdSet.has(questionId)) {
+                                    r.push(questionId);
+                                }
+                                return r;
+                            }, []);
+                        }
+
+
+                        if (removedQuestionIds.length || (!noQuestionIds && (survey.questionIds.length !== questions.length))) { // eslint-disable-line max-len
                             if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
                                 return SurveyError.reject('surveyChangeQuestionWhenPublished');
                             }
