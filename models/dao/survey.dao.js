@@ -140,7 +140,6 @@ module.exports = class SurveyDAO extends Translatable {
                 delete result.sections;
             }
         }
-
         return result;
     }
 
@@ -286,7 +285,6 @@ module.exports = class SurveyDAO extends Translatable {
 
     updateSurveyTx(inputId, survey, transaction) {
         const { sections, questions } = this.flattenHierarchy(survey);
-
         const record = { id: inputId, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
             .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
@@ -406,7 +404,6 @@ module.exports = class SurveyDAO extends Translatable {
                             return null;
                         }
                         const { sections, questions } = this.flattenHierarchy(surveyPatch);
-
                         const questionIdSet = new Set();
                         questions.forEach((question) => {
                             const questionId = question.id;
