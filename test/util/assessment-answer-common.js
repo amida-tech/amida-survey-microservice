@@ -302,11 +302,13 @@ const IntegrationTests = class AnswerIntegrationTests {
         };
     }
 
-    verifyAssessmentAnswersListFn(statusList, group, indices) {
+    verifyAssessmentAnswersListFn(statusList, options = {}, indices) {
         const self = this;
         const hxAssessment = this.hxAssessment;
         return function verifyAssessmentAnswerList() {
-            const query = group ? { group } : undefined;
+            const query = (options.group || options.assessmentAnswersStatus) ?
+                          { group: options.group, 'assessment-answers-status': options.assessmentAnswersStatus } :
+                           undefined;
             return self.surveySuperTest.get('/assessment-answers', true, 200, query)
                 .then((res) => {
                     let expected = hxAssessment.listServers();
@@ -317,6 +319,10 @@ const IntegrationTests = class AnswerIntegrationTests {
                     expected.forEach((r, index) => {
                         r.status = statusList[index];
                     });
+                    if (options.assessmentAnswersStatus) {
+                        expected = expected
+                                   .filter(r => r.status === options.assessmentAnswersStatus);
+                    }
                     expect(res.body).to.deep.equal(expected);
                 });
         };

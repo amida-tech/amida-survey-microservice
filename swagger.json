@@ -1297,7 +1297,8 @@
                     "in": "query",
                     "description": "Status of survey completion by user",
                     "required": false,
-                    "type": "string"
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
                 }],
                 "responses": {
                     "200": {
@@ -1532,8 +1533,7 @@
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/newUserAssessment"
-                    }
-                }],
+                }}],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
@@ -1705,7 +1705,8 @@
                     "in": "query",
                     "description": "status of assessment completion by user",
                     "required": false,
-                    "type": "string"
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
                 },{
                     "name": "group",
                     "in": "query",
