@@ -41,13 +41,6 @@ module.exports = function survey(sequelize, Sequelize, schema) {
         authorId: {
             type: Sequelize.INTEGER,
             field: 'author_id',
-            references: {
-                model: {
-                    schema,
-                    tableName: 'survey_user',
-                },
-                key: 'id',
-            },
         },
     }, {
         freezeTableName: true,

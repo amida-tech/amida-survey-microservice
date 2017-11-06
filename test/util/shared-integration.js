@@ -141,10 +141,8 @@ class SharedIntegration {
             if (!user) {
                 user = generator.newUser(override);
             }
-            return surveySuperTest.post('/users', user, 201)
-                .then((res) => {
-                    history.push(user, { id: res.body.id });
-                });
+            surveySuperTest.authService.addUser(user);
+            history.push(user, { id: history.clients.length + 2 });
         };
     }
 
@@ -275,6 +273,7 @@ class SharedIntegration {
 
         it('verify user audit', function vua() {
             const userAudit = surveySuperTest.getUserAudit();
+<<<<<<< HEAD
             return surveySuperTest.get('/users', true, 200, { role: 'all' })
                 .then(res => new Map(res.body.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
@@ -284,6 +283,11 @@ class SharedIntegration {
                 .then((expected) => {
                     const px = surveySuperTest.get('/user-audits', true, 200);
                     return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
+=======
+            return surveySuperTest.get('/user-audits', true, 200)
+                .then((resAudit) => {
+                    expect(resAudit.body).to.deep.equal(userAudit);
+>>>>>>> develop
                 });
         });
 

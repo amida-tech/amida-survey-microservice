@@ -4,7 +4,6 @@ const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
 const surveyStatus = require('./survey-status.model');
-const user = require('./user.model');
 const questionType = require('./question-type.model');
 const question = require('./question.model');
 const choiceSet = require('./choice-set.model');
@@ -74,7 +73,6 @@ const questionChoiceBelongsTo = function () {
 
 const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
-    const User = user(sequelize, Sequelize, schema);
     const QuestionType = questionType(sequelize, Sequelize, schema);
     const Question = question(sequelize, Sequelize, schema);
     const ChoiceSet = choiceSet(sequelize, Sequelize, schema);
@@ -114,17 +112,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
-    Answer.belongsTo(User, {
-        as: 'user',
-        foreignKey: {
-            fieldName: 'userId',
-            field: 'user_id',
-            references: {
-                model: 'user',
-                key: 'id',
-            },
-        },
-    });
 
     QuestionIdentifier.belongsTo(Question, questionBelongsTo());
     AnswerIdentifier.belongsTo(Question, questionBelongsTo());
@@ -180,7 +167,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     return {
         sequelize,
         SurveyStatus,
-        User,
         Section,
         SectionText,
         SurveySection,

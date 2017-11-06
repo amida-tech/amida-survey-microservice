@@ -573,7 +573,7 @@ module.exports = class AnswerDAO extends Base {
 
                 // find users with a matching answer for each question
                 // (i.e., users who match all criteria)
-                const include = [{ model: this.db.User, as: 'user', attributes: [] }];
+                const include = [];
                 const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), n);
                 const group = ['user_id'];
 

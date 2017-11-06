@@ -9,13 +9,6 @@ module.exports = function File(sequelize, Sequelize, schema) {
             type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
-            references: {
-                model: {
-                    schema,
-                    tableName: 'survey_user',
-                },
-                key: 'id',
-            },
         },
         name: {
             type: Sequelize.TEXT,
