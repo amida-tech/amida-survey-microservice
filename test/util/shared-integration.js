@@ -273,21 +273,10 @@ class SharedIntegration {
 
         it('verify user audit', function vua() {
             const userAudit = surveySuperTest.getUserAudit();
-<<<<<<< HEAD
-            return surveySuperTest.get('/users', true, 200, { role: 'all' })
-                .then(res => new Map(res.body.map(user => [user.username, user.id])))
-                .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
-                    const userId = userMap.get(username);
-                    return { userId, operation, endpoint };
-                }))
-                .then((expected) => {
-                    const px = surveySuperTest.get('/user-audits', true, 200);
-                    return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
-=======
+
             return surveySuperTest.get('/user-audits', true, 200)
                 .then((resAudit) => {
                     expect(resAudit.body).to.deep.equal(userAudit);
->>>>>>> develop
                 });
         });
 
