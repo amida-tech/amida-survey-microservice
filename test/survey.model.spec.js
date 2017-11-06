@@ -580,7 +580,16 @@ describe('survey unit', function surveyUnit() {
         return models.survey.replaceSurvey(survey.id, replacementSurvey);
     });
 
-    it('create survey without questions', () => models.survey.createSurvey({ name: 'name' }));
+    const createAndGetEmptySurvey = function (name) {
+        return models.survey.createSurvey({ name }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
+            const survey = { id, name, questions: [], authorId: 1, status: 'published' };
+            expect(emptySurvey).to.deep.equal(survey);
+            hxSurvey.push(emptySurvey, { id });
+            surveyCount += 1;
+        }));
+    };
+
+    it('create and get survey without questions', () => createAndGetEmptySurvey('Empty Survey'));
 
     it('survey count sanity check', () => {
         expect(hxSurvey.length()).to.equal(surveyCount);
