@@ -1295,7 +1295,7 @@
                 {
                     "name": "user-survey-status",
                     "in": "query",
-                    "description": "User status of survey completion",
+                    "description": "Status of survey completion by user",
                     "required": false,
                     "type": "string"
                 }],
@@ -1701,6 +1701,12 @@
                 "description": "Do not return attached surveys.",
                 "operationId": "getAssessmentAnswersList",
                 "parameters": [{
+                    "name": "assessment-answers-status",
+                    "in": "query",
+                    "description": "status of assessment completion by user",
+                    "required": false,
+                    "type": "string"
+                },{
                     "name": "group",
                     "in": "query",
                     "description": "Group for assessments",
@@ -2520,8 +2526,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/newSurveyQuestion"
-            },
-            "minItems": 1
+            }
         },
         "newSection": {
             "type": "object",
