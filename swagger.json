@@ -2530,6 +2530,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "description": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "questions": {
                     "$ref": "#/definitions/newSurveyQuestions"
                 },
@@ -2543,7 +2547,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "section": {
@@ -2555,6 +2559,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description" :{
                     "type": "string",
                     "minLength": 1
                 },
@@ -2583,6 +2591,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
                     "type": "string",
                     "minLength": 1
                 }

@@ -72,8 +72,8 @@ module.exports = class SurveyDAO extends Translatable {
 
     flattenSectionsHieararchy(sections, result, parentIndex) {
         sections.forEach((section, line) => {
-            const { id, name, questions, enableWhen } = section;
-            const sectionInfo = { name, parentIndex, line };
+            const { id, name, description, questions, enableWhen } = section;
+            const sectionInfo = { name, description, parentIndex, line };
             if (id) {
                 sectionInfo.id = id;
             }
