@@ -2527,8 +2527,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/newSurveyQuestion"
-            },
-            "minItems": 1
+            }
         },
         "newSection": {
             "type": "object",
