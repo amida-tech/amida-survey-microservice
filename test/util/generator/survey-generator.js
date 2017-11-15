@@ -23,7 +23,9 @@ const sectionGenerators = {
     oneLevelMissingName(surveyQuestions) {
         const sections = sectionGenerators.oneLevel(surveyQuestions);
         delete sections[0].name;
+        delete sections[0].description;
         delete sections[sections.length - 1].name;
+        delete sections[sections.length - 1].description;
         return sections;
     },
     twoLevel(surveyQuestions) {
