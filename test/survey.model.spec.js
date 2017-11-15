@@ -132,9 +132,6 @@ describe('survey unit', function surveyUnit() {
         };
     };
 
-    it('error: create survey without questions', () => models.survey.createSurvey({ name: 'name' })
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified')));
-
     _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
@@ -216,14 +213,6 @@ describe('survey unit', function surveyUnit() {
     it('error: show a non-existent survey', () => models.survey.getSurvey(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound')));
 
-    it('error: replace with a survey with no questions', () => {
-        const survey = hxSurvey.server(1);
-        const replacementSurvey = generator.newSurvey();
-        delete replacementSurvey.questions;
-        delete replacementSurvey.sections;
-        return models.survey.replaceSurvey(survey.id, replacementSurvey)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified'));
-    });
 
     it('error: replace a non-existent survey', () => {
         const replacementSurvey = generator.newSurvey();
@@ -583,12 +572,32 @@ describe('survey unit', function surveyUnit() {
             .then(shared.throwingHandler, shared.expectedErrorHandler('answerQxNotInSurvey'));
     });
 
+
     it('error: create survey with description and no name', () => {
         let survey = generator.surveyGenerator.newSurvey();
         survey.sections = [{questions:survey.questions, description:"description No Name"}]
         delete survey.questions;
         return models.survey.createSurvey(survey).then(shared.throwingHandler, shared.expectedErrorHandler('Section Name required for description'))
     });
+
+    it('Replace with a survey with no questions', () => {
+        const survey = hxSurvey.server(1);
+        const replacementSurvey = generator.newSurvey();
+        delete replacementSurvey.questions;
+        delete replacementSurvey.sections;
+        return models.survey.replaceSurvey(survey.id, replacementSurvey);
+    });
+
+    const createAndGetEmptySurvey = function (name) {
+        return models.survey.createSurvey({ name }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
+            const survey = { id, name, questions: [], authorId: 1, status: 'published' };
+            expect(emptySurvey).to.deep.equal(survey);
+            hxSurvey.push(emptySurvey, { id });
+            surveyCount += 1;
+        }));
+    };
+
+    it('create and get survey without questions', () => createAndGetEmptySurvey('Empty Survey'));
 
     it('survey count sanity check', () => {
         expect(hxSurvey.length()).to.equal(surveyCount);
