@@ -15,15 +15,17 @@ const sectionGenerators = {
             throw new Error('Not enough questions for sections.');
         }
         const sections = Array(3);
-        sections[0] = { name: 'section_0', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
-        sections[1] = { name: 'section_1', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
-        sections[2] = { name: 'section_2', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        sections[0] = { name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { name: 'section_2', description: 'section_2_description', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
         return sections;
     },
     oneLevelMissingName(surveyQuestions) {
         const sections = sectionGenerators.oneLevel(surveyQuestions);
         delete sections[0].name;
+        delete sections[0].description;
         delete sections[sections.length - 1].name;
+        delete sections[sections.length - 1].description;
         return sections;
     },
     twoLevel(surveyQuestions) {

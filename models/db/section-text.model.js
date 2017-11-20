@@ -30,7 +30,7 @@ module.exports = function sectionText(sequelize, Sequelize, schema) {
         },
         name: {
             type: Sequelize.TEXT,
-            allowNull: false,
+            allowNull:false
         },
         description: {
             type: Sequelize.TEXT,
@@ -43,7 +43,15 @@ module.exports = function sectionText(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
-    }, {
+    },
+    {
+        validate: {
+            descriptionAndNameOrNone() {
+                if ((!this.name) && (this.description)) {
+                    throw new Error('Section Name required for description');
+                }
+            }
+        },
         freezeTableName: true,
         tableName,
         schema,
