@@ -73,7 +73,10 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('login as super', shared.loginFn(config.superUser));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['new', 'new', 'new', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     _.range(3).forEach((index) => {
         it(`verify assessment answer ${index}`, tests.verifyAssessmentAnswersFn(index, index, 'new'));
@@ -88,7 +91,10 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('verify assessment 0 answers', tests.verifyAssessmentAnswersFn(0, 0, 'completed'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'new', 'new', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
     it('logout as user 0', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -97,14 +103,20 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('verify assessment 1 answers', tests.verifyAssessmentAnswersFn(1, 1, 'in-progress'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     it('user 2 modifies assessment 1 (in-progress)', tests.createAssessmentAnswersFullFn(2, 1, 'in-progress'));
     it('verify assessment 1 status', tests.verifyStatusFn(1, 1, 'in-progress'));
     it('verify assessment 1 answers', tests.verifyAssessmentAnswersFn(1, 1, 'in-progress'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'new', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     it('logout as user 1', shared.logoutFn());
 
@@ -114,7 +126,10 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('verify assessment 2 answers', tests.verifyAssessmentAnswersFn(2, 2, 'in-progress'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     it('logout as user 2', shared.logoutFn());
 
@@ -124,7 +139,10 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('verify assessment 3 status', tests.verifyAssessmentAnswersFn(0, 3, 'new'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'in-progress', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     it('logout as user 0', shared.logoutFn());
 
@@ -134,7 +152,10 @@ describe('assessment answer status integration', function assessmentAnswerUnit()
     it('verify assessment 2 status', tests.verifyAssessmentAnswersFn(2, 2, 'completed'));
 
     it('verify assessment answers list', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new']));
-    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new'], 'group', [0, 1]));
+    it('verify assessment answers list new', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new'], { assessmentAnswersStatus: 'new' }));
+    it('verify assessment answers list in-progress', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new'], { assessmentAnswersStatus: 'in-progress' }));
+    it('verify assessment answers list completed', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new'], { assessmentAnswersStatus: 'completed' }));
+    it('verify assessment answers list (group)', tests.verifyAssessmentAnswersListFn(['completed', 'in-progress', 'completed', 'new', 'new', 'new'], { group: 'group' }, [0, 1]));
 
     it('logout as user 2', shared.logoutFn());
 });

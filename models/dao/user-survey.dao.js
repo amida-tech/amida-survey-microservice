@@ -64,7 +64,8 @@ module.exports = class UserSurveyDAO extends Base {
                             });
 
                             if (options.userSurveyStatus) {
-                                return surveys.filter(r => r.status === options.userSurveyStatus);
+                                return surveys
+                                       .filter(r => r.status === options.userSurveyStatus);
                             }
                             return surveys;
                         });

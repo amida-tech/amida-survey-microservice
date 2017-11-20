@@ -92,15 +92,9 @@ describe('user survey integration', () => {
 
     const verifyUserSurveyListFn = function (statusList, userSurveyStatus = '') {
         return function verifyUserSurveyList(done) {
-            let listRequest;
-            if (userSurveyStatus !== '') {
-                const query = { 'user-survey-status': userSurveyStatus };
-                listRequest = surveySuperTest.get('/user-surveys', true, 200, query);
-            } else {
-                listRequest = surveySuperTest.get('/user-surveys', true, 200);
-            }
+            const query = !(userSurveyStatus === '') ? { 'user-survey-status': userSurveyStatus } : undefined;
 
-            listRequest
+            surveySuperTest.get('/user-surveys', true, 200, query)
                 .expect((res) => {
                     const userSurveys = res.body;
                     let expected = _.cloneDeep(hxSurvey.listServers());
