@@ -47,7 +47,7 @@ module.exports = function sectionText(sequelize, Sequelize, schema) {
     {
         validate: {
             descriptionAndNameOrNone() {
-                if ((this.name === null) && (this.description !== null)) {
+                if ((!this.name) && (this.description)) {
                     throw new Error('Section Name required for description');
                 }
             }
