@@ -2416,7 +2416,7 @@
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
                 "date", "year", "month", "day", "choice-ref", "open-choice",
-                "pounds", "zip", "feet-inches", "blood-pressure", "file"
+                "pounds", "zip", "feet-inches", "blood-pressure", "file", "bullet"
             ]
         },
         "questionMeta": {
