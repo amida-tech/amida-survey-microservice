@@ -6,21 +6,21 @@
   command: mv /tmp/app {{ src_dir }}
 
 - name: Install Patch
-  sudo: yes
+  become: true
   yum:
     name: patch
     state: latest
 
 - name: Install yarn
-  sudo: yes
+  become: true
   command: npm install -g yarn
 
 - name: Install grunt
-  sudo: yes
+  become: true
   command: npm install -g grunt
 
 - name: Copy systemd service
-  sudo: yes
+  become: true
   template:
     src: express.service.j2
     dest: /etc/systemd/system/express.service
@@ -37,5 +37,5 @@
   command: chdir={{ src_dir }}/app node seed.js
 
 - name: Start application in express service
-  sudo: yes
+  become: true
   service: name=express state=started enabled=yes

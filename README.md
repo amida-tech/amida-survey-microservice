@@ -275,6 +275,8 @@ Be sure to have your postgres host running and replace the `pg_host` value in th
     -var 'aws_access_key=my-aws-access-key' \
     -var 'aws_secret_key=my-aws-secret-key' \
     -var 'build_env=development' \
+		-var 'logstash_host=logstash.amida.com' \
+    -var 'service_name=amida_survey_microservice' \
     -var 'ami_name=api-survey-service-boilerplate' \
     -var 'node_env=development' \
     -var 'jwt_secret=my-0-jwt-8-secret' \
