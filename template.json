@@ -147,6 +147,6 @@
       "./deploy/roles/cron",
       "./deploy/roles/nginx"
     ],
-    "extra_arguments": "-vv --extra-vars \"pg_db={{user `pg_db`}} pg_host={{user `pg_host`}} pg_passwd={{user `pg_passwd`}} pg_user={{user `pg_user`}} node_env={{user `build_env`}} jwt_secret={{user `jwt_secret`}}\""
+    "extra_arguments": "-vv --extra-vars \"pg_db={{user `pg_db`}} pg_host={{user `pg_host`}} pg_passwd={{user `pg_passwd`}} pg_user={{user `pg_user`}} node_env={{user `build_env`}} jwt_secret={{user `jwt_secret`}} service_name={{user `service_name`}} logstash_host={{user `logstash_host`}}\""
   }]
 }

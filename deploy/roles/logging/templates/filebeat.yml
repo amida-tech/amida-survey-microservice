@@ -7,11 +7,19 @@ filebeat.prospectors:
 # Below are the prospector specific configurations.
 
 - input_type: log
+  close_inactive: 8760h
   document_type: nginx
   paths:
     - /var/log/nginx/*.log
 
 - input_type: log
+  close_inactive: 8760h
+  document_type: {{ service_name }}_api
+  paths:
+    - /home/centos/api/app/*.log
+
+- input_type: log
+  close_inactive: 8760h
   document_type: syslog
   paths:
     - /var/log/messages

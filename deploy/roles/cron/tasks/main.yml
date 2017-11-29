@@ -1,6 +1,6 @@
 ---
 - name: Replace Crontab File
-  sudo: yes
+  become: true
   template:
     src: crontab
     dest: /etc/crontab
