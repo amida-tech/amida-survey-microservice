@@ -123,7 +123,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     getAssessmentAnswersStatus({ assessmentId }) {
         const where = { assessmentId };
-        return this.db.AssessmentAnswer.findOne({ where, raw: true, attributes: ['status'] })
+        return this.db.AssessmentAnswer
+                      .findOne({ where, raw: true, attributes: ['status'] })
             .then(record => (record ? record.status : 'new'));
     }
 
@@ -143,6 +144,10 @@ module.exports = class AnswerAssessmentDAO extends Base {
                             assessments.forEach((r) => {
                                 r.status = map.get(r.id) || 'new';
                             });
+                            if (options.assessmentAnswersStatus) {
+                                return assessments.filter(r =>
+                                    r.status === options.assessmentAnswersStatus);
+                            }
                             return assessments;
                         });
                 }

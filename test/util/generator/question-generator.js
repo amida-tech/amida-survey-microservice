@@ -15,7 +15,7 @@ const virtualQuestionTypes = [
     'choicesMeta', 'choiceMeta',
 ];
 
-const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
+const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes, 'bullet'];
 
 const updateIdentifiers = function (question, identifiers) {
     const { type, postfix } = identifiers;

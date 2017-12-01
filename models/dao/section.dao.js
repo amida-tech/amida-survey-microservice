@@ -23,9 +23,13 @@ module.exports = class SectionDAO extends Translatable {
         }
         return this.db.Section.create(fields, { transaction })
             .then(({ id }) => {
+                if(description && !name) {
+                    return SurveyError.reject('Section Name required for description');
+                }
                 if (name) {
                     return this.createTextTx({ name, description, id }, transaction);
                 }
+
                 return { id };
             });
     }

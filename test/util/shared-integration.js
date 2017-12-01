@@ -273,6 +273,7 @@ class SharedIntegration {
 
         it('verify user audit', function vua() {
             const userAudit = surveySuperTest.getUserAudit();
+
             return surveySuperTest.get('/user-audits', true, 200)
                 .then((resAudit) => {
                     expect(resAudit.body).to.deep.equal(userAudit);

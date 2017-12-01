@@ -99,6 +99,11 @@ module.exports = class Answerer {
         return choices[answerIndex % choices.length];
     }
 
+    bullet(question) {
+      const answerIndex = this.answerIndex;
+      return{textValue: `string_${answerIndex}`}
+    }
+
     choice(question) {
         const choice = this.selectChoice(question.choices);
         return { choice: choice.id };

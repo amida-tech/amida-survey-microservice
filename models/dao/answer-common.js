@@ -75,6 +75,9 @@ const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
             choices = _.sortBy(choices, 'id');
             return { choices };
         },
+        bullet(entries){
+            return {textValue: entries[0].value};
+        },
     };
 
     return function fnGetChoiceAnswerGenerator(type) {
@@ -89,6 +92,9 @@ const generateAnswer = function (type, entries, multiple) {
         const result = entries.map((entry) => {
             const answer = { multipleIndex: entry.multipleIndex };
             if (type === 'choice' || type === 'open-choice') {
+                const fnChoice = getChoiceAnswerGenerator(type);
+                Object.assign(answer, fnChoice([entry]));
+            } else if (type === 'bullet'){
                 const fnChoice = getChoiceAnswerGenerator(type);
                 Object.assign(answer, fnChoice([entry]));
             } else if (type === 'file') {

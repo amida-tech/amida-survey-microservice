@@ -1,0 +1,152 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "rds_host": "",
+    "rds_password": "",
+    "build_env": "",
+    "ami_name": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-west-2",
+    "source_ami": "ami-d2c924b2",
+    "instance_type": "t2.medium",
+    "ssh_username": "centos",
+    "ami_name": "{{user `ami_name`}}-{{user `build_env`}} {{timestamp}}",
+    "ssh_private_ip": false,
+    "associate_public_ip_address": true,
+    "ssh_pty" : true,
+    "security_group_id": "sg-dff3bcb9"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "mkdir /tmp/app"
+    ]
+  },{
+    "type": "file",
+    "source": "./config",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./controllers",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./deploy",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./docs",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./export",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./import",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./lib",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./locales",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./models",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./security",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./sql-scripts",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./test",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./app-generator.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./app.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./create-smtp.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./gruntfile.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./i18n.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./index.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./logger.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./package.json",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./Procfile",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./seed.js",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./swagger.json",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./yarn.lock",
+    "destination": "/tmp/app/"
+  },{
+    "type": "file",
+    "source": "./stress_test.py",
+    "destination": "/home/centos/"
+  },{
+    "type": "shell",
+    "inline": [
+      "sleep 30",
+      "sudo yum -y install epel-release",
+      "sudo yum -y install ansible git",
+      "sudo yum -y install perl-Switch perl-DateTime perl-Sys-Syslog perl-LWP-Protocol-https perl-Digest-SHA.x86_64 unzip",
+      "sudo yum clean all"
+    ]
+  },{
+    "type": "ansible-local",
+    "playbook_file": "./deploy/playbook.yml",
+    "role_paths": [
+      "./deploy/roles/nodejs",
+      "./deploy/roles/api",
+      "./deploy/roles/repo-epel",
+      "./deploy/roles/logging",
+      "./deploy/roles/cloudwatch",
+      "./deploy/roles/cron",
+      "./deploy/roles/nginx"
+    ],
+    "extra_arguments": "-vv --extra-vars \"pg_db={{user `pg_db`}} pg_host={{user `pg_host`}} pg_passwd={{user `pg_passwd`}} pg_user={{user `pg_user`}} node_env={{user `build_env`}} jwt_secret={{user `jwt_secret`}} service_name={{user `service_name`}} logstash_host={{user `logstash_host`}}\""
+  }]
+}

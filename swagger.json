@@ -1297,7 +1297,8 @@
                     "in": "query",
                     "description": "Status of survey completion by user",
                     "required": false,
-                    "type": "string"
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
                 }],
                 "responses": {
                     "200": {
@@ -1532,8 +1533,7 @@
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/newUserAssessment"
-                    }
-                }],
+                }}],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
@@ -1705,7 +1705,8 @@
                     "in": "query",
                     "description": "status of assessment completion by user",
                     "required": false,
-                    "type": "string"
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
                 },{
                     "name": "group",
                     "in": "query",
@@ -2416,7 +2417,7 @@
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
                 "date", "year", "month", "day", "choice-ref", "open-choice",
-                "pounds", "zip", "feet-inches", "blood-pressure", "file"
+                "pounds", "zip", "feet-inches", "blood-pressure", "file", "bullet"
             ]
         },
         "questionMeta": {
@@ -2535,6 +2536,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "description": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "questions": {
                     "$ref": "#/definitions/newSurveyQuestions"
                 },
@@ -2548,7 +2553,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "section": {
@@ -2560,6 +2565,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description" :{
                     "type": "string",
                     "minLength": 1
                 },
@@ -2588,6 +2597,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
                     "type": "string",
                     "minLength": 1
                 }

@@ -39,7 +39,8 @@ exports.getAssessmentAnswersStatus = function getAssessmentAnswersStatus(req, re
 
 exports.getAssessmentAnswersList = function getAssessmentAnswersStatus(req, res) {
     const group = _.get(req, 'swagger.params.group.value');
-    const options = group ? { group } : {};
+    const assessmentAnswersStatus = _.get(req, 'swagger.params.assessment-answers-status.value');
+    const options = { group, assessmentAnswersStatus };
     req.models.assessmentAnswer.getAssessmentAnswersList(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
