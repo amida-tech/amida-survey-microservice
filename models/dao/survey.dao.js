@@ -573,12 +573,14 @@ module.exports = class SurveyDAO extends Translatable {
             .then((surveyQuestions) => {
                 surveyQuestions.forEach(({ surveyId, questionId, required }) => {
                     const survey = surveyMap.get(surveyId);
-                    const questions = survey.questions;
-                    const question = { id: questionId, required };
-                    if (questions) {
-                        questions.push(question);
-                    } else {
-                        survey.questions = [question];
+                    if (survey) {
+                        const questions = survey.questions;
+                        const question = { id: questionId, required };
+                        if (questions) {
+                            questions.push(question);
+                        } else {
+                            survey.questions = [question];
+                        }
                     }
                 });
                 return surveys;
@@ -719,50 +721,56 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     exportAppendQuestionLines(r, startBaseObject, baseObject, questions) {
-        questions.forEach(({ id, required, sections }, index) => {
-            const line = { questionId: id, required };
-            if (index === 0) {
-                Object.assign(line, startBaseObject);
-            } else {
-                Object.assign(line, baseObject);
-            }
-            r.push(line);
-            if (sections) {
-                const questionAsParent = Object.assign({
-                    id: baseObject.id, parentQuestionId: id,
-                });
-                this.exportAppendSectionLines(r, questionAsParent, questionAsParent, sections);
-            }
-        });
+        if (questions) {
+            questions.forEach(({ id, required, sections }, index) => {
+                const line = { questionId: id, required };
+                if (index === 0) {
+                    Object.assign(line, startBaseObject);
+                } else {
+                    Object.assign(line, baseObject);
+                }
+                r.push(line);
+                if (sections) {
+                    const questionAsParent = Object.assign({
+                        id: baseObject.id, parentQuestionId: id,
+                    });
+                    this.exportAppendSectionLines(r, questionAsParent, questionAsParent, sections);
+                }
+            });
+        }
     }
 
     exportAppendSectionLines(r, startBaseObject, baseObject, parentSections) {
-        parentSections.forEach(({ id, sections, questions }, index) => {
-            const line = { sectionId: id };
-            if (index === 0) {
-                Object.assign(line, startBaseObject);
-            } else {
-                Object.assign(line, baseObject);
-            }
-            if (questions) {
-                const nextLines = Object.assign({ sectionId: id }, baseObject);
-                this.exportAppendQuestionLines(r, line, nextLines, questions);
-                return;
-            }
-            r.push(line);
-            const sectionAsParent = { id: baseObject.id, parentSectionId: id };
-            this.exportAppendSectionLines(r, sectionAsParent, sectionAsParent, sections);
-        });
+        if (parentSections) {
+            parentSections.forEach(({ id, sections, questions }, index) => {
+                const line = { sectionId: id };
+                if (index === 0) {
+                    Object.assign(line, startBaseObject);
+                } else {
+                    Object.assign(line, baseObject);
+                }
+                if (questions) {
+                    const nextLines = Object.assign({ sectionId: id }, baseObject);
+                    this.exportAppendQuestionLines(r, line, nextLines, questions);
+                    return;
+                }
+                r.push(line);
+                const sectionAsParent = { id: baseObject.id, parentSectionId: id };
+                this.exportAppendSectionLines(r, sectionAsParent, sectionAsParent, sections);
+            });
+        }
     }
 
     exportSurveys() {
         return this.listSurveys({ scope: 'export' })
             .then(surveys => surveys.reduce((r, { id, name, description, questions, sections }) => {
                 const surveyLine = { id, name, description };
+
                 if (questions) {
                     this.exportAppendQuestionLines(r, surveyLine, { id }, questions);
                     return r;
                 }
+
                 this.exportAppendSectionLines(r, surveyLine, { id }, sections);
                 return r;
             }, []))
@@ -841,14 +849,14 @@ module.exports = class SurveyDAO extends Translatable {
                         newRecord[field] = newValue;
                     }
                 });
+
                 ['questionId', 'parentQuestionId'].forEach((field) => {
                     const value = record[field];
                     if (value) {
                         const newValue = questionIdMap[value];
-                        if (!newValue) {
-                            throw new SurveyError('surveyImportMissingQuestionId', value);
+                        if (newValue) {
+                            newRecord[field] = newValue;
                         }
-                        newRecord[field] = newValue;
                     }
                 });
                 return newRecord;
