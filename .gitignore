@@ -28,3 +28,4 @@ migration/sequelize-meta.json
 *.DS_Store
 
 tmp/*
+combined.log

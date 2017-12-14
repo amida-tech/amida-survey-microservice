@@ -33,7 +33,7 @@ module.exports = class SectionDAO extends Base {
         }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, description }) => { // eslint-disable-line max-len
-                const record = { name, surveyId, line, parentIndex, description};
+                const record = { name, surveyId, line, parentIndex, description };
                 if (questionIndex !== undefined) {
                     record.parentQuestionId = surveyQuestionIds[questionIndex];
                 }
