@@ -45,10 +45,17 @@ describe('assessment answer unit', function answerAssessmentUnit() {
     });
 
     const userCount = findMax('user');
-    const questionCount = answerSession.reduce((r, { questions }) => {
-        questions.forEach((question) => {
-            r = Math.max(r, question + 1);
-        });
+    const questionCount = answerSession.reduce((r, { questions, commentQuestions }) => {
+        if (questions) {
+            questions.forEach((question) => {
+                r = Math.max(r, question + 1);
+            });
+        }
+        if (commentQuestions) {
+            commentQuestions.forEach((question) => {
+                r = Math.max(r, question + 1);
+            });
+        }
         return r;
     }, 0);
     const nameCount = findMax('name');
@@ -85,18 +92,22 @@ describe('assessment answer unit', function answerAssessmentUnit() {
 
     const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
-        const { name, stage, user, questions } = answersSpec;
+        const { name, stage, user, questions, commentQuestions } = answersSpec;
         const userIndex = user;
         const questionIndices = questions;
+        const commentIndices = commentQuestions;
         const assessmentIndex = (name * stageCount) + stage;
         if (!assessmentIndexSet.has(assessmentIndex)) {
             assessmentIndexSet.add(assessmentIndex);
             if (stage > 0) {
                 const prevAssessmentIndex = (name * stageCount) + (stage - 1);
-                it(`user ${userIndex} copies assessesment ${name} ${stage}`, tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`,
+                    tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
             }
         }
-        it(`user ${userIndex} creates assessesment ${name} ${stage}`, tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex));
-        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`, tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
+        it(`user ${userIndex} creates assessesment ${name} ${stage}`,
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
+            tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 });

@@ -50,6 +50,9 @@ describe('assessment answer integration', function answerAssessmentIntegration()
 
     const userCount = findMax('user');
     const questionCount = answerSession.reduce((r, { questions }) => {
+        if (!questions) {
+            return r;
+        }
         questions.forEach((question) => {
             r = Math.max(r, question + 1);
         });
@@ -98,6 +101,9 @@ describe('assessment answer integration', function answerAssessmentIntegration()
     const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
         const { name, stage, user, questions } = answersSpec;
+        if (name === 2) {
+            return;
+        }
         const userIndex = user;
         const questionIndices = questions;
         const assessmentIndex = (name * stageCount) + stage;

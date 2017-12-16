@@ -23,7 +23,7 @@ const SpecTests = class AnswerSpecTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
         const generator = this.generator;
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
@@ -33,7 +33,7 @@ const SpecTests = class AnswerSpecTests {
         return function createAssessmentAnswer() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
-            const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices, commentIndices); // eslint-disable-line max-len
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
@@ -44,7 +44,7 @@ const SpecTests = class AnswerSpecTests {
             }
             return models.assessmentAnswer.createAssessmentAnswers(input)
                 .then(() => {
-                    hxAnswer.push(assessmentIndex, surveyIndex, answers, language);
+                    hxAnswer.push(assessmentIndex, surveyIndex, answers, language, userId);
                 })
                 .then(() => answers);
         };
