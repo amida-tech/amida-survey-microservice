@@ -85,13 +85,13 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     createAssessmentAnswersTx(inputRecord, transaction) {
         const { answers, comments } = inputRecord.answers.reduce((r, answer) => {
-            const { questionId, comment } = answer;
-            if (comment) {
-                r.comments.push({ questionId, comment });
+            const { questionId, comments: newComments } = answer;
+            if (newComments) {
+                newComments.forEach(comment => r.comments.push({ questionId, comment }));
             }
             if (answer.answer || answer.answers) {
                 const a = _.cloneDeep(answer);
-                r.answers.push(_.omit(a, 'comment'));
+                r.answers.push(_.omit(a, 'comments'));
             }
             return r;
         }, { answers: [], comments: [] });

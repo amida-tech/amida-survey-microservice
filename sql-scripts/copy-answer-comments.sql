@@ -1,4 +1,4 @@
-INSERT INTO answer_comment (assessment_id, survey_id, user_id, question_id, reason, "text", language_code, created_at, deleted_at)
+INSERT INTO answer_comment (assessment_id, survey_id, user_id, question_id, reason, text, language_code, created_at, deleted_at)
 	SELECT
 		:assessment_id AS assessment_id,
 		a.survey_id AS survey_id,

@@ -13,10 +13,10 @@ const toAnswerRecord = function (answers, language) {
     }, {});
     language = language || 'en';
     answers = answers.reduce((r, answer) => {
-        if (!answer.answer && !answer.answers && answer.comment) {
+        if (!answer.answer && !answer.answers && answer.comments) {
             return r;
         }
-        const commentlessAnswer = _.omit(answer, 'comment');
+        const commentlessAnswer = _.omit(answer, 'comments');
         if (!commentlessAnswer.language) {
             Object.assign(commentlessAnswer, { language });
         }
@@ -51,7 +51,7 @@ module.exports = class AnswerHistory {
             const removed = record.removed;
             answers.forEach((r) => {
                 const questionId = r.questionId;
-                if (!r.answer && !r.answers && r.comment) {
+                if (!r.answer && !r.answers && r.comments) {
                     return;
                 }
                 if (Object.prototype.hasOwnProperty.call(remaining, questionId)) {
@@ -63,16 +63,18 @@ module.exports = class AnswerHistory {
     }
 
     updateComments(userIndex, surveyIndex, answers, language, userId) {
-        answers.forEach(({ questionId, comment }) => {
-            if (comment) {
+        answers.forEach(({ questionId, comments: newComments }) => {
+            if (newComments) {
                 const commentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
                 let comments = this.comments[commentKey];
                 if (!comments) {
                     comments = [];
                     this.comments[commentKey] = comments;
                 }
-                const record = Object.assign({}, comment, { language: language || 'en' }, { userId });
-                comments.push(record);
+                newComments.forEach((comment) => {
+                    const record = Object.assign({}, comment, { language: language || 'en' }, { userId });
+                    comments.push(record);
+                });
                 const key = AnswerHistory.key(userIndex, surveyIndex);
                 let questionsWithComments = this.questionsWithComments[key];
                 if (!questionsWithComments) {

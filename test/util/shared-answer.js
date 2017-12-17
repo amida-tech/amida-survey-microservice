@@ -5,19 +5,29 @@ const _ = require('lodash');
 const generateComment = (function generateCommentFn() {
     let index = -1;
 
-    return function generateCommentInner(questionId) {
+    return function generateCommentInner() {
         index += 1;
         const reason = (index % 2) ? 'agree' : 'disagree';
         const text = `text_${index}`;
-        return { questionId, comment: { reason, text } };
+        return { reason, text };
     };
 }());
 
-const generateAnswerComments = function (hxQuestion, commentIndices) {
-    return commentIndices.map((index) => {
+const generateAnswersWithComments = function (hxQuestion, commentIndices) {
+    const questionLocation = {};
+    return commentIndices.reduce((r, index) => {
         const questionId = hxQuestion.id(index);
-        return generateComment(questionId);
-    });
+        const comment = generateComment();
+        const location = questionLocation[questionId];
+        if (location || location === 0) {
+            r[location].comments.push(comment);
+            return r;
+        }
+        const answerWithComments = { questionId, comments: [comment] };
+        questionLocation[questionId] = r.length;
+        r.push(answerWithComments);
+        return r;
+    }, []);
 };
 
 const generateAnswers = function (generator, survey, hxQuestion, qxIndices, commentIndices) {
@@ -33,7 +43,7 @@ const generateAnswers = function (generator, survey, hxQuestion, qxIndices, comm
         if (!commentIndices) {
             return result;
         }
-        const comments = generateAnswerComments(hxQuestion, commentIndices);
+        const comments = generateAnswersWithComments(hxQuestion, commentIndices);
         const commentsByQxId = _.keyBy(comments, 'questionId');
         const inserted = new Set();
         result.forEach((answer) => {
@@ -53,7 +63,7 @@ const generateAnswers = function (generator, survey, hxQuestion, qxIndices, comm
         return result;
     }
     if (commentIndices) {
-        return generateAnswerComments(hxQuestion, commentIndices);
+        return generateAnswersWithComments(hxQuestion, commentIndices);
     }
     return generator.answerQuestions(survey.questions);
 };

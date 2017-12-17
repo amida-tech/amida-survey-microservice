@@ -34,6 +34,13 @@ const SpecTests = class AnswerSpecTests {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices, commentIndices); // eslint-disable-line max-len
+            const commentCount = answers.reduce((r, answer) => {
+                if (answer.comments) {
+                    return r + answer.comments.length;
+                }
+                return r;
+            }, 0);
+            expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
