@@ -1820,7 +1820,7 @@
                     "200": {
                         "description": "Successful response.",
                         "schema": {
-                            "$ref": "#/definitions/linkedAnswers"
+                            "$ref": "#/definitions/assessmentLinkedAnswers"
                         }
                     },
                     "default": {
@@ -4042,6 +4042,60 @@
             },
             "additionalProperties": false
         },
+        "newComment": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "enum": ["agree", "disagree"]
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentLinkedAnswer": {
+            "type": "object",
+            "required": [
+                "questionId"
+            ],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newComment"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentLinkedAnswers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newAssessmentLinkedAnswer"
+            }
+        },
         "newAssessmentAnswers": {
             "type": "object",
             "required": ["answers"],
@@ -4050,7 +4104,7 @@
                     "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
-                    "$ref": "#/definitions/linkedAnswers"
+                    "$ref": "#/definitions/newAssessmentLinkedAnswers"
                 },
                 "language": {
                     "type": "string",
@@ -4058,6 +4112,72 @@
                 }
             },
             "additionalProperties": false
+        },
+        "comment": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": ["agree", "disagree"]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentLinkedAnswer": {
+            "type": "object",
+            "required": [
+                "questionId"
+            ],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/comment"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentLinkedAnswers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentLinkedAnswer"
+            }
         },
         "assessmentAnswers": {
             "type": "object",
@@ -4067,7 +4187,7 @@
                     "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
-                    "$ref": "#/definitions/linkedAnswers"
+                    "$ref": "#/definitions/assessmentLinkedAnswers"
                 }
             },
             "additionalProperties": false

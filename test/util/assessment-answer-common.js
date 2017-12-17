@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -9,6 +11,38 @@ const AnswerHistory = require('./answer-history');
 const sharedAnswer = require('./shared-answer');
 
 const expect = chai.expect;
+
+const findMax = function (answerSession, property) {
+    return 1 + answerSession.reduce((r, q) => {
+        r = Math.max(r, q[property]);
+        return r;
+    }, 0);
+};
+
+const findQuestionCount = function (answerSession) {
+    return answerSession.reduce((r, { questions, commentQuestions }) => {
+        if (questions) {
+            questions.forEach((question) => {
+                r = Math.max(r, question + 1);
+            });
+        }
+        if (commentQuestions) {
+            commentQuestions.forEach((question) => {
+                r = Math.max(r, question + 1);
+            });
+        }
+        return r;
+    }, 0);
+};
+
+const findAnswerCommentsCount = function (answers) {
+    return answers.reduce((r, answer) => {
+        if (answer.comments) {
+            return r + answer.comments.length;
+        }
+        return r;
+    }, 0);
+};
 
 const SpecTests = class AnswerSpecTests {
     constructor(options) {
@@ -34,12 +68,7 @@ const SpecTests = class AnswerSpecTests {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices, commentIndices); // eslint-disable-line max-len
-            const commentCount = answers.reduce((r, answer) => {
-                if (answer.comments) {
-                    return r + answer.comments.length;
-                }
-                return r;
-            }, 0);
+            const commentCount = findAnswerCommentsCount(answers);
             expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
@@ -243,25 +272,29 @@ const IntegrationTests = class AnswerIntegrationTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
         const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
         const hxAssessment = this.hxAssessment;
+        const hxUser = this.hxUser;
         return function answerSurvey() {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = sharedAnswer.generateAnswers(generator, survey, hxQuestion, qxIndices, commentIndices); // eslint-disable-line max-len
+            const commentCount = findAnswerCommentsCount(answers);
+            expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const input = { answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
             const language = generator.nextLanguage();
             if (language) {
                 input.language = language;
             }
+            const userId = hxUser.id(userIndex);
             return surveySuperTest.post(`/assessment-answers/${assessmentId}`, input, 204)
                 .then(() => {
-                    hxAnswer.push(assessmentIndex, surveyIndex, answers, language);
+                    hxAnswer.push(assessmentIndex, surveyIndex, answers, language, userId);
                 })
                 .then(() => answers);
         };
@@ -432,4 +465,6 @@ const IntegrationTests = class AnswerIntegrationTests {
 module.exports = {
     SpecTests,
     IntegrationTests,
+    findMax,
+    findQuestionCount,
 };

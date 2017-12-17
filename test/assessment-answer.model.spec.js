@@ -22,13 +22,6 @@ const answerSession = require('./fixtures/answer-session/assessment-0');
 
 const expect = chai.expect;
 
-const findMax = function findMax(property) {
-    return 1 + answerSession.reduce((r, q) => {
-        r = Math.max(r, q[property]);
-        return r;
-    }, 0);
-};
-
 describe('assessment answer unit', function answerAssessmentUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
@@ -44,22 +37,10 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment,
     });
 
-    const userCount = findMax('user');
-    const questionCount = answerSession.reduce((r, { questions, commentQuestions }) => {
-        if (questions) {
-            questions.forEach((question) => {
-                r = Math.max(r, question + 1);
-            });
-        }
-        if (commentQuestions) {
-            commentQuestions.forEach((question) => {
-                r = Math.max(r, question + 1);
-            });
-        }
-        return r;
-    }, 0);
-    const nameCount = findMax('name');
-    const stageCount = findMax('stage');
+    const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
+    const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
+    const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
+    const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
 
     before(shared.setUpFn());
 
