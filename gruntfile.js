@@ -62,7 +62,7 @@ module.exports = function gruntmain(grunt) {
         ],
         eslint: {
             options: {
-                configFile: '.eslintrc.js',
+                configFile: '.eslintrc',
                 fix: true,
             },
             target: [
@@ -72,7 +72,7 @@ module.exports = function gruntmain(grunt) {
                 'gruntfile.js',
                 'index.js',
                 'app.js',
-                '.eslintrc.js',
+                '.eslintrc',
                 'test/.eslintrc.js',
             ],
         },
