@@ -8,6 +8,9 @@ const generateComment = (function generateCommentFn() {
     return function generateCommentInner() {
         index += 1;
         const reason = (index % 2) ? 'agree' : 'disagree';
+        if (index % 4 === 3) {
+            return { reason };
+        }
         const text = `text_${index}`;
         return { reason, text };
     };

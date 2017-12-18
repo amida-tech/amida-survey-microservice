@@ -18,6 +18,7 @@ module.exports = class AnswerCommentDAO extends Base {
         const attributes = ['id', 'userId', 'questionId', 'reason', 'text', 'language'];
         const where = { assessmentId };
         return this.db.AnswerComment.findAll({ where, attributes, raw: true })
+            .then(records => records.map(record => _.omitBy(record, _.isNil)))
             .then((records) => {
                 const { result } = records.reduce((r, record) => {
                     const questionId = record.questionId;
