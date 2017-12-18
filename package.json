@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node --harmony index.js",
     "test": "NODE_ENV=test mocha test/*.js test/import-export/*.js --bail",
+    "beautify": "esw -c .eslintrc *.js ./**/*.js --color --fix",
     "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
     "coveragehtml": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
   },
@@ -51,6 +52,7 @@
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-import": "^2.2.0",
+    "eslint-watch": "2.1.14",
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-env": "^0.4.4",
@@ -67,5 +69,8 @@
     "supertest-session": "^3.0.0",
     "unzipper": "^0.8.9",
     "winston-spy": "^0.2.0"
+  },
+  "engines": {
+  	"node": ">=8.9.0"
   }
 }
