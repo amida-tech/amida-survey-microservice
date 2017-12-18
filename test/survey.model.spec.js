@@ -574,10 +574,10 @@ describe('survey unit', function surveyUnit() {
 
 
     it('error: create survey with description and no name', () => {
-        let survey = generator.surveyGenerator.newSurvey();
-        survey.sections = [{questions:survey.questions, description:"description No Name"}]
+        const survey = generator.surveyGenerator.newSurvey();
+        survey.sections = [{ questions: survey.questions, description: 'description No Name' }];
         delete survey.questions;
-        return models.survey.createSurvey(survey).then(shared.throwingHandler, shared.expectedErrorHandler('Section Name required for description'))
+        return models.survey.createSurvey(survey).then(shared.throwingHandler, shared.expectedErrorHandler('Section Name required for description'));
     });
 
     it('Replace with a survey with no questions', () => {
