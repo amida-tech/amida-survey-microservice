@@ -1829,6 +1829,46 @@
                 }
             }
         },
+        "/assessment-answers/csv/{id}" : {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters":[{
+                "description": "survey Id that of the assessments' anwers that will be returned",
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type":"integer"
+            }, {
+                "description": "questionId filter on the assessments' anwers that will be returned",
+                "name": "question-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            },
+            {
+                "name": "section-id",
+                "description": "sectionId filter on the assessments' anwers that will be returned",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            }],
+            "get": {
+                "summary":"currently just gets assessments with the specified survey id(incomplete)",
+                "operationId":"exportAssessmentAnswers",
+                "produces": ["text/csv"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+
+            }
+        },
         "/assessment-answers/{id}/status": {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters": [{
@@ -1843,7 +1883,6 @@
                 "responses": {
                     "200": {
                         "description": "Successful response.",
-                        "description": "Successful response",
                         "schema": {
                             "type": "object",
                             "required": ["status"],

@@ -6,7 +6,7 @@ const Base = require('./base');
 const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
-
+const CSVConverterExport = require('../../export/csv-converter');
 const copySqlQuery = queryrize.readQuerySync('copy-answers.sql');
 
 module.exports = class AnswerAssessmentDAO extends Base {
@@ -153,5 +153,31 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 }
                 return assessments;
             });
+    }
+
+    exportAssessmentAnswers(options) {
+        const surveyId = options.surveyId;
+        const sectionId = options.sectionId;
+        const questionId = options.questionId;
+        const csvConverter = new CSVConverterExport();
+        if(sectionId && questionId) {
+            surveyError.reject('surveyBothQuestionsSectionsSpecified');
+        }
+        return this.db.AssessmentSurvey.findAll({
+            where: { survey_id: surveyId},
+            raw:true,
+            attributes: ['assessmentId', 'surveyId']
+        }).then(assessments => {
+            const assessmentIds = assessments.map(r => r.assessmentId)
+            const options = {surveyId, assessmentIds, questionIds: [questionId], scope: 'export'};
+            return this.answer.listAnswers(options)
+                .then(answers => {
+                    if(!answers.length) {
+                    return SurveyError.reject('surveyNotFound');
+                    }
+                    return csvConverter.dataToCSV(answers);
+                })
+
+        });
     }
 };

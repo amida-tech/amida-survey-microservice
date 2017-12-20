@@ -55,3 +55,19 @@ exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
+
+exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
+    const surveyId = _.get(req, 'swagger.params.id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
+    const sectionId = _.get(req, 'swagger.params.section-id.value');
+    const options = {surveyId, questionId, sectionId}
+    req.models.assessmentAnswer.exportAssessmentAnswers(options)
+        .then((result) => {
+            console.log("resulting csv")
+            console.log(result)
+            res.type('text/csv');
+            res.status(200).send(result)
+
+        })
+        .catch(shared.handleError(res));
+};

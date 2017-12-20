@@ -338,7 +338,7 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, assessmentId, history, ids, userIds }) {
+    listAnswers({ userId, userIds, surveyId, surveyIds,assessmentId, assessmentIds, scope, history, ids, questionIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -359,6 +359,15 @@ module.exports = class AnswerDAO extends Base {
         if (assessmentId) {
             where.assessmentId = assessmentId;
         }
+
+        if(assessmentIds) {
+            where.assessment_id = {$in: assessmentIds}
+        }
+
+        if(questionIds) {
+            where.question_id = {$in: questionIds}
+        }
+
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
@@ -372,12 +381,21 @@ module.exports = class AnswerDAO extends Base {
         if (userIds || assessmentId) {
             attributes.push('userId');
         }
+        if(assessmentIds && surveyId) {
+            attributes.push('userId', 'assessmentId')
+        }
+
+        if(!(assessmentId || assessmentIds)) {
+            where.assessment_id = null;
+        }
+
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
         ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then((result) => {
+
                 result.forEach((r) => {
                     if (r['question.type'] === 'choices') {
                         r.choiceType = r['questionChoice.type'];
@@ -389,10 +407,15 @@ module.exports = class AnswerDAO extends Base {
             .then((result) => {
                 if (scope === 'export') {
                     return result.map((p) => {
+
                         const r = { surveyId: p.surveyId };
-                        if (userIds) {
+                        if(assessmentId || assessmentIds) {
+                            r.assessmentId = p.assessmentId;
+                        }
+                        if (attributes.includes('userId')) {
                             r.userId = p.userId;
                         }
+
                         r.questionId = p['question.id'];
                         r.questionType = p['question.type'];
                         if (p.questionChoiceId) {
@@ -404,6 +427,7 @@ module.exports = class AnswerDAO extends Base {
                         if (p.choiceType) {
                             r.choiceType = p.choiceType;
                         }
+
                         return r;
                     });
                 }
