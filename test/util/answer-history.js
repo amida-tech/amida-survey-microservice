@@ -12,12 +12,17 @@ const toAnswerRecord = function (answers, language) {
         return r;
     }, {});
     language = language || 'en';
-    answers = answers.map((answer) => {
-        if (answer.language) {
-            return answer;
+    answers = answers.reduce((r, answer) => {
+        if (!answer.answer && !answer.answers && answer.comments) {
+            return r;
         }
-        return Object.assign({ language }, answer);
-    });
+        const commentlessAnswer = _.omit(answer, 'comments');
+        if (!commentlessAnswer.language) {
+            Object.assign(commentlessAnswer, { language });
+        }
+        r.push(commentlessAnswer);
+        return r;
+    }, []);
     return { remaining, answers, removed: {} };
 };
 
@@ -26,10 +31,16 @@ module.exports = class AnswerHistory {
         this.historyIndexMap = new Map();
         this.store = [];
         this.serverStore = [];
+        this.comments = {};
+        this.questionsWithComments = {};
     }
 
     static key(userIndex, surveyIndex) {
         return `${userIndex}-${surveyIndex}`;
+    }
+
+    static commentKey(userIndex, surveyIndex, questionId) {
+        return `${userIndex}-${surveyIndex}-${questionId}`;
     }
 
     updateRecords(userIndex, surveyIndex, answers) {
@@ -38,7 +49,11 @@ module.exports = class AnswerHistory {
         records.forEach((record) => {
             const remaining = record.remaining;
             const removed = record.removed;
-            answers.forEach(({ questionId }) => {
+            answers.forEach((r) => {
+                const questionId = r.questionId;
+                if (!r.answer && !r.answers && r.comments) {
+                    return;
+                }
                 if (Object.prototype.hasOwnProperty.call(remaining, questionId)) {
                     delete remaining[questionId];
                     removed[questionId] = timeIndex;
@@ -47,7 +62,31 @@ module.exports = class AnswerHistory {
         });
     }
 
-    push(userIndex, surveyIndex, answers, language) {
+    updateComments(userIndex, surveyIndex, answers, language, userId) {
+        answers.forEach(({ questionId, comments: newComments }) => {
+            if (newComments) {
+                const commentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+                let comments = this.comments[commentKey];
+                if (!comments) {
+                    comments = [];
+                    this.comments[commentKey] = comments;
+                }
+                newComments.forEach((comment) => {
+                    const record = Object.assign({}, comment, { language: language || 'en' }, { userId });
+                    comments.push(record);
+                });
+                const key = AnswerHistory.key(userIndex, surveyIndex);
+                let questionsWithComments = this.questionsWithComments[key];
+                if (!questionsWithComments) {
+                    questionsWithComments = new Set();
+                    this.questionsWithComments[key] = questionsWithComments;
+                }
+                questionsWithComments.add(questionId);
+            }
+        });
+    }
+
+    push(userIndex, surveyIndex, answers, language, userId) {
         this.updateRecords(userIndex, surveyIndex, answers);
         const key = AnswerHistory.key(userIndex, surveyIndex);
         let indexHistory = this.historyIndexMap.get(key);
@@ -61,6 +100,7 @@ module.exports = class AnswerHistory {
         this.store.push(value);
         this.serverStore.push(null);
         indexHistory.push(index);
+        this.updateComments(userIndex, surveyIndex, answers, language, userId);
     }
 
     getLastIndex(userIndex, surveyIndex) {
@@ -118,7 +158,7 @@ module.exports = class AnswerHistory {
 
     expectedAnswers(userIndex, surveyIndex) {
         const records = this.getAll(userIndex, surveyIndex);
-        const result = records.reduce((r, { remaining, answers }) => {
+        const preresult = records.reduce((r, { remaining, answers }) => {
             if (!remaining) {
                 r.push(...answers);
                 return r;
@@ -131,6 +171,29 @@ module.exports = class AnswerHistory {
             });
             return r;
         }, []);
+        const insertedComment = new Set();
+        const result = preresult.map((answer) => {
+            const questionId = answer.questionId;
+            const key = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+            const comments = this.comments[key];
+            if (comments) {
+                insertedComment.add(questionId);
+                return Object.assign({ comments }, answer);
+            }
+            return answer;
+        });
+        const key = AnswerHistory.key(userIndex, surveyIndex);
+        const questionsWithComments = this.questionsWithComments[key];
+        if (questionsWithComments) {
+            questionsWithComments.forEach((questionId) => {
+                if (!insertedComment.has(questionId)) {
+                    const commentKey = `${key}-${questionId}`;
+                    const comments = this.comments[commentKey];
+                    const language = comments[comments.length - 1].language;
+                    result.push({ questionId, comments, language });
+                }
+            });
+        }
         return result;
     }
 
@@ -154,6 +217,16 @@ module.exports = class AnswerHistory {
 
     copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex) {
         const answers = this.expectedAnswers(prevAssessmentIndex, surveyIndex);
-        this.push(userIndex, surveyIndex, answers);
+        const commentlessAnswers = answers.map(answer => _.omit(answer, 'comments'));
+        this.push(userIndex, surveyIndex, commentlessAnswers);
+        const prevKey = AnswerHistory.key(prevAssessmentIndex, surveyIndex);
+        const questionsWithComments = this.questionsWithComments[prevKey];
+        if (questionsWithComments) {
+            const currentKey = AnswerHistory.key(userIndex, surveyIndex);
+            this.questionsWithComments[currentKey] = questionsWithComments;
+            questionsWithComments.forEach((questionId) => {
+                this.comments[`${currentKey}-${questionId}`] = this.comments[`${prevKey}-${questionId}`];
+            });
+        }
     }
 };

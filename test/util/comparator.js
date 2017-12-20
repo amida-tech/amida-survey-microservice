@@ -233,6 +233,14 @@ const comparator = {
                 delete fileValue.content;
                 fileValue.id = actual[index].answer.fileValue.id;
             }
+            if (answer.comments) {
+                answer.comments.forEach((r, cindex) => {
+                    const id = _.get(actual, `${index}.comments.${cindex}.id`);
+                    if (id) {
+                        r.id = id;
+                    }
+                });
+            }
         });
         expect(actual).to.deep.equal(expected);
     },
