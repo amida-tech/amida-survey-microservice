@@ -10,10 +10,10 @@ module.exports = new (winston.Logger)({
             json: true,
             colorize: true,
         }),
-        new winston.transports.File({
-          filename: 'combined.log',
-          level: 'info'
-        }),
+        //new winston.transports.File({
+        //    filename: 'combined.log',
+        //    level: 'info',
+        //}),
     ],
     level: config.logging.level,
 });

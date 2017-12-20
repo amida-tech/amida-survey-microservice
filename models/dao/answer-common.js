@@ -75,8 +75,8 @@ const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
             choices = _.sortBy(choices, 'id');
             return { choices };
         },
-        bullet(entries){
-            return {textValue: entries[0].value};
+        bullet(entries) {
+            return { textValue: entries[0].value };
         },
     };
 
@@ -94,7 +94,7 @@ const generateAnswer = function (type, entries, multiple) {
             if (type === 'choice' || type === 'open-choice') {
                 const fnChoice = getChoiceAnswerGenerator(type);
                 Object.assign(answer, fnChoice([entry]));
-            } else if (type === 'bullet'){
+            } else if (type === 'bullet') {
                 const fnChoice = getChoiceAnswerGenerator(type);
                 Object.assign(answer, fnChoice([entry]));
             } else if (type === 'file') {

@@ -6,8 +6,35 @@ const Base = require('./base');
 const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+
 const CSVConverterExport = require('../../export/csv-converter');
-const copySqlQuery = queryrize.readQuerySync('copy-answers.sql');
+
+const copySql = queryrize.readQuerySync('copy-answers.sql');
+const copyCommentsSql = queryrize.readQuerySync('copy-answer-comments.sql');
+
+const mergeAnswerComments = function (answers, comments) {
+    const commentsMap = _.keyBy(comments, 'questionId');
+    const insertedComments = new Set();
+    answers.forEach((answer) => {
+        const questionId = answer.questionId;
+        const questionComments = commentsMap[questionId];
+        if (questionComments) {
+            insertedComments.add(questionId);
+            Object.assign(answer, questionComments);
+        }
+    });
+    comments.forEach((comment) => {
+        const questionId = comment.questionId;
+        if (!insertedComments.has(questionId)) {
+            const ccomments = comment.comments;
+            const language = ccomments[ccomments.length - 1].language;
+            const r = Object.assign({ language }, comment);
+            answers.push(r);
+        }
+    });
+    return answers;
+};
+
 
 module.exports = class AnswerAssessmentDAO extends Base {
     constructor(db, dependencies) {
@@ -60,21 +87,45 @@ module.exports = class AnswerAssessmentDAO extends Base {
     }
 
     createAssessmentAnswersTx(inputRecord, transaction) {
-        const answers = _.cloneDeep(inputRecord.answers);
+        const { answers, comments } = inputRecord.answers.reduce((r, answer) => {
+            const { questionId, comments: newComments } = answer;
+            if (newComments) {
+                newComments.forEach(comment => r.comments.push({ questionId, comment }));
+            }
+            if (answer.answer || answer.answers) {
+                const a = _.cloneDeep(answer);
+                r.answers.push(_.omit(a, 'comments'));
+            }
+            return r;
+        }, { answers: [], comments: [] });
         const status = inputRecord.status || 'completed';
         const language = inputRecord.language || 'en';
         return this.getMasterId(inputRecord, transaction)
             .then(masterId => this.answer.validateCreate(masterId, answers, status, transaction)
                 .then(() => this.updateStatus(inputRecord.assessmentId, status, transaction))
                 .then(() => {
-                    const ids = _.map(answers, 'questionId');
-                    const where = { questionId: { $in: ids } };
-                    where.assessmentId = masterId.assessmentId;
-                    return this.db.Answer.destroy({ where, transaction });
+                    if (answers.length) {
+                        const ids = _.map(answers, 'questionId');
+                        const where = { questionId: { $in: ids } };
+                        where.assessmentId = masterId.assessmentId;
+                        return this.db.Answer.destroy({ where, transaction });
+                    }
+                    return null;
                 })
                 .then(() => {
-                    const payload = { masterId, answers, language };
-                    return this.answer.prepareAndFileAnswer(payload, transaction);
+                    if (comments.length) {
+                        const ac = this.answerComment;
+                        const common = Object.assign({ language }, masterId);
+                        return ac.createAnswerCommentsTx(common, comments, transaction);
+                    }
+                    return null;
+                })
+                .then(() => {
+                    if (answers.length) {
+                        const payload = { masterId, answers, language };
+                        return this.answer.prepareAndFileAnswer(payload, transaction);
+                    }
+                    return null;
                 }));
     }
 
@@ -83,13 +134,27 @@ module.exports = class AnswerAssessmentDAO extends Base {
     }
 
     getAssessmentAnswers({ assessmentId }) {
-        return this.answer.listAnswers({ scope: 'assessment', assessmentId })
+        return this.getAssessmentAnswersOnly({ assessmentId })
             .then(answers => this.getAssessmentAnswersStatus({ assessmentId })
                 .then(status => ({ status, answers })));
     }
 
     getAssessmentAnswersOnly({ assessmentId }) {
-        return this.answer.listAnswers({ scope: 'assessment', assessmentId });
+        return this.answer.listAnswers({ scope: 'assessment', assessmentId })
+            .then(answers => this.answerComment.listAnswerComments({ assessmentId })
+                .then((comments) => {
+                    if (answers && answers.length) {
+                        if (comments.length) {
+                            return mergeAnswerComments(answers, comments);
+                        }
+                        return answers;
+                    }
+                    const commentsLength = comments.length;
+                    if (commentsLength) {
+                        return comments;
+                    }
+                    return answers;
+                }));
     }
 
     copyAssessmentAnswersTx(inputRecord, transaction) {
@@ -104,7 +169,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         where.userId = masterId.userId;
                         where.surveyId = masterId.surveyId;
                     }
-                    return this.db.Answer.destroy({ where, transaction });
+                    return this.db.Answer.destroy({ where, transaction })
+                        .then(() => this.db.AnswerComment.destroy({ where, transaction }));
                 })
                 .then(() => {
                     const { userId, assessmentId, prevAssessmentId } = inputRecord;
@@ -113,7 +179,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         assessment_id: assessmentId,
                         prev_assessment_id: prevAssessmentId,
                     };
-                    return this.query(copySqlQuery, params, transaction);
+                    return this.query(copySql, params, transaction)
+                        .then(() => this.query(copyCommentsSql, params, transaction));
                 }));
     }
 

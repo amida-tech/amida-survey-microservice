@@ -22,13 +22,6 @@ const answerSession = require('./fixtures/answer-session/assessment-0');
 
 const expect = chai.expect;
 
-const findMax = function findMax(property) {
-    return 1 + answerSession.reduce((r, q) => {
-        r = Math.max(r, q[property]);
-        return r;
-    }, 0);
-};
-
 describe('assessment answer unit', function answerAssessmentUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
@@ -44,15 +37,10 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment,
     });
 
-    const userCount = findMax('user');
-    const questionCount = answerSession.reduce((r, { questions }) => {
-        questions.forEach((question) => {
-            r = Math.max(r, question + 1);
-        });
-        return r;
-    }, 0);
-    const nameCount = findMax('name');
-    const stageCount = findMax('stage');
+    const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
+    const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
+    const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
+    const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
 
     before(shared.setUpFn());
 
@@ -85,18 +73,22 @@ describe('assessment answer unit', function answerAssessmentUnit() {
 
     const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
-        const { name, stage, user, questions } = answersSpec;
+        const { name, stage, user, questions, commentQuestions } = answersSpec;
         const userIndex = user;
         const questionIndices = questions;
+        const commentIndices = commentQuestions;
         const assessmentIndex = (name * stageCount) + stage;
         if (!assessmentIndexSet.has(assessmentIndex)) {
             assessmentIndexSet.add(assessmentIndex);
             if (stage > 0) {
                 const prevAssessmentIndex = (name * stageCount) + (stage - 1);
-                it(`user ${userIndex} copies assessesment ${name} ${stage}`, tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`,
+                    tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
             }
         }
-        it(`user ${userIndex} creates assessesment ${name} ${stage}`, tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex));
-        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`, tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
+        it(`user ${userIndex} creates assessesment ${name} ${stage}`,
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
+            tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 });
