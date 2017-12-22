@@ -1694,7 +1694,7 @@
                 }
             }
         },
-       "/assessment-answers": {
+        "/assessment-answers": {
             "x-swagger-router-controller": "assessment-answer.controller",
             "get": {
                 "summary": "Lists assessment answers",
@@ -2108,6 +2108,92 @@
                         "description": "Successful response",
                         "schema": {
                             "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/links": {
+            "x-swagger-router-controller": "link.controller",
+            "post": {
+                "summary": "Stores link and meta-data in database",
+                "operationId": "createLink",
+                "parameters": [{
+                    "name": "url",
+                    "in": "formData",
+                    "description": "URL to be stored in database",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "displayType",
+                    "in": "formData",
+                    "description": "Meta-data field names",
+                    "required": false,
+                    "type":"string",
+                    "enum":["title_author", "physician_scanType"]
+                }, {
+                    "name": "field1",
+                    "in": "formData",
+                    "description": "Content of first meta-data field, e.g. title, physician",
+                    "required": false,
+                    "type": "string"
+                }, {
+                    "name": "field2",
+                    "in": "formData",
+                    "description": "Content of second meta-data field, e.g. author, type of scan",
+                    "required": false,
+                    "type": "string"
+                }, {
+                    "name": "sourceDate",
+                    "in": "formData",
+                    "description": "Date item was sourced",
+                    "required": false,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all links",
+                "operationId": "listLinks",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/links"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/links/{id}": {
+            "x-swagger-router-controller": "link.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Get link URL and meta-data",
+                "operationId": "getLink",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "link"
                         }
                     },
                     "default": {

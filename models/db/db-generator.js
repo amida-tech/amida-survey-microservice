@@ -38,6 +38,7 @@ const userAudit = require('./user-audit.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const file = require('./file.model');
+const link = require('./link.model');
 const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
 
@@ -107,6 +108,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const File = file(sequelize, Sequelize, schema);
+    const Link = link(sequelize, Sequelize, schema);
     const SmtpType = smtpType(sequelize, Sequelize, schema);
     const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
 
@@ -201,6 +203,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Filter,
         FilterAnswer,
         File,
+        Link,
         AssessmentAnswer,
         SmtpType,
         schema,
