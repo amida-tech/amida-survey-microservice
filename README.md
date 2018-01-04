@@ -292,3 +292,13 @@ Be sure to have your postgres host running and replace the `pg_host` value in th
 7. To get SNS Alarm notifications be sure that you are subscribed to SNS topic arn:aws:sns:us-west-2:844297601570:ops_team_alerts and you have confirmed subscription
 
 Further details can be found in the `deploy` directory.
+
+
+### Docker deployment
+Docker Compose:
+```sh
+docker-compose up
+```
+
+### Kubernetes Deployment
+See the [paper](https://paper.dropbox.com/doc/Amida-Microservices-Kubernetes-Deployment-Xsz32zX8nwT9qctitGNVc) write-up for instructions on how to deploy with Kubernetes. The `kubernetes.yml` file contains the deployment definition for the project.
