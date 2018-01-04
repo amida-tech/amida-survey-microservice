@@ -46,6 +46,14 @@ describe('survey import-export unit', function surveyImportExportUnit() {
     [3, 11].forEach((index) => {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
+    const createAndGetEmptySurvey = function (name) {
+        models.survey.createSurvey({ name }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
+            const survey = { id, name, questions: [], authorId: 1, status: 'published' };
+            expect(emptySurvey).to.deep.equal(survey);
+            hxSurvey.push(emptySurvey, { id });
+        }));
+    };
+    it('create survey without questions', () => { createAndGetEmptySurvey('Empty Survey'); });
 
     it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 

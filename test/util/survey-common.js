@@ -256,6 +256,7 @@ const SpecTests = class SurveySpecTests {
                     }
                     const expected = hxSurvey.listServersByScope(options);
                     expect(surveys.length).to.equal(expected.length);
+
                     surveys.forEach((survey, index) => {
                         expect(survey).to.deep.equal(expected[index]);
                     });

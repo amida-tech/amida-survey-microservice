@@ -1,0 +1,6 @@
+---
+- name: Replace Crontab File
+  become: true
+  template:
+    src: crontab
+    dest: /etc/crontab

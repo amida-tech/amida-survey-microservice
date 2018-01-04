@@ -41,6 +41,8 @@ const file = require('./file.model');
 const link = require('./link.model');
 const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
+const answerCommentReason = require('./answer-comment-reason.model');
+const answerComment = require('./answer-comment.model');
 
 const questionBelongsTo = function () {
     const result = {
@@ -111,6 +113,8 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Link = link(sequelize, Sequelize, schema);
     const SmtpType = smtpType(sequelize, Sequelize, schema);
     const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
+    const AnswerCommentReason = answerCommentReason(sequelize, Sequelize, schema);
+    const AnswerComment = answerComment(sequelize, Sequelize, schema);
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
@@ -206,6 +210,8 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Link,
         AssessmentAnswer,
         SmtpType,
+        AnswerCommentReason,
+        AnswerComment,
         schema,
     };
 };

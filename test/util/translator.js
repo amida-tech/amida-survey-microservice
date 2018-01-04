@@ -37,12 +37,12 @@ const translator = {
     },
     translateSurveySections(surveySections, language, result = []) {
         surveySections.forEach(({ id, name, description, sections }) => {
-            let translated = {
+            const translated = {
                 id,
                 name: this.translate(name, language),
             };
-            if(description){
-                let transDescription = this.translate(description, language);
+            if (description) {
+                const transDescription = this.translate(description, language);
                 translated.description = transDescription;
             }
             result.push(translated);

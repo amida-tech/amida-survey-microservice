@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --harmony index.js",
-    "test": "NODE_ENV=test mocha test/*.js --bail",
+    "test": "NODE_ENV=test mocha test/*.js test/import-export/*.js --bail",
     "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
     "coveragehtml": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
   },
@@ -27,7 +27,7 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.0",
     "csvtojson": "^1.1.2",
-    "dotenv": "^2.0.0",
+    "dotenv": "^4.0.0",
     "express": "^4.14.0",
     "express-winston": "^2.0.0",
     "i18n": "^0.8.3",

@@ -266,3 +266,30 @@ Migration uses the `.env` file in the root directory.  Each run creates/updates 
 - [Supertest](https://github.com/visionmedia/supertest)
 - [Babel](http://babeljs.io/)
 - [Swagger](http://swagger.io/)
+
+## Deployment
+
+### Deployment to AWS with Packer and Terraform
+You will need to install [pakcer](https://www.packer.io/) and [terraform](https://www.terraform.io/) installed on your local machine.
+Be sure to have your postgres host running and replace the `pg_host` value in the command below with the postgres host address. The command in `1.` below will allow you to build the AMI with default settings. You may also need to include additional environment variables in `./deploy/roles/api/templates/env.service.j2` before build.
+1. First validate the AMI with a command similar to ```packer validate \
+    -var 'aws_access_key=my-aws-access-key' \
+    -var 'aws_secret_key=my-aws-secret-key' \
+    -var 'build_env=development' \
+		-var 'logstash_host=logstash.amida.com' \
+    -var 'service_name=amida_survey_microservice' \
+    -var 'ami_name=api-survey-service-boilerplate' \
+    -var 'node_env=development' \
+    -var 'jwt_secret=my-0-jwt-8-secret' \
+    -var 'pg_host=amid-survey-packer-test.czgzedfwgy7z.us-west-2.rds.amazonaws.com' \
+    -var 'pg_db=amida_survey' \
+    -var 'pg_user=amida_survey' \
+    -var 'pg_passwd=amida_survey' template.json```
+2. If the validation from `1.` above succeeds, build the image by running the same command but replacing `validate` with `build`
+3. In the AWS console you can test the build before deployment. To do this, launch an EC2 instance with the built image and visit the health-check endpoint at <host_address>:4000/api/health-check. Be sure to launch the instance with security groups that allow http access on the app port (currently 4000) and access from Postgres port of the data base. You should see an "OK" response.
+4. Enter `aws_access_key` and `aws_secret_key` values in the vars.tf file
+5. run `terraform plan` to validate config
+6. run `terraform apply` to deploy
+7. To get SNS Alarm notifications be sure that you are subscribed to SNS topic arn:aws:sns:us-west-2:844297601570:ops_team_alerts and you have confirmed subscription
+
+Further details can be found in the `deploy` directory.

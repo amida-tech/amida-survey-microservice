@@ -33,7 +33,7 @@ module.exports = class SectionDAO extends Base {
         }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, description }) => { // eslint-disable-line max-len
-                const record = { name, surveyId, line, parentIndex, description};
+                const record = { name, surveyId, line, parentIndex, description };
                 if (questionIndex !== undefined) {
                     record.parentQuestionId = surveyQuestionIds[questionIndex];
                 }
@@ -188,34 +188,50 @@ module.exports = class SectionDAO extends Base {
                                     currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id)); // eslint-disable-line max-len
                                 }
                                 currentSurveyId = surveySection.surveyId;
-                                currentSurvey = surveyMap.get(currentSurveyId);
-                                currentSurvey.questions.forEach((question) => {
-                                    questionMap.set(question.id, question);
-                                });
-                            }
-                            const section = { id: surveySection.sectionId };
-                            if (surveySection.parentId === null && surveySection.parentQuestionId === null) { // eslint-disable-line max-len
-                                if (!currentSurvey.sections) {
-                                    currentSurvey.sections = [section];
-                                    delete currentSurvey.questions;
-                                } else {
-                                    currentSurvey.sections.push(section);
+                                if (surveyMap.get(currentSurveyId)) {
+                                    currentSurvey = surveyMap.get(currentSurveyId);
+                                    currentSurvey.questions.forEach((question) => {
+                                        questionMap.set(question.id, question);
+                                    });
                                 }
                             }
-                            const questionIds = sectionQuestionMap.get(surveySection.id);
-                            if (questionIds && questionIds.length) {
-                                section.questions = questionIds.map(id => questionMap.get(id));
-                                questionIds.forEach(id => sectionQuestionSet.add(id));
-                                questionIds.forEach(id => sectionQuestionSet.add(id));
-                            } else {
-                                section.sections = [];
+
+                            if (surveyMap.get(currentSurveyId)) {
+                                const section = { id: surveySection.sectionId };
+
+                                if (!surveySection.parentId && !surveySection.parentQuestionId) { // eslint-disable-line max-len
+                                    if (currentSurvey && !currentSurvey.sections) {
+                                        currentSurvey.sections = [section];
+                                        delete currentSurvey.questions;
+                                    } else {
+                                        currentSurvey.sections.push(section);
+                                    }
+                                }
+
+                                const questionIds = sectionQuestionMap.get(surveySection.id);
+                                if (questionIds && questionIds.length) {
+                                    section.questions = questionIds.map(id => questionMap.get(id));
+                                    questionIds.forEach(id => sectionQuestionSet.add(id));
+                                } else if (surveySection.parentId) {
+                                    // FIXME: if a section within a section has
+                                    //        further nested sections within it
+                                    //        there may be an error here.
+
+                                    section.questions = [];
+                                }
+                                sectionMap.set(surveySection.id, section);
                             }
-                            sectionMap.set(surveySection.id, section);
                         });
                         surveySections.forEach(({ id, parentId, parentQuestionId }) => {
                             if (parentId) {
                                 const section = sectionMap.get(id);
                                 const parentSection = sectionMap.get(parentId);
+                                if (!parentSection.sections) {
+                                    parentSection.sections = [];
+                                }
+                                if (parentSection.questions) {
+                                    delete parentSection.questions;
+                                }
                                 parentSection.sections.push(section);
                                 return;
                             }
