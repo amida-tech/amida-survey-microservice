@@ -152,7 +152,7 @@ All table and column names are in snake case to follow Postgres convention and f
 
 ### Multi Lingual Support
 
-This is a English first design where all logical records are assumed to be in English when first created.  Once a record is created any user facing text column (those users see in the user interface) can be translated to any language.  For each table English and translated versions of user facing text colums are stored in an axuilliary table whose name is the name of the actual table postfixed with `_text` (Ex: `question` and `question_text`).
+This is a English first design where all logical records are assumed to be in English when first created.  Once a record is created any user facing text column (those users see in the user interface) can be translated to any language.  For each table English and translated versions of user facing text columns are stored in an auxilliary table whose name is the name of the actual table postfixed with `_text` (Ex: `question` and `question_text`).
 
 ### Tables
 
@@ -160,7 +160,7 @@ This is a English first design where all logical records are assumed to be in En
 
 - `answer_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for possible answers to questions (columns `question_id`, `question_choice_id`, `multiple_index`).
 
-- `answer_rule`: This table stores conditions (column `logic`) for survey (column `survey_id`) questions (column `question_id`) or sections (column `section_id`) to be enabled or disabled. Conditions are based on answers to other questions (column `answer_question_id`).  Conditon answers themselves are defined in table `answer_rule_value`.
+- `answer_rule`: This table stores conditions (column `logic`) for survey (column `survey_id`) questions (column `question_id`) or sections (column `section_id`) to be enabled or disabled. Conditions are based on answers to other questions (column `answer_question_id`).  Condition answers themselves are defined in table `answer_rule_value`.
 
 - `answer_rule_logic`: This table defines possible condition types (column `name`, exs: equals, exists) that can be used in `answer_rule` table.
 
@@ -168,7 +168,7 @@ This is a English first design where all logical records are assumed to be in En
 
 - `answer_type`: This table stores available answer types. Current supported types are `text`, `bool` and `choice`.
 
-- `assessment`: This table defines assesments (column `name`) together with table `assesment_survey`.  Assessment are set of surveys whose answers are tracked over time.
+- `assessment`: This table defines assessments (column `name`) together with table `assesment_survey`.  Assessment are set of surveys whose answers are tracked over time.
 
 - `assessment_survey`: This table stores the surveys (column `survey_id`) that forms an assessment (column `assessment_id`).
 
@@ -176,11 +176,13 @@ This is a English first design where all logical records are assumed to be in En
 
 - `file`: This table stores users' (column `user_id`) answers that are files (columns `name` and `content`).
 
-- `filter`: This table stores quesion filters.
+- `filter`: This table stores question filters.
 
 - `filter_answer`: This table stores filter specifics (columns `question_id`, `exclude`, `question_choice_id`, `value`) for filter (column `filter_id`).
 
 - `language`: Each record in this table represents a supported language.  `code` column is used as the primary key and designed to store two or three character ISO codes.  Columns `name` and `native_name` can be used for language selection on the client.
+
+- `link`: This table stores survey answers which are links to external websites and metadata. Along with the link itself, 3 metadata fields for key information are included, the title of each field is dependent on the displayTypeId. ID=1 => Title, Author, and Date of publication. ID=2 => Title, Author, and Date of publication. To add additional display types, just create a new ID. `field1` and `field2` are the 2 metadata fields. `sourceDate` is the date the user viewed the link. Adding a new display type should not require a new enum and a rebuild, so an integer type was used for `displayTypeId`.
 
 - `question`: Each record in this table represents a question that is being or can be used in surveys .  Questions can be stand alone, can belong to a survey or can belong to multiple surveys.  Link to surveys (table `survey`) is achieved through `survey_question` table.  Question records can be soft deleted but when no other active record in any other table does not reference it.  Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first question in the group.  A set of types are supported (column `type`).
 
@@ -219,7 +221,6 @@ This is a English first design where all logical records are assumed to be in En
 - `survey_status`: This defines statuses during answering of surveys,
 
 - `survey_text`: This table stores translatable columns `name` and `description`. `language` is also a column and each record has a value for `name` in that language. `survey_id` column links each record to `survey` table.
-
 
 - `rr_section`: Each record in this tables represents a section in a survey. Content of sections are represented as local indices of questions in column `indices`.  The name of the section is stored in `section_text` table.
 

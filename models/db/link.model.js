@@ -14,8 +14,8 @@ module.exports = function Link(sequelize, Sequelize, schema) {
             type: Sequelize.TEXT,
             allowNull: false,
         },
-        displayType: {
-            type: Sequelize.ENUM('title_author', 'physician_scanType'),
+        displayTypeId: {
+            type: Sequelize.INTEGER,
             allowNull: true,
         },
         field1: {

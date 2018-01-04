@@ -2128,12 +2128,11 @@
                     "required": true,
                     "type": "string"
                 }, {
-                    "name": "displayType",
+                    "name": "displayTypeId",
                     "in": "formData",
                     "description": "Meta-data field names",
                     "required": false,
-                    "type":"string",
-                    "enum":["title_author", "physician_scanType"]
+                    "type": "integer"
                 }, {
                     "name": "field1",
                     "in": "formData",
@@ -2193,7 +2192,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "link"
+                            "$ref": "#/definitions/link"
                         }
                     },
                     "default": {
@@ -2357,7 +2356,7 @@
                 }
             }
         },
-      "resetPasswordInfo": {
+        "resetPasswordInfo": {
           "type": "object",
           "required": [
               "token",
@@ -2375,7 +2374,7 @@
           },
           "additionalProperties": false
       },
-      "role": {
+        "role": {
           "type": "string",
           "enum": ["participant", "clinician", "admin"]
       },
@@ -3951,7 +3950,7 @@
             },
             "additionalProperties": false
        },
-       "smtpSpec": {
+        "smtpSpec": {
             "type": "object",
             "required": ["exists"],
             "properties": {
@@ -4037,7 +4036,7 @@
             },
             "additionalProperties": false
         },
-       "smtpSpecTextUpdate": {
+        "smtpSpecTextUpdate": {
             "type": "object",
             "required": ["subject", "content"],
             "properties": {
@@ -4566,7 +4565,7 @@
                 "$ref": "#/definitions/userAudit"
             }
         },
-        "file": {
+        "link": {
             "type": "object",
             "required": ["id", "name"],
             "properties": {
@@ -4575,6 +4574,27 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "links": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/link"
+            }
+        },
+        "file": {
+            "type": "object",
+            "required": ["id", "url"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "url": {
                     "type": "string",
                     "minLength": 1
                 }
