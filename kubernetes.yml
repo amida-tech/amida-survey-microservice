@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: amida-survey-microservice-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: amida-survey-microservice
+    spec:
+      imagePullSecrets:
+      - name: amida-docker
+      containers:
+      - name: amida-survey-microservice
+        image: amidatech/survey-service
+        env:
+        - name: SURVEY_SERVICE_DB_NAME
+          value: amida_survey
+        - name: SURVEY_SERVICE_DB_PORT
+          value: '5432'
+        - name: SURVEY_SERVICE_DB_HOST
+          value: kubernetes-survey-microservice.database_url.us-west-2.rds.amazonaws.com
+        - name: SURVEY_SERVICE_DB_USER
+          value: amida_survey_microservice
+        - name: SURVEY_SERVICE_DB_PASS
+          value: amida-survey
+        - name: SURVEY_SERVICE_DB_DIALECT
+          value: postgres
+        - name: SURVEY_SERVICE_DB_POOL_MAX
+          value: '5'
+        - name: SURVEY_SERVICE_DB_MIN
+          value: '0'
+        - name: SURVEY_SERVICE_DB_IDLE
+          value: '10000'
+        - name: SURVEY_SERVICE_LOGGING_LEVEL
+          value: emerg
+        - name: SURVEY_SERVICE_CLIENT_BASE_URL
+          value: http://localhost:4000/
+        - name: SURVEY_SERVICE_ZIP_API_KEY
+          value: pwoy0hqicy3e49qd
+        - name: JWT_SECRET
+          value: 0a6b944d-d2fb-46fc-a85e-0295c986cd9f
+        - name: DEBUGXX
+          value: swagger-tools:middleware:*
+        ports:
+        - name: nodejs-port
+          containerPort: 9005
