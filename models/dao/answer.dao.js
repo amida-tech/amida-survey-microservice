@@ -182,8 +182,9 @@ module.exports = class AnswerDAO extends Base {
         const Answer = this.db.Answer;
         const records = answers.reduce((r, p) => {
             const questionId = p.questionId;
+            const meta = p.meta || null;
             const dbValues = answerCommon.prepareAnswerForDB(p.answer || p.answers);
-            dbValues.forEach((v) => {
+            dbValues.forEach((v, index) => {
                 const mndx = v.multipleIndex;
                 const value = {
                     userId,
@@ -195,6 +196,7 @@ module.exports = class AnswerDAO extends Base {
                     fileId: v.fileId || null,
                     multipleIndex: (mndx || mndx === 0) ? mndx : null,
                     value: 'value' in v ? v.value : null,
+                    meta: index === 0 ? meta : null,
                 };
                 r.push(value);
             });
@@ -363,6 +365,9 @@ module.exports = class AnswerDAO extends Base {
             where.deletedAt = { $ne: null };
         }
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
+        if (scope !== 'export') {
+            attributes.push('meta');
+        }
         if (scope === 'export' || (scope !== 'assessment' && !surveyId)) {
             attributes.push('surveyId');
         }
@@ -423,6 +428,10 @@ module.exports = class AnswerDAO extends Base {
                         questionId: v[0]['question.id'],
                         language: v[0].language,
                     };
+                    const vWithMata = v.find(e => e.meta);
+                    if (vWithMata) {
+                        r.meta = vWithMata.meta;
+                    }
                     if (v[0]['question.multiple']) {
                         r.answers = answerCommon.generateAnswer(v[0]['question.type'], v, true);
                     } else {

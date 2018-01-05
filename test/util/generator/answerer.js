@@ -139,6 +139,15 @@ module.exports = class Answerer {
         return { choices: _.sortBy(choices, 'id') };
     }
 
+    metaUpAnswer(answer) {
+        const index = this.answerIndex;
+        if (index % 3 !== 1) {
+            return answer;
+        }
+        const meta = { [`prop_${index}`]: `value_${index}` };
+        return Object.assign({ meta }, answer);
+    }
+
     answerQuestion(question) {
         const type = _.camelCase(question.type);
         if (question.multiple) {
@@ -147,11 +156,11 @@ module.exports = class Answerer {
                 this.answerIndex += 1;
                 return Object.assign({ multipleIndex }, this[type](question));
             });
-            return { questionId: question.id, answers };
+            return this.metaUpAnswer({ questionId: question.id, answers });
         }
         this.answerIndex += 1;
         const answer = this[type](question);
-        return { questionId: question.id, answer };
+        return this.metaUpAnswer({ questionId: question.id, answer });
     }
 
     answerFilterQuestion(question) {
@@ -174,7 +183,7 @@ module.exports = class Answerer {
             this.answerIndex += 1;
             return Object.assign({ multipleIndex }, this[type](question));
         });
-        return { questionId: question.id, answers };
+        return this.metaUpAnswer({ questionId: question.id, answers });
     }
 
     answerChoicesQuestion(question, selectionChoice) {
@@ -190,13 +199,13 @@ module.exports = class Answerer {
             }
             return answer;
         });
-        return { questionId: question.id, answer: { choices } };
+        return this.metaUpAnswer({ questionId: question.id, answer: { choices } });
     }
 
     answerChoiceQuestion(question, choiceIndex) { // eslint-disable-line class-methods-use-this
         const choice = question.choices[choiceIndex].id;
         const answer = { choice };
-        return { questionId: question.id, answer };
+        return this.metaUpAnswer({ questionId: question.id, answer });
     }
 
     answerRawQuestion(question) {
