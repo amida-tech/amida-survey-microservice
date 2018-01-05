@@ -3862,6 +3862,9 @@
                     "type": "string",
                     "minLength": 2
                 },
+                "meta": {
+                    "type": "object"
+                },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 },
@@ -4151,6 +4154,9 @@
                     "type": "string",
                     "minLength": 2
                 },
+                "meta": {
+                    "type": "object"
+                },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 },
@@ -4233,6 +4239,9 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                },
+                "meta": {
+                    "type": "object"
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
