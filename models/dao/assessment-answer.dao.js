@@ -222,29 +222,35 @@ module.exports = class AnswerAssessmentDAO extends Base {
             });
     }
 
-    exportAssessmentAnswers(options) {
+    listAssessmentAnswers(options) {
         const surveyId = options.surveyId;
         const sectionId = options.sectionId;
         const questionId = options.questionId;
-        const csvConverter = new CSVConverterExport();
-        if(sectionId && questionId) {
-            surveyError.reject('surveyBothQuestionsSectionsSpecified');
+
+        if (sectionId && questionId) {
+            SurveyError.reject('surveyBothQuestionsSectionsSpecified');
         }
         return this.db.AssessmentSurvey.findAll({
-            where: { survey_id: surveyId},
-            raw:true,
-            attributes: ['assessmentId', 'surveyId']
-        }).then(assessments => {
-            const assessmentIds = assessments.map(r => r.assessmentId)
-            const options = {surveyId, assessmentIds, questionIds: [questionId], scope: 'export'};
-            return this.answer.listAnswers(options)
-                .then(answers => {
-                    if(!answers.length) {
-                    return SurveyError.reject('surveyNotFound');
+            where: { survey_id: surveyId },
+            raw: true,
+            attributes: ['assessmentId', 'surveyId'],
+        }).then((assessments) => {
+            const assessmentIds = assessments.map(r => r.assessmentId);
+            const newOptions = { surveyId, assessmentIds, questionIds: [questionId], scope: 'export' };
+            return this.answer.listAnswers(newOptions)
+                .then((answers) => {
+                    if (!answers.length) {
+                        return SurveyError.reject('surveyNotFound');
                     }
-                    return csvConverter.dataToCSV(answers);
-                })
-
+                    return answers;
+                });
         });
+    }
+
+
+    exportAssessmentAnswersCSV(options) {
+        const csvConverter = new CSVConverterExport();
+        return this.listAssessmentAnswers(options)
+            .then(answers => csvConverter.dataToCSV(answers));
     }
 };

@@ -57,17 +57,28 @@ exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
 };
 
 exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
-    const surveyId = _.get(req, 'swagger.params.id.value');
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const questionId = _.get(req, 'swagger.params.question-id.value');
-    const sectionId = _.get(req, 'swagger.params.section-id.value');
-    const options = {surveyId, questionId, sectionId}
-    req.models.assessmentAnswer.exportAssessmentAnswers(options)
+// TODO:    const sectionId = _.get(req, 'swagger.params.section-id.value');
+// TODO:    const userIds = _.get(req, 'swagger.params.section-id.value');
+    const options = { surveyId, questionId };
+    req.models.assessmentAnswer.listAssessmentAnswers(options)
         .then((result) => {
-            console.log("resulting csv")
-            console.log(result)
-            res.type('text/csv');
-            res.status(200).send(result)
+            res.status(200).send(result);
+        })
+        .catch(shared.handleError(res));
+};
 
+exports.assessmentAnswersCSV = function assessmentAnswersCSV(req, res) {
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
+// TODO:    const sectionId = _.get(req, 'swagger.params.section-id.value');
+// TODO:    const userIds = _.get(req, 'swagger.params.section-id.value');
+    const options = { surveyId, questionId };
+    req.models.assessmentAnswer.exportAssessmentAnswersCSV(options)
+        .then((result) => {
+            res.type('text/csv');
+            res.status(200).send(result);
         })
         .catch(shared.handleError(res));
 };

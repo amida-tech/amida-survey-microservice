@@ -338,7 +338,8 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, userIds, surveyId, surveyIds,assessmentId, assessmentIds, scope, history, ids, questionIds }) {
+    listAnswers({ userId, userIds, surveyId, assessmentId,
+                  assessmentIds, scope, history, ids, questionIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -360,12 +361,12 @@ module.exports = class AnswerDAO extends Base {
             where.assessmentId = assessmentId;
         }
 
-        if(assessmentIds) {
-            where.assessment_id = {$in: assessmentIds}
+        if (assessmentIds) {
+            where.assessment_id = { $in: assessmentIds };
         }
 
-        if(questionIds) {
-            where.question_id = {$in: questionIds}
+        if (questionIds) {
+            where.question_id = { $in: questionIds };
         }
 
         if (scope === 'history-only') {
@@ -381,11 +382,11 @@ module.exports = class AnswerDAO extends Base {
         if (userIds || assessmentId) {
             attributes.push('userId');
         }
-        if(assessmentIds && surveyId) {
-            attributes.push('userId', 'assessmentId')
+        if (assessmentIds && surveyId) {
+            attributes.push('userId', 'assessmentId');
         }
 
-        if(!(assessmentId || assessmentIds)) {
+        if (!(assessmentId || assessmentIds)) {
             where.assessment_id = null;
         }
 
@@ -395,7 +396,6 @@ module.exports = class AnswerDAO extends Base {
         ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then((result) => {
-
                 result.forEach((r) => {
                     if (r['question.type'] === 'choices') {
                         r.choiceType = r['questionChoice.type'];
@@ -407,9 +407,8 @@ module.exports = class AnswerDAO extends Base {
             .then((result) => {
                 if (scope === 'export') {
                     return result.map((p) => {
-
                         const r = { surveyId: p.surveyId };
-                        if(assessmentId || assessmentIds) {
+                        if (assessmentId || assessmentIds) {
                             r.assessmentId = p.assessmentId;
                         }
                         if (attributes.includes('userId')) {

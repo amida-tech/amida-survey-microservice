@@ -115,7 +115,7 @@ const SpecTests = class AnswerSpecTests {
             return models.assessmentAnswer.copyAssessmentAnswers(input)
                 .then(() => {
                     const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
-                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
                 });
