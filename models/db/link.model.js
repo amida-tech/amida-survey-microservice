@@ -34,6 +34,11 @@ module.exports = function Link(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'created_at',
         },
+        questionId: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
+            field: 'question_id',
+        },
 
     }, {
         freezeTableName: true,

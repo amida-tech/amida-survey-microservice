@@ -2130,25 +2130,31 @@
                 }, {
                     "name": "displayTypeId",
                     "in": "formData",
-                    "description": "Meta-data field names",
+                    "description": "Metadata field names",
                     "required": false,
                     "type": "integer"
                 }, {
                     "name": "field1",
                     "in": "formData",
-                    "description": "Content of first meta-data field, e.g. title, physician",
+                    "description": "Content of first metadata field, e.g. title, physician",
                     "required": false,
                     "type": "string"
                 }, {
                     "name": "field2",
                     "in": "formData",
-                    "description": "Content of second meta-data field, e.g. author, type of scan",
+                    "description": "Content of second metadata field, e.g. author, type of scan",
                     "required": false,
                     "type": "string"
                 }, {
                     "name": "sourceDate",
                     "in": "formData",
                     "description": "Date item was sourced",
+                    "required": false,
+                    "type": "string"
+                }, {
+                    "name": "questionId",
+                    "in": "formData",
+                    "description": "The ID of the question related to this metadata",
                     "required": false,
                     "type": "string"
                 }],
