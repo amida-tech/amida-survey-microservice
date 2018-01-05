@@ -32,7 +32,7 @@ describe('assessment answer integration', function answerAssessmentIntegration()
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
 
     const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion);

@@ -33,7 +33,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
     const hxAnswer = new History();
 
     const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
@@ -42,7 +42,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     const tests = new assessmentAnswerCommon.IntegrationTests(surveySuperTest, {
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment, hxAnswer,
     });
-    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({ hxSurvey, hxQuestion, hxAnswer, tests });
+    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({hxSurvey, hxQuestion, hxAnswer, tests})
 
     const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
     const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
@@ -99,10 +99,10 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
         // TODO add section ids to tests
         return function verify() {
-            const options = { 'question-id': index, 'survey-id': 1 };
+            let options = { 'question-id': index, 'survey-id': 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
                 .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] }));
+                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] }))
                     expect(_.sortBy(answers.body, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
                 });
         };

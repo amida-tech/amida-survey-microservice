@@ -28,7 +28,7 @@ describe('assessment answer unit', function answerAssessmentUnit() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);

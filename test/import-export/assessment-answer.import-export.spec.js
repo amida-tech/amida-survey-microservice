@@ -18,7 +18,7 @@ const assessmentAnswerCommon = require('../util/assessment-answer-common');
 const questionCommon = require('../util/question-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
-// const ExportCSVConverter = require('../../import/csv-converter.js');
+//const ExportCSVConverter = require('../../import/csv-converter.js');
 const ExportBuilder = require('./assessment-answer.export-builder');
 const answerSession = require('../fixtures/answer-session/assessment-0');
 
@@ -31,7 +31,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
     const hxAnswer = new History();
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
@@ -40,7 +40,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
     const tests = new assessmentAnswerCommon.SpecTests({
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment, hxAnswer,
     });
-    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({ hxSurvey, hxQuestion, hxAnswer, tests });
+    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({hxSurvey, hxQuestion, hxAnswer, tests})
 
     const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
     const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
@@ -95,7 +95,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
             const options = { questionId: index, surveyId: 1 };
             return models.assessmentAnswer.listAssessmentAnswers(options)
                 .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
+                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(options)
                     expect(_.sortBy(answers, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
                 });
         };
