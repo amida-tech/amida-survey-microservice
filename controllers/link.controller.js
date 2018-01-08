@@ -13,7 +13,12 @@ exports.createLink = function createLink(req, res) {
     const sourceDate = _.get(req, 'swagger.params.sourceDate.value');
     const questionId = _.get(req, 'swagger.params.questionId.value');
 
-    req.models.link.createLink(userId, { name, url, displayTypeId, field1, field2, sourceDate, questionId })
+    req.models.link.createLink(userId, { url,
+        displayTypeId,
+        field1,
+        field2,
+        sourceDate,
+        questionId })
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
