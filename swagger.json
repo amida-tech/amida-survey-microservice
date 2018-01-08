@@ -2119,41 +2119,35 @@
         "/links": {
             "x-swagger-router-controller": "link.controller",
             "post": {
-                "summary": "Stores link and meta-data in database",
+                "summary": "Stores link with meta-data fields and in database",
                 "operationId": "createLink",
                 "parameters": [{
                     "name": "url",
-                    "in": "formData",
                     "description": "URL to be stored in database",
                     "required": true,
                     "type": "string"
                 }, {
                     "name": "displayTypeId",
-                    "in": "formData",
                     "description": "Metadata field names",
                     "required": false,
                     "type": "integer"
                 }, {
                     "name": "field1",
-                    "in": "formData",
                     "description": "Content of first metadata field, e.g. title, physician",
                     "required": false,
                     "type": "string"
                 }, {
                     "name": "field2",
-                    "in": "formData",
                     "description": "Content of second metadata field, e.g. author, type of scan",
                     "required": false,
                     "type": "string"
                 }, {
                     "name": "sourceDate",
-                    "in": "formData",
                     "description": "Date item was sourced",
                     "required": false,
                     "type": "string"
                 }, {
                     "name": "questionId",
-                    "in": "formData",
                     "description": "The ID of the question related to this metadata",
                     "required": false,
                     "type": "string"
