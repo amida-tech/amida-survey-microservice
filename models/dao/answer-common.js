@@ -28,6 +28,17 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
             }
             return { integerRange };
         },
+        scale(value) {
+            const [min, max] = value.split(':');
+            const scale = {};
+            if (max) {
+                scale.max = parseFloat(max);
+            }
+            if (min) {
+                scale.min = parseFloat(min);
+            }
+            return { scaleValue: scale };
+        },
         float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
             const pieces = value.split('-');
@@ -211,6 +222,9 @@ const answerValueToDBFormat = {
         const systolic = value.systolic || 0;
         const diastolic = value.diastolic || 0;
         return { value: `${systolic}-${diastolic}` };
+    },
+    scaleValue(value) {
+        return answerValueToDBFormat.integerRange(value);
     },
     integerRange(value) {
         const max = (value.max === 0) ? '0' : (value.max || '');

@@ -217,7 +217,11 @@ const comparator = {
             answer.language = answer.language || 'en';
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
-                    const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
+                    const numValues = [
+                        'textValue', 'code', 'monthValue', 'yearValue', 'dayValue',
+                        'integerValue', 'boolValue', 'dateValue', 'numberValue',
+                        'feetInchesValue', 'bloodPressureValue', 'scaleValue',
+                    ].reduce((r, p) => {
                         if (Object.prototype.hasOwnProperty.call(choice, p)) {
                             r += 1;
                         }

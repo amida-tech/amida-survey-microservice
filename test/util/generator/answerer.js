@@ -37,6 +37,19 @@ module.exports = class Answerer {
         };
     }
 
+    scale() {
+        const answerIndex = this.answerIndex;
+        let max = 100 + (answerIndex % 7);
+        let min = 70 + (answerIndex % 4);
+        if (answerIndex % 2) {
+            max += 0.5;
+            min += 0.5;
+        }
+        return {
+            scaleValue: { max, min },
+        };
+    }
+
     feetInches() {
         const answerIndex = this.answerIndex;
         return {

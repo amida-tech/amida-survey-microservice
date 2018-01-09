@@ -2417,7 +2417,8 @@
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
                 "date", "year", "month", "day", "choice-ref", "open-choice",
-                "pounds", "zip", "feet-inches", "blood-pressure", "file", "bullet"
+                "pounds", "zip", "feet-inches", "blood-pressure",
+                "file", "bullet", "scale"
             ]
         },
         "questionMeta": {
@@ -3180,6 +3181,19 @@
                     },
                     "additionalProperties": false
                 },
+                "scaleValue": {
+                    "type": "object",
+                    "properties": {
+                        "max": {
+                            "type": "number"
+                        },
+                        "min": {
+                            "type": "number"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "fileValue": {
                     "type": "object",
                     "properties": {
@@ -3280,6 +3294,19 @@
                             "type": "integer"
                         }
                     },
+                    "additionalProperties": false
+                },
+                "scaleValue": {
+                    "type": "object",
+                    "properties": {
+                        "max": {
+                            "type": "number"
+                        },
+                        "min": {
+                            "type": "number"
+                        }
+                    },
+                    "minProperties": 1,
                     "additionalProperties": false
                 },
                 "yearValue": {
@@ -3447,6 +3474,19 @@
                     },
                     "additionalProperties": false
                 },
+                "scaleValue": {
+                    "type": "object",
+                    "properties": {
+                        "max": {
+                            "type": "number"
+                        },
+                        "min": {
+                            "type": "number"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "yearValue": {
                     "type": "string",
                     "pattern": "^\\d{4}$"
@@ -3553,6 +3593,19 @@
                             "type": "integer"
                         }
                     },
+                    "additionalProperties": false
+                },
+                "scaleValue": {
+                    "type": "object",
+                    "properties": {
+                        "max": {
+                            "type": "number"
+                        },
+                        "min": {
+                            "type": "number"
+                        }
+                    },
+                    "minProperties": 1,
                     "additionalProperties": false
                 },
                 "yearValue": {
