@@ -239,6 +239,14 @@ const comparator = {
                     answer.comment.id = id;
                 }
             }
+            if (answer.commentHistory) {
+                answer.commentHistory.forEach((comment, commentIndex) => {
+                    const id = _.get(actual, `${index}.commentHistory.${commentIndex}.id`);
+                    if (id) {
+                        comment.id = id;
+                    }
+                });
+            }
         });
         expect(actual).to.deep.equal(expected);
     },

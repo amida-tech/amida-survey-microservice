@@ -17,15 +17,26 @@ const mergeAnswerComments = function (answers, comments) {
         const commentObject = commentsMap[questionId];
         if (commentObject) {
             insertedComments.add(questionId);
-            const { comment } = commentObject;
-            Object.assign(answer, { comment });
+            const { comment, commentHistory } = commentObject;
+            if (comment) {
+                Object.assign(answer, { comment });
+            }
+            if (commentHistory) {
+                Object.assign(answer, { commentHistory });
+            }
         }
     });
     comments.forEach((commentObject) => {
-        const { questionId, comment } = commentObject;
+        const { questionId, comment, commentHistory } = commentObject;
         if (!insertedComments.has(questionId)) {
-            const language = comment.language;
-            answers.push({ questionId, language, comment });
+            let language = comment ? comment.language : null;
+            if (!language) {
+                const n = commentHistory && commentHistory.length;
+                if (n) {
+                    language = commentHistory[n - 1].language;
+                }
+            }
+            answers.push(Object.assign({ language }, commentObject));
         }
     });
     return answers;
@@ -145,7 +156,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     getAssessmentAnswersOnly({ assessmentId }) {
         return this.answer.listAnswers({ scope: 'assessment', assessmentId })
-            .then(answers => this.answerComment.listAnswerComments({ assessmentId })
+            .then(answers => this.answerComment.listAnswerCommentsWithHistory({ assessmentId })
                 .then((comments) => {
                     if (answers && answers.length) {
                         if (comments.length) {

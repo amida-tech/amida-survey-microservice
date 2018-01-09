@@ -4172,6 +4172,12 @@
                 },
                 "comment": {
                     "$ref": "#/definitions/comment"
+                },
+                "commentHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/comment"
+                    }
                 }
             },
             "additionalProperties": false
