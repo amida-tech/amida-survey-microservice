@@ -8,7 +8,7 @@ const singleQuestionTypes = [
     'text', 'choice', 'open-choice', 'bool',
     'integer', 'zip', 'pounds', 'float',
     'date', 'year', 'month', 'day',
-    'feet-inches', 'blood-pressure',
+    'feet-inches', 'blood-pressure', 'scale',
 ];
 
 const virtualQuestionTypes = [
