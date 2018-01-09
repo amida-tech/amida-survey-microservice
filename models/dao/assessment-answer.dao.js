@@ -8,26 +8,24 @@ const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
-const copyCommentsSql = queryrize.readQuerySync('copy-answer-comments.sql');
 
 const mergeAnswerComments = function (answers, comments) {
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
         const questionId = answer.questionId;
-        const questionComments = commentsMap[questionId];
-        if (questionComments) {
+        const commentObject = commentsMap[questionId];
+        if (commentObject) {
             insertedComments.add(questionId);
-            Object.assign(answer, questionComments);
+            const { comment } = commentObject;
+            Object.assign(answer, { comment });
         }
     });
-    comments.forEach((comment) => {
-        const questionId = comment.questionId;
+    comments.forEach((commentObject) => {
+        const { questionId, comment } = commentObject;
         if (!insertedComments.has(questionId)) {
-            const ccomments = comment.comments;
-            const language = ccomments[ccomments.length - 1].language;
-            const r = Object.assign({ language }, comment);
-            answers.push(r);
+            const language = comment.language;
+            answers.push({ questionId, language, comment });
         }
     });
     return answers;
@@ -85,13 +83,13 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     createAssessmentAnswersTx(inputRecord, transaction) {
         const { answers, comments } = inputRecord.answers.reduce((r, answer) => {
-            const { questionId, comments: newComments } = answer;
-            if (newComments) {
-                newComments.forEach(comment => r.comments.push({ questionId, comment }));
+            const { questionId, comment: newComment } = answer;
+            if (newComment) {
+                r.comments.push({ questionId, comment: newComment });
             }
             if (answer.answer || answer.answers) {
                 const a = _.cloneDeep(answer);
-                r.answers.push(_.omit(a, 'comments'));
+                r.answers.push(_.omit(a, 'comment'));
             }
             return r;
         }, { answers: [], comments: [] });
@@ -106,6 +104,15 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         const where = { questionId: { $in: ids } };
                         where.assessmentId = masterId.assessmentId;
                         return this.db.Answer.destroy({ where, transaction });
+                    }
+                    return null;
+                })
+                .then(() => {
+                    if (comments.length) {
+                        const ids = _.map(comments, 'questionId');
+                        const where = { questionId: { $in: ids } };
+                        where.assessmentId = masterId.assessmentId;
+                        return this.db.AnswerComment.destroy({ where, transaction });
                     }
                     return null;
                 })
@@ -166,8 +173,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         where.userId = masterId.userId;
                         where.surveyId = masterId.surveyId;
                     }
-                    return this.db.Answer.destroy({ where, transaction })
-                        .then(() => this.db.AnswerComment.destroy({ where, transaction }));
+                    return this.db.Answer.destroy({ where, transaction });
                 })
                 .then(() => {
                     const { userId, assessmentId, prevAssessmentId } = inputRecord;
@@ -176,8 +182,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         assessment_id: assessmentId,
                         prev_assessment_id: prevAssessmentId,
                     };
-                    return this.query(copySql, params, transaction)
-                        .then(() => this.query(copyCommentsSql, params, transaction));
+                    return this.query(copySql, params, transaction);
                 }));
     }
 

@@ -19,19 +19,11 @@ module.exports = class AnswerCommentDAO extends Base {
         const where = { assessmentId };
         return this.db.AnswerComment.findAll({ where, attributes, raw: true })
             .then(records => records.map(record => _.omitBy(record, _.isNil)))
-            .then((records) => {
-                const { result } = records.reduce((r, record) => {
-                    const questionId = record.questionId;
-                    let comments = r.map[questionId];
-                    if (!comments) {
-                        comments = [];
-                        r.result.push({ questionId, comments });
-                        r.map[questionId] = comments;
-                    }
-                    comments.push(_.omit(record, 'questionId'));
-                    return r;
-                }, { result: [], map: {} });
-                return result;
-            });
+            .then(records => records.reduce((r, record) => {
+                const questionId = record.questionId;
+                const comment = _.omit(record, 'questionId');
+                r.push({ questionId, comment });
+                return r;
+            }, []));
     }
 };

@@ -37,8 +37,8 @@ const findQuestionCount = function (answerSession) {
 
 const findAnswerCommentsCount = function (answers) {
     return answers.reduce((r, answer) => {
-        if (answer.comments) {
-            return r + answer.comments.length;
+        if (answer.comment) {
+            return r + 1;
         }
         return r;
     }, 0);
@@ -114,7 +114,7 @@ const SpecTests = class AnswerSpecTests {
             const input = { userId, assessmentId, prevAssessmentId };
             return models.assessmentAnswer.copyAssessmentAnswers(input)
                 .then(() => {
-                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, true);
                     hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
@@ -325,7 +325,7 @@ const IntegrationTests = class AnswerIntegrationTests {
             const input = { prevAssessmentId };
             return surveySuperTest.post(`/assessment-answers/${assessmentId}/as-copy`, input, 204)
                 .then(() => {
-                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, true);
                     hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
