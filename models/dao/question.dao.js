@@ -33,6 +33,9 @@ const parameterJsonToString = function (question) {
     if (scaleLimits) {
         const min = scaleLimits.min === undefined ? '' : scaleLimits.min;
         const max = scaleLimits.max === undefined ? '' : scaleLimits.max;
+        if (min !== '' && max !== '' && min > max) {
+            throw new SurveyError('questionScaleMinGTMax');
+        }
         return `${min}:${max}`;
     }
     return '';

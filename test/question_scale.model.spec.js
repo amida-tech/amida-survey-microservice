@@ -59,6 +59,12 @@ describe('scale type question unit', function scaleQuestionUnit() {
         it(`verify question ${index}`, tests.verifyQuestionFn(index));
     });
 
+    const errorQuestion = generator.newQuestion({ type: 'scale', scaleLimits: { min: 3, max: 2 } });
+    it('error: scale minimum is greater than maximum', function errorMinGtMax() {
+        return models.question.createQuestion(errorQuestion)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('questionScaleMinGTMax'));
+    });
+
     it('list questions 2, 4, 7', function listIded() {
         const indices = [2, 4, 5];
         const ids = indices.map(i => hxQuestion.id(i));

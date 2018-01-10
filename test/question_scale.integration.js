@@ -67,6 +67,12 @@ describe('scale type question integration', function scaleQuestionIntegration() 
         it(`verify question ${index}`, tests.verifyQuestionFn(index));
     });
 
+    const errorQuestion = generator.newQuestion({ type: 'scale', scaleLimits: { min: 3, max: 2 } });
+    it('error: scale minimum is greater than maximum', function errorMinGtMax() {
+        return surveySuperTest.post('/questions', errorQuestion, 400)
+             .then(res => shared.verifyErrorMessage(res, 'questionScaleMinGTMax'));
+    });
+
     it('list questions 2, 4, 7', function listIded() {
         const indices = [2, 4, 5];
         const ids = indices.map(i => hxQuestion.id(i));

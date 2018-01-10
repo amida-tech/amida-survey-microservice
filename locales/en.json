@@ -43,6 +43,7 @@
 	"ccfNoSelectionsForChoice": "No selection is specified choice type question.",
 	"choiceSetNotFound": "No choice set named {{$0}} is found.",
 	"questionChoiceCodeNotFound": "Question choice code is not found.",
+	"questionScaleMinGTMax": "Scale question maximum cannot be greater than minimum.",
 	"searchQuestionRepeat": "Questions were specified multiple times in the criteria.",
 	"zipInvalidValue": "Invalid zip code value: {{$0}}.",
 	"zipApiError": "Zip code API gave error {{$0}}.",

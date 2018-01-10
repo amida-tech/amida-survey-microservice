@@ -2589,7 +2589,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "sectionTextUpdate": {

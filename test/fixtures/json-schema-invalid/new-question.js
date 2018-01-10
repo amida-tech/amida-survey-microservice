@@ -28,8 +28,4 @@ module.exports = [{
 }, {
     text: 'Example',
     type: 'scale',
-}, {
-    text: 'Example',
-    type: 'scale',
-    scaleLimits: {},
 }];
