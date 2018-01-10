@@ -9,6 +9,7 @@ const singleQuestionTypes = [
     'integer', 'zip', 'pounds', 'float',
     'date', 'year', 'month', 'day',
     'feet-inches', 'blood-pressure',
+    'scale',
 ];
 
 const virtualQuestionTypes = [
@@ -161,6 +162,20 @@ module.exports = class QuestionGenerator {
             return r;
         });
         question.choices = choices;
+        return question;
+    }
+
+    scale() {
+        const scaleLimits = {};
+        const question = this.body('scale');
+        const value = this.index % 3;
+        if (value === 0 || value === 1) {
+            scaleLimits.min = 10.5 + value;
+        }
+        if (value === 1 || value === 2) {
+            scaleLimits.max = 90.5 + value;
+        }
+        question.scaleLimits = scaleLimits;
         return question;
     }
 
