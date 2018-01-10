@@ -165,9 +165,13 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    scale() {
-        const scaleLimits = {};
+    scale(options) {
         const question = this.body('scale');
+        if (options.scaleLimits) {
+            question.scaleLimits = options.scaleLimits;
+            return question;
+        }
+        const scaleLimits = {};
         const value = this.index % 3;
         if (value === 0 || value === 1) {
             scaleLimits.min = 10.5 + value;
