@@ -73,7 +73,7 @@ describe('scale type question integration', function scaleQuestionIntegration() 
              .then(res => shared.verifyErrorMessage(res, 'questionScaleMinGTMax'));
     });
 
-    it('list questions 2, 4, 7', function listIded() {
+    it('list questions 2, 4, 5', function listIded() {
         const indices = [2, 4, 5];
         const ids = indices.map(i => hxQuestion.id(i));
         return models.question.listQuestions({ scope: 'complete', ids })
