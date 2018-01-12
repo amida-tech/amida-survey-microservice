@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    extends: '../.eslintrc.js',
+    extends: '../.eslintrc',
     rules: {
         'import/no-extraneous-dependencies': [
             'error',
