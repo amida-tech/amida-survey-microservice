@@ -215,10 +215,10 @@ module.exports = class AnswerHistory {
         return result;
     }
 
-    copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex) {
+    copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex, userId) {
         const answers = this.expectedAnswers(prevAssessmentIndex, surveyIndex);
         const commentlessAnswers = answers.map(answer => _.omit(answer, 'comments'));
-        this.push(userIndex, surveyIndex, commentlessAnswers);
+        this.push(userIndex, surveyIndex, commentlessAnswers, null, userId);
         const prevKey = AnswerHistory.key(prevAssessmentIndex, surveyIndex);
         const questionsWithComments = this.questionsWithComments[prevKey];
         if (questionsWithComments) {

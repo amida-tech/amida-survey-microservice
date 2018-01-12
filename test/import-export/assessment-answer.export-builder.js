@@ -14,6 +14,7 @@ const filterDuplicates = function filterDuplicates(duplicates) {
             expected.push(curr1);
         }
     });
+
     return expected;
 };
 
@@ -22,8 +23,8 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     constructor(options) {
         this.hxSurvey = options.hxSurvey;
         this.hxQuestion = options.hxQuestion;
-        this.hxAnswer = options.hxAnswer;
-        this.tests = options.tests;
+        this.hxAnswer = options.tests.hxAnswer;
+        this.hxAssessment = options.hxAssessment;
     }
 
     formatAnswerJSON(currExpected, options) {
@@ -32,35 +33,40 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const expected = Object.assign({}, currExpected);
         const questionAnswer = expected.answers.find(answer => answer.questionId === options.questionId);
         const answer = questionAnswer.answer;
-        expected.surveyId = hxSurvey.id(expected.surveyIndex);
-        expected.assessmentId = expected.userIndex + 1;
-        expected.questionId = questionAnswer.questionId;
-        expected.questionType = hxQuestion.serverById(expected.questionId).type;
-        delete expected.surveyIndex;
-        delete expected.remaining;
-        delete expected.removed;
-        delete expected.userIndex;
-        delete expected.answers;
+
+        if (answer) {
+            expected.surveyId = hxSurvey.id(expected.surveyIndex);
+            expected.assessmentId = expected.userIndex + 1;
+            expected.questionId = questionAnswer.questionId;
+            expected.questionType = hxQuestion.serverById(expected.questionId).type;
+
+            delete expected.surveyIndex;
+            delete expected.remaining;
+            delete expected.removed;
+            delete expected.userIndex;
+            delete expected.answers;
 
 
-        if (answer.boolValue !== undefined) {
-            expected.value = answer.boolValue ? 'true' : 'false';
-        } else if (answer.choices) {
-            return this.formatChoicesAnswerJSON(expected, answer, options);
-        } else if (answer.choice) {
-            expected.questionChoiceId = answer.choice;
-        } else if (answer.textValue) {
-            expected.value = answer.textValue;
-        } else if (answer.integerValue) {
-            expected.value = String(answer.integerValue);
-        } else if (answer.floatValue) {
-            expected.value = String(answer.floatValue);
-        } else if (answer.numberValue) {
-            expected.value = String(answer.numberValue);
-        } else if (answer.dateValue) {
-            expected.value = String(answer.dateValue);
+            if (answer.boolValue !== undefined) {
+                expected.value = answer.boolValue ? 'true' : 'false';
+            } else if (answer.choices) {
+                return this.formatChoicesAnswerJSON(expected, answer, options);
+            } else if (answer.choice) {
+                expected.questionChoiceId = answer.choice;
+            } else if (answer.textValue) {
+                expected.value = answer.textValue;
+            } else if (answer.integerValue) {
+                expected.value = String(answer.integerValue);
+            } else if (answer.floatValue) {
+                expected.value = String(answer.floatValue);
+            } else if (answer.numberValue) {
+                expected.value = String(answer.numberValue);
+            } else if (answer.dateValue) {
+                expected.value = String(answer.dateValue);
+            }
+            return expected;
         }
-        return expected;
+        return [];
     }
 
     formatChoicesAnswerJSON(expected, answer) {
@@ -85,16 +91,43 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         return expected;
     }
 
+    filterForLatestStage(expected) {
+        const hxAssessment = this.hxAssessment;
+        const assessmentGroup = new Map();
+        const latestAssessment = new Map();
+        const finalExpected = [];
+
+
+        hxAssessment.listServers().forEach((assessment) => {
+            assessmentGroup[assessment.id] = assessment.group;
+            if (latestAssessment[assessment.group] &&
+                 assessment.stage > latestAssessment[assessment.group].stage) {
+                latestAssessment[assessment.group] = assessment;
+            } else if (!latestAssessment[assessment.group]) {
+                latestAssessment[assessment.group] = assessment;
+            }
+        });
+
+        expected.forEach((e) => {
+            const group = assessmentGroup[e.assessmentId];
+            if (latestAssessment[group].id === e.assessmentId) {
+                finalExpected.push(e);
+            }
+        });
+
+        return finalExpected;
+    }
 
     getExpectedExportedAsessmentAnswers(options) {
         const hxSurvey = this.hxSurvey;
-        const tests = this.tests;
-        const expectedWithDuplicates = _.filter(tests.hxAnswer.store, answers => _.filter(answers.answers, answer => answer.questionId === options.questionId).length
+        const hxAnswer = this.hxAnswer;
+        const expectedWithDuplicates = _.filter(hxAnswer.store, answers => _.filter(answers.answers, answer => answer.questionId === options.questionId).length
                     && hxSurvey.id(answers.surveyIndex) === options.surveyId);
         let expected = filterDuplicates(expectedWithDuplicates);
+
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));
         expected = _.flatten(expected);
-        return expected;
+        return this.filterForLatestStage(expected);
     }
 
 

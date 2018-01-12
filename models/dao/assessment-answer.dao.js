@@ -222,7 +222,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
             });
     }
 
-    listAssessmentAnswers(options) {
+    exportAssessmentAnswers(options) {
         const surveyId = options.surveyId;
         const sectionId = options.sectionId;
         const questionId = options.questionId;
@@ -230,27 +230,44 @@ module.exports = class AnswerAssessmentDAO extends Base {
         if (sectionId && questionId) {
             SurveyError.reject('surveyBothQuestionsSectionsSpecified');
         }
+        if (!surveyId) {
+            SurveyError.reject('surveyMustBeSpecified');
+        }
         return this.db.AssessmentSurvey.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
-        }).then((assessments) => {
-            const assessmentIds = assessments.map(r => r.assessmentId);
+        }).then((surveyAssessments) => {
+            const assessmentIds = surveyAssessments.map(r => r.assessmentId);
             const newOptions = { surveyId, assessmentIds, questionIds: [questionId], scope: 'export' };
             return this.answer.listAnswers(newOptions)
-                .then((answers) => {
-                    if (!answers.length) {
-                        return SurveyError.reject('surveyNotFound');
-                    }
-                    return answers;
-                });
+                .then(answers => this.db.Assessment.findAll({
+                    where: { id: { $in: assessmentIds } },
+                    raw: true,
+                    attributes: ['id', 'group', 'stage'],
+                }).then((assessments) => {
+                    const mapInput = assessments.map(r => [r.id, r.group, r.stage]);
+                    const groupMap = new Map(mapInput);
+                    const latestAssessments = new Map();
+                    assessments.forEach((a) => {
+                        if ((latestAssessments[a.group] &&
+                            a.stage > latestAssessments[a.group].stage) ||
+                            !latestAssessments[a.group]) {
+                            latestAssessments[a.group] = a;
+                        }
+                    });
+                    const final = answers.filter((a) => {
+                        const group = groupMap.get(a.assessmentId);
+                        return a.assessmentId === latestAssessments[group].id;
+                    });
+                    return final;
+                }));
         });
     }
 
-
     exportAssessmentAnswersCSV(options) {
         const csvConverter = new CSVConverterExport();
-        return this.listAssessmentAnswers(options)
-            .then(answers => csvConverter.dataToCSV(answers));
+        return this.exportAssessmentAnswers(options)
+            .then(answers => (answers ? csvConverter.dataToCSV(answers) : ''));
     }
 };

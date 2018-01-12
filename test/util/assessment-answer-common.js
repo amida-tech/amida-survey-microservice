@@ -319,14 +319,17 @@ const IntegrationTests = class AnswerIntegrationTests {
         const surveySuperTest = this.surveySuperTest;
         const hxAnswer = this.hxAnswer;
         const hxAssessment = this.hxAssessment;
+        const hxUser = this.hxUser;
         return function answerSurvey() {
             const assessmentId = hxAssessment.id(assessmentIndex);
             const prevAssessmentId = hxAssessment.id(prevIndex);
             const input = { prevAssessmentId };
+            const userId = hxUser.id(userIndex);
+
             return surveySuperTest.post(`/assessment-answers/${assessmentId}/as-copy`, input, 204)
                 .then(() => {
                     const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
-                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
                 });

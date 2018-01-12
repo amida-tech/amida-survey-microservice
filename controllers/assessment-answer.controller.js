@@ -62,7 +62,7 @@ exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
 // TODO:    const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.section-id.value');
     const options = { surveyId, questionId };
-    req.models.assessmentAnswer.listAssessmentAnswers(options)
+    req.models.assessmentAnswer.exportAssessmentAnswers(options)
         .then((result) => {
             res.status(200).send(result);
         })

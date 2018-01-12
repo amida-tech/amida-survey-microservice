@@ -25,30 +25,25 @@ const ExportBuilder = require('./assessment-answer.export-builder');
 const expect = chai.expect;
 
 describe('export assessment answers integration', function answerAssessmentUnit() {
-    // TODO: verify import scripts work for assessment-answers
-    const surveySuperTest = new SurveySuperTest();
     const generator = new Generator();
-
+    const surveySuperTest = new SurveySuperTest();
     const shared = new SharedIntegration(surveySuperTest, generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
     const hxAssessment = new History(['id', 'name', 'stage', 'group']);
-    const hxAnswer = new History();
 
     const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion);
     const assessmentTests = new assessmentCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxAssessment);
     const tests = new assessmentAnswerCommon.IntegrationTests(surveySuperTest, {
-        generator, hxUser, hxSurvey, hxQuestion, hxAssessment, hxAnswer,
+        generator, hxUser, hxSurvey, hxQuestion, hxAssessment,
     });
-    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({hxSurvey, hxQuestion, hxAnswer, tests})
-
+    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({ hxSurvey, hxQuestion, hxAssessment, tests });
     const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
     const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
     const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
-
     before(shared.setUpFn());
 
     it('sanity checks', function sanityChecks() {
@@ -75,11 +70,14 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage };
+            const override = { name, stage, group: String(nameIndex) };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
+
     it('logout as super', shared.logoutFn());
+
+
     const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
         const { name, stage, user, questions, commentQuestions } = answersSpec;
@@ -87,29 +85,44 @@ describe('export assessment answers integration', function answerAssessmentUnit(
         const questionIndices = questions;
         const commentIndices = commentQuestions;
         const assessmentIndex = (name * stageCount) + stage;
-        assessmentIndexSet.add(assessmentIndex);
         it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
-        it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-                tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
-        it(`logout as  user ${userIndex}`, shared.logoutFn());
-    });
-    it('login as super', shared.loginFn(config.superUser));
 
+        if (!assessmentIndexSet.has(assessmentIndex)) {
+            assessmentIndexSet.add(assessmentIndex);
+            if (stage > 0) {
+                const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`,
+                    tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+            }
+        }
+
+        it(`user ${userIndex} creates assessesment ${name} ${stage}`,
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
+            tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
+
+        it(`logout as user ${userIndex}`, shared.logoutFn());
+    });
+
+
+    it('login as super', shared.loginFn(config.superUser));
 
     const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
         // TODO add section ids to tests
         return function verify() {
-            let options = { 'question-id': index, 'survey-id': 1 };
+            const options = { 'question-id': index, 'survey-id': 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
                 .then((answers) => {
-                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] }))
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] }));
                     expect(_.sortBy(answers.body, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
                 });
         };
     };
-    _.range(1, questionCount + 1).forEach((index) => {
-        it(`exported assessment-answers csv, surveyId: 1, questionId: ${index}`,
+
+    _.range(0, questionCount + 2).forEach((index) => {
+        it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
             verifyExportAssessmentAnswers(index));
     });
+
     it('logout as super', shared.logoutFn());
 });

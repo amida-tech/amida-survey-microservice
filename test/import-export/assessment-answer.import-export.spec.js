@@ -18,7 +18,7 @@ const assessmentAnswerCommon = require('../util/assessment-answer-common');
 const questionCommon = require('../util/question-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
-//const ExportCSVConverter = require('../../import/csv-converter.js');
+// const ExportCSVConverter = require('../../import/csv-converter.js');
 const ExportBuilder = require('./assessment-answer.export-builder');
 const answerSession = require('../fixtures/answer-session/assessment-0');
 
@@ -40,7 +40,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
     const tests = new assessmentAnswerCommon.SpecTests({
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment, hxAnswer,
     });
-    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({hxSurvey, hxQuestion, hxAnswer, tests})
+    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({ hxSurvey, hxQuestion, hxAssessment, tests });
 
     const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
     const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
@@ -71,7 +71,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage };
+            const override = { name, stage, group: String(nameIndex) };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
@@ -93,16 +93,35 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
         // TODO add section ids to tests
         return function verify() {
             const options = { questionId: index, surveyId: 1 };
-            return models.assessmentAnswer.listAssessmentAnswers(options)
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
                 .then((answers) => {
-                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(options)
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
                     expect(_.sortBy(answers, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
                 });
         };
     };
 
     _.range(1, questionCount + 1).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
+        it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
             verifyExportAssessmentAnswers(index));
     });
+
+    const verifyErrorMsgBothQuestionIdSectionId = function verifyErrorMsg() {
+        return function verifyErr() {
+            const options = { questionId: 1, surveyId: 1, sectionId: 1 };
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
+            .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
+        };
+    };
+
+    const verifyErrorMsgNoSurveyId = function verifyErrorMsg() {
+        return function verifyErr() {
+            const options = { questionId: 1, sectionId: 1 };
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
+            .then(res => shared.verifyErrorMessage(res, 'surveyMustBeSpecified'));
+        };
+    };
+
+    it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsgBothQuestionIdSectionId);
+    it('verifyErrorMsgNoSurveyId', verifyErrorMsgNoSurveyId);
 });
