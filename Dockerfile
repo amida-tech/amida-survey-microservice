@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:6.9.1
+FROM node:8.9.0
 
 # Add package.json before rest of repo, for Docker caching purposes
 # See http://ilikestuffblog.com/2014/01/06/

@@ -4113,11 +4113,8 @@
                         "$ref": "#/definitions/answer"
                     }
                 },
-                "comments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/newComment"
-                    }
+                "comment": {
+                    "$ref": "#/definitions/newComment"
                 }
             },
             "additionalProperties": false
@@ -4199,7 +4196,10 @@
                         "$ref": "#/definitions/answer"
                     }
                 },
-                "comments": {
+                "comment": {
+                    "$ref": "#/definitions/comment"
+                },
+                "commentHistory": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/comment"
