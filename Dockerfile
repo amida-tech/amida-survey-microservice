@@ -14,6 +14,5 @@ RUN npm install --production
 
 ADD . /app
 
-ENV PORT 9005
 EXPOSE 9005
 CMD node seed.js && node --harmony index.js
