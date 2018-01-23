@@ -38,6 +38,9 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
                 },
             };
         },
+        scale(value) {
+            return { numberValue: parseFloat(value) };
+        },
         feetInches(value) {
             const pieces = value.split('-');
             return {

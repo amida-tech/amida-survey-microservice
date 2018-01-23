@@ -44,6 +44,7 @@
 	"ccfNoSelectionsForChoice": "No selection is specified choice type question.",
 	"choiceSetNotFound": "No choice set named {{$0}} is found.",
 	"questionChoiceCodeNotFound": "Question choice code is not found.",
+	"questionScaleMinGTMax": "Scale question maximum cannot be greater than minimum.",
 	"searchQuestionRepeat": "Questions were specified multiple times in the criteria.",
 	"zipInvalidValue": "Invalid zip code value: {{$0}}.",
 	"zipApiError": "Zip code API gave error {{$0}}.",
@@ -62,5 +63,6 @@
 	"cohortZipFileNotGenerated": "Cohort csv file cannot be zipped.",
 	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})",
 	"answerInvalidAssesSurveys": "Survey assigned to assessment is not unique.",
-	"answerInvalidSurveyInAsses": "Survey does not belong to assessment."
+	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
+	"answerOutOfScale": "Answer {{0}} is out of scale."
 }

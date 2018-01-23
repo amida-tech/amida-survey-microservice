@@ -17,17 +17,10 @@ const generateComment = (function generateCommentFn() {
 }());
 
 const generateAnswersWithComments = function (hxQuestion, commentIndices) {
-    const questionLocation = {};
     return commentIndices.reduce((r, index) => {
         const questionId = hxQuestion.id(index);
         const comment = generateComment();
-        const location = questionLocation[questionId];
-        if (location || location === 0) {
-            r[location].comments.push(comment);
-            return r;
-        }
-        const answerWithComments = { questionId, comments: [comment] };
-        questionLocation[questionId] = r.length;
+        const answerWithComments = { questionId, comment };
         r.push(answerWithComments);
         return r;
     }, []);
