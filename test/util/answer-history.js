@@ -13,10 +13,10 @@ const toAnswerRecord = function (answers, language) {
     }, {});
     language = language || 'en';
     answers = answers.reduce((r, answer) => {
-        if (!answer.answer && !answer.answers && answer.comment) {
+        if (!answer.answer && !answer.answers && answer.comments) {
             return r;
         }
-        const commentlessAnswer = _.omit(answer, 'comment');
+        const commentlessAnswer = _.omit(answer, 'comments');
         if (!commentlessAnswer.language) {
             Object.assign(commentlessAnswer, { language });
         }
@@ -32,7 +32,6 @@ module.exports = class AnswerHistory {
         this.store = [];
         this.serverStore = [];
         this.comments = {};
-        this.instant = 0;
         this.questionsWithComments = {};
     }
 
@@ -52,7 +51,7 @@ module.exports = class AnswerHistory {
             const removed = record.removed;
             answers.forEach((r) => {
                 const questionId = r.questionId;
-                if (!r.answer && !r.answers && r.comment) {
+                if (!r.answer && !r.answers && r.comments) {
                     return;
                 }
                 if (Object.prototype.hasOwnProperty.call(remaining, questionId)) {
@@ -64,16 +63,18 @@ module.exports = class AnswerHistory {
     }
 
     updateComments(userIndex, surveyIndex, answers, language, userId) {
-        this.instant = this.instant + 1;
-        const instant = this.instant;
-        answers.forEach(({ questionId, comment: newComment }) => {
-            if (newComment) {
+        answers.forEach(({ questionId, comments: newComments }) => {
+            if (newComments) {
                 const commentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
-                const comment = Object.assign({}, newComment, {
-                    language: language || 'en',
-                }, { userId });
-
-                this.comments[commentKey] = { comment, instant };
+                let comments = this.comments[commentKey];
+                if (!comments) {
+                    comments = [];
+                    this.comments[commentKey] = comments;
+                }
+                newComments.forEach((comment) => {
+                    const record = Object.assign({}, comment, { language: language || 'en' }, { userId });
+                    comments.push(record);
+                });
                 const key = AnswerHistory.key(userIndex, surveyIndex);
                 let questionsWithComments = this.questionsWithComments[key];
                 if (!questionsWithComments) {
@@ -155,52 +156,9 @@ module.exports = class AnswerHistory {
         }, []);
     }
 
-    getGroupComments(group, userIndex, surveyIndex) {
-        const result = group.reduce((r, groupIndex) => {
-            const key = AnswerHistory.key(groupIndex, surveyIndex);
-            const questionsWithComments = this.questionsWithComments[key];
-            if (!questionsWithComments) {
-                return r;
-            }
-            questionsWithComments.forEach((questionId) => {
-                const commentKey = `${key}-${questionId}`;
-                const comment = this.comments[commentKey];
-                if (comment) {
-                    const currentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
-                    let questionComments = r[currentKey];
-                    if (!questionComments) {
-                        questionComments = [];
-                        r[currentKey] = questionComments;
-                    }
-                    questionComments.push(comment);
-                }
-            });
-            return r;
-        }, {});
-        return Object.keys(result).reduce((r, key) => {
-            const orderedComments = _.sortBy(result[key], 'instant');
-            r[key] = orderedComments.map(({ comment }) => comment);
-            return r;
-        }, {});
-    }
-
-    getGroupQuestionsWithComments(group, userIndex, surveyIndex) {
-        return group.reduce((r, groupIndex) => {
-            const key = AnswerHistory.key(groupIndex, surveyIndex);
-            const questionsWithComments = this.questionsWithComments[key];
-            if (!questionsWithComments) {
-                return r;
-            }
-            questionsWithComments.forEach((questionId) => {
-                r.add(questionId);
-            });
-            return r;
-        }, new Set());
-    }
-
-    expectedAnswers(userIndex, surveyIndex, options = {}) {
+    expectedAnswers(userIndex, surveyIndex) {
         const records = this.getAll(userIndex, surveyIndex);
-        let preresult = records.reduce((r, { remaining, answers }) => {
+        const preresult = records.reduce((r, { remaining, answers }) => {
             if (!remaining) {
                 r.push(...answers);
                 return r;
@@ -213,45 +171,14 @@ module.exports = class AnswerHistory {
             });
             return r;
         }, []);
-        const group = options.group;
-        if (group) {
-            const groupComments = this.getGroupComments(group, userIndex, surveyIndex);
-            const insertedComment = new Set();
-            preresult = preresult.map((answer) => {
-                const questionId = answer.questionId;
-                const key = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
-                const commentHistory = groupComments[key];
-                if (commentHistory && commentHistory.length) {
-                    insertedComment.add(questionId);
-                    return Object.assign({ commentHistory }, answer);
-                }
-                return answer;
-            });
-            const key = AnswerHistory.key(userIndex, surveyIndex);
-            const questionsWithComments = this.getGroupQuestionsWithComments(group, userIndex, surveyIndex);
-            questionsWithComments.forEach((questionId) => {
-                if (!insertedComment.has(questionId)) {
-                    const commentKey = `${key}-${questionId}`;
-                    const commentHistory = groupComments[commentKey];
-                    const n = commentHistory && commentHistory.length;
-                    if (n) {
-                        const language = commentHistory[n - 1].language;
-                        preresult.push({ questionId, language, commentHistory });
-                    }
-                }
-            });
-        }
-        if (options.ignoreComments) {
-            return preresult;
-        }
         const insertedComment = new Set();
         const result = preresult.map((answer) => {
             const questionId = answer.questionId;
             const key = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
-            const { comment } = this.comments[key] || {};
-            if (comment) {
+            const comments = this.comments[key];
+            if (comments) {
                 insertedComment.add(questionId);
-                return Object.assign({ comment }, answer);
+                return Object.assign({ comments }, answer);
             }
             return answer;
         });
@@ -261,9 +188,9 @@ module.exports = class AnswerHistory {
             questionsWithComments.forEach((questionId) => {
                 if (!insertedComment.has(questionId)) {
                     const commentKey = `${key}-${questionId}`;
-                    const { comment } = this.comments[commentKey] || {};
-                    const language = comment.language;
-                    result.push({ questionId, language, comment });
+                    const comments = this.comments[commentKey];
+                    const language = comments[comments.length - 1].language;
+                    result.push({ questionId, comments, language });
                 }
             });
         }

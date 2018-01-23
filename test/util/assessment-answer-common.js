@@ -37,26 +37,11 @@ const findQuestionCount = function (answerSession) {
 
 const findAnswerCommentsCount = function (answers) {
     return answers.reduce((r, answer) => {
-        if (answer.comment) {
-            return r + 1;
+        if (answer.comments) {
+            return r + answer.comments.length;
         }
         return r;
     }, 0);
-};
-
-const findGroup = function (hxAssessment, assessmentIndex) {
-    const allClients = hxAssessment.listClientsWithIndex();
-    const thisClient = hxAssessment.client(assessmentIndex);
-    return allClients.reduce((r, { client, index }) => {
-        if (assessmentIndex === index) {
-            return r;
-        }
-        if (thisClient.group !== client.group) {
-            return r;
-        }
-        r.push(index);
-        return r;
-    }, []);
 };
 
 const SpecTests = class AnswerSpecTests {
@@ -107,12 +92,11 @@ const SpecTests = class AnswerSpecTests {
         return function getAssessmentAnswers() {
             const masterId = {};
             const assessmentId = hxAssessment.id(assessmentIndex);
-            const group = findGroup(hxAssessment, assessmentIndex);
             Object.assign(masterId, { assessmentId });
             return models.assessmentAnswer.getAssessmentAnswersOnly(masterId)
                 .then((result) => {
                     const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
-                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex, { group });
+                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     comparator.answers(expected, result);
                     hxAnswer.pushServer(masterIndex, surveyIndex, result);
                 });
@@ -130,8 +114,7 @@ const SpecTests = class AnswerSpecTests {
             const input = { userId, assessmentId, prevAssessmentId };
             return models.assessmentAnswer.copyAssessmentAnswers(input)
                 .then(() => {
-                    const options = { ignoreComments: true };
-                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, options);
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
                     hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
@@ -322,11 +305,10 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxAnswer = this.hxAnswer;
         const hxAssessment = this.hxAssessment;
         return function getAnswers() {
-            const group = findGroup(hxAssessment, assessmentIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             return surveySuperTest.get(`/assessment-answers/${assessmentId}/answers`, true, 200)
                 .then((res) => {
-                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex, { group });
+                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     comparator.answers(expected, res.body);
                     hxAnswer.pushServer(assessmentIndex, surveyIndex, res.body);
                 });
@@ -346,8 +328,7 @@ const IntegrationTests = class AnswerIntegrationTests {
 
             return surveySuperTest.post(`/assessment-answers/${assessmentId}/as-copy`, input, 204)
                 .then(() => {
-                    const options = { ignoreComments: true };
-                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, options);
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
                     hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);

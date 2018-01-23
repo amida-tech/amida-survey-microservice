@@ -14,66 +14,24 @@ module.exports = class AnswerCommentDAO extends Base {
         return this.db.AnswerComment.bulkCreate(records, { transaction });
     }
 
-    listAnswerComments({ assessmentId, assessmentIds }) {
+    listAnswerComments({ assessmentId }) {
         const attributes = ['id', 'userId', 'questionId', 'reason', 'text', 'language'];
-        const where = {};
-        if (assessmentId) {
-            where.assessmentId = assessmentId;
-        }
-        if (assessmentIds) {
-            attributes.push('assessmentId');
-            where.assessmentId = { $in: assessmentIds };
-        }
-        const order = ['created_at'];
-        return this.db.AnswerComment.findAll({ where, attributes, raw: true, order })
+        const where = { assessmentId };
+        return this.db.AnswerComment.findAll({ where, attributes, raw: true })
             .then(records => records.map(record => _.omitBy(record, _.isNil)))
-            .then(records => records.reduce((r, record) => {
-                const questionId = record.questionId;
-                const comment = _.omit(record, ['questionId', 'assessmentId']);
-                const commentObj = { questionId, comment };
-                if (record.assessmentId) {
-                    commentObj.assessmentId = record.assessmentId;
-                }
-                r.push(commentObj);
-                return r;
-            }, []));
-    }
-
-    listAnswerCommentsWithHistory({ assessmentId }) {
-        return this.db.Assessment.findById(assessmentId, {
-            raw: true, attributes: ['group'],
-        })
-            .then(({ group }) => {
-                if (!group) {
-                    return [assessmentId];
-                }
-                return this.db.Assessment.findAll({
-                    raw: true, attributes: ['id'], where: { group },
-                })
-                    .then(groupResult => groupResult.map(({ id }) => id));
-            })
-            .then(assessmentIds => this.listAnswerComments({ assessmentIds }))
             .then((records) => {
-                const answerMap = {};
-                return records.reduce((r, record) => {
-                    const { questionId, comment } = record;
-                    let answer = answerMap[questionId];
-                    if (!answer) {
-                        answer = { questionId };
-                        answerMap[questionId] = answer;
-                        r.push(answer);
+                const { result } = records.reduce((r, record) => {
+                    const questionId = record.questionId;
+                    let comments = r.map[questionId];
+                    if (!comments) {
+                        comments = [];
+                        r.result.push({ questionId, comments });
+                        r.map[questionId] = comments;
                     }
-                    if (record.assessmentId === assessmentId) {
-                        answer.comment = comment;
-                        return r;
-                    }
-                    if (!answer.commentHistory) {
-                        answer.commentHistory = [comment];
-                        return r;
-                    }
-                    answer.commentHistory.push(comment);
+                    comments.push(_.omit(record, 'questionId'));
                     return r;
-                }, []);
+                }, { result: [], map: {} });
+                return result;
             });
     }
 };

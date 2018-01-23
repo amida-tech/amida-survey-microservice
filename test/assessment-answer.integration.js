@@ -72,7 +72,7 @@ describe('assessment answer integration', function answerAssessmentIntegration()
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage, group: name };
+            const override = { name, stage };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });

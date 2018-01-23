@@ -10,35 +10,26 @@ const queryrize = require('../../lib/queryrize');
 const CSVConverterExport = require('../../export/csv-converter');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
+const copyCommentsSql = queryrize.readQuerySync('copy-answer-comments.sql');
 
 const mergeAnswerComments = function (answers, comments) {
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
         const questionId = answer.questionId;
-        const commentObject = commentsMap[questionId];
-        if (commentObject) {
+        const questionComments = commentsMap[questionId];
+        if (questionComments) {
             insertedComments.add(questionId);
-            const { comment, commentHistory } = commentObject;
-            if (comment) {
-                Object.assign(answer, { comment });
-            }
-            if (commentHistory) {
-                Object.assign(answer, { commentHistory });
-            }
+            Object.assign(answer, questionComments);
         }
     });
-    comments.forEach((commentObject) => {
-        const { questionId, comment, commentHistory } = commentObject;
+    comments.forEach((comment) => {
+        const questionId = comment.questionId;
         if (!insertedComments.has(questionId)) {
-            let language = comment ? comment.language : null;
-            if (!language) {
-                const n = commentHistory && commentHistory.length;
-                if (n) {
-                    language = commentHistory[n - 1].language;
-                }
-            }
-            answers.push(Object.assign({ language }, commentObject));
+            const ccomments = comment.comments;
+            const language = ccomments[ccomments.length - 1].language;
+            const r = Object.assign({ language }, comment);
+            answers.push(r);
         }
     });
     return answers;
@@ -97,13 +88,13 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     createAssessmentAnswersTx(inputRecord, transaction) {
         const { answers, comments } = inputRecord.answers.reduce((r, answer) => {
-            const { questionId, comment: newComment } = answer;
-            if (newComment) {
-                r.comments.push({ questionId, comment: newComment });
+            const { questionId, comments: newComments } = answer;
+            if (newComments) {
+                newComments.forEach(comment => r.comments.push({ questionId, comment }));
             }
             if (answer.answer || answer.answers) {
                 const a = _.cloneDeep(answer);
-                r.answers.push(_.omit(a, 'comment'));
+                r.answers.push(_.omit(a, 'comments'));
             }
             return r;
         }, { answers: [], comments: [] });
@@ -118,15 +109,6 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         const where = { questionId: { $in: ids } };
                         where.assessmentId = masterId.assessmentId;
                         return this.db.Answer.destroy({ where, transaction });
-                    }
-                    return null;
-                })
-                .then(() => {
-                    if (comments.length) {
-                        const ids = _.map(comments, 'questionId');
-                        const where = { questionId: { $in: ids } };
-                        where.assessmentId = masterId.assessmentId;
-                        return this.db.AnswerComment.destroy({ where, transaction });
                     }
                     return null;
                 })
@@ -159,7 +141,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     getAssessmentAnswersOnly({ assessmentId }) {
         return this.answer.listAnswers({ scope: 'assessment', assessmentId })
-            .then(answers => this.answerComment.listAnswerCommentsWithHistory({ assessmentId })
+            .then(answers => this.answerComment.listAnswerComments({ assessmentId })
                 .then((comments) => {
                     if (answers && answers.length) {
                         if (comments.length) {
@@ -187,7 +169,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         where.userId = masterId.userId;
                         where.surveyId = masterId.surveyId;
                     }
-                    return this.db.Answer.destroy({ where, transaction });
+                    return this.db.Answer.destroy({ where, transaction })
+                        .then(() => this.db.AnswerComment.destroy({ where, transaction }));
                 })
                 .then(() => {
                     const { userId, assessmentId, prevAssessmentId } = inputRecord;
@@ -196,7 +179,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         assessment_id: assessmentId,
                         prev_assessment_id: prevAssessmentId,
                     };
-                    return this.query(copySql, params, transaction);
+                    return this.query(copySql, params, transaction)
+                        .then(() => this.query(copyCommentsSql, params, transaction));
                 }));
     }
 

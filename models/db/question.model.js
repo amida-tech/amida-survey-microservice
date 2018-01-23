@@ -58,9 +58,6 @@ module.exports = function question(sequelize, Sequelize, schema) {
         common: {
             type: Sequelize.BOOLEAN,
         },
-        parameter: {
-            type: Sequelize.TEXT,
-        },
     }, {
         freezeTableName: true,
         tableName,

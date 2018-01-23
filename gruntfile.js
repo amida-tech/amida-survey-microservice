@@ -72,6 +72,8 @@ module.exports = function gruntmain(grunt) {
                 'gruntfile.js',
                 'index.js',
                 'app.js',
+                '.eslintrc',
+                'test/.eslintrc.js',
             ],
         },
         watch: {

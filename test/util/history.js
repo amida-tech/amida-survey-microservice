@@ -95,16 +95,6 @@ class History {
         return this.clients;
     }
 
-    listClientsWithIndex() {
-        return this.currentIndex.reduce((r, currentIndex, index) => {
-            if (currentIndex >= 0) {
-                const client = this.clients[currentIndex];
-                r.push({ client, index });
-            }
-            return r;
-        }, []);
-    }
-
     listServers(fields, indices) {
         let list;
         if (indices) {

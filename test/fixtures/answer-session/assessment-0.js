@@ -119,5 +119,5 @@ module.exports = [{
     name: 2,
     stage: 3,
     user: 3,
-    commentQuestions: [0, 2, 4],
+    commentQuestions: [0, 0, 2, 4, 4],
 }];
