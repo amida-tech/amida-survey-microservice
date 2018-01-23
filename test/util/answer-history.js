@@ -95,7 +95,7 @@ module.exports = class AnswerHistory {
         }
         const index = this.store.length;
         const record = toAnswerRecord(answers, language);
-        const value = Object.assign({ userIndex, surveyIndex, userId }, record);
+        const value = Object.assign({ userIndex, surveyIndex, userId}, record);
         this.store.push(value);
         this.serverStore.push(null);
         indexHistory.push(index);
@@ -290,16 +290,7 @@ module.exports = class AnswerHistory {
 
     copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex, userId) {
         const answers = this.expectedAnswers(prevAssessmentIndex, surveyIndex);
-        const commentlessAnswers = answers.map(answer => _.omit(answer, 'comments'));
+        const commentlessAnswers = answers.map(answer => _.omit(answer, 'comment'));
         this.push(userIndex, surveyIndex, commentlessAnswers, null, userId);
-        const prevKey = AnswerHistory.key(prevAssessmentIndex, surveyIndex);
-        const questionsWithComments = this.questionsWithComments[prevKey];
-        if (questionsWithComments) {
-            const currentKey = AnswerHistory.key(userIndex, surveyIndex);
-            this.questionsWithComments[currentKey] = questionsWithComments;
-            questionsWithComments.forEach((questionId) => {
-                this.comments[`${currentKey}-${questionId}`] = this.comments[`${prevKey}-${questionId}`];
-            });
-        }
     }
 };
