@@ -1,6 +1,6 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
+/* eslint no-param-reassign: 0, max-len: 0, class-methods-use-this: 0 */
 
 const _ = require('lodash');
 
@@ -102,6 +102,20 @@ module.exports = class Answerer {
     bullet() {
         const answerIndex = this.answerIndex;
         return { textValue: `string_${answerIndex}` };
+    }
+
+    scale(question) {
+        const { min, max } = question.scaleLimits;
+        if (min !== undefined && max !== undefined) {
+            return { numberValue: (min + max) / 2 };
+        }
+        if (min !== undefined) {
+            return { numberValue: min + 0.5 };
+        }
+        if (max !== undefined) {
+            return { numberValue: max - 0.5 };
+        }
+        return { numberValue: 0 };
     }
 
     choice(question) {
