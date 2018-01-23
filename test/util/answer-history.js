@@ -95,7 +95,7 @@ module.exports = class AnswerHistory {
         }
         const index = this.store.length;
         const record = toAnswerRecord(answers, language);
-        const value = Object.assign({ userIndex, surveyIndex, userId}, record);
+        const value = Object.assign({ userIndex, surveyIndex, userId }, record);
         this.store.push(value);
         this.serverStore.push(null);
         indexHistory.push(index);
