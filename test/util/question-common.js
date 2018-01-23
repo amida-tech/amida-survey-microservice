@@ -10,9 +10,9 @@ const SPromise = require('../../lib/promise');
 const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
-    summary: ['id', 'type', 'text', 'instruction'],
+    summary: ['id', 'type', 'scaleLimits', 'text', 'instruction'],
     complete: null,
-    export: ['id', 'type', 'text', 'instruction', 'choices', 'meta'],
+    export: ['id', 'type', 'scaleLimits', 'text', 'instruction', 'choices', 'meta'],
 };
 
 const expect = chai.expect;

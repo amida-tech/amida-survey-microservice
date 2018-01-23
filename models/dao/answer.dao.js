@@ -225,10 +225,47 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
+    validateAnswerValues(userAnswers) {
+        const ids = userAnswers.map(({ questionId }) => questionId);
+        const attributes = ['id', 'type', 'parameter'];
+        const where = { id: { $in: ids } };
+        return this.db.Question.findAll({ where, attributes, raw: true })
+            .then(questions => _.keyBy(questions, 'id'))
+            .then((questionMap) => {
+                userAnswers.forEach(({ questionId, answer, answers }) => {
+                    const question = questionMap[questionId];
+                    if (!question) {
+                        throw new SurveyError('answerQxNotInSurvey');
+                    }
+                    const { type, parameter } = question;
+                    if (type === 'scale' && (answer || answers)) { // only for scale currently
+                        const paramSplit = parameter.split(':');
+                        const [min, max] = paramSplit.map(v => (v ? parseFloat(v) : null));
+                        let values;
+                        if (answer) {
+                            values = [answer.numberValue];
+                        }
+                        if (answers) {
+                            values = answers.map(({ numberValue }) => numberValue);
+                        }
+                        values.forEach((value) => {
+                            if (min !== null && value < min) {
+                                throw new SurveyError('answerOutOfScale', value);
+                            }
+                            if (max !== null && value > max) {
+                                throw new SurveyError('answerOutOfScale', value);
+                            }
+                        });
+                    }
+                });
+            });
+    }
+
     validateAnswers(masterId, answers, status) {
         const Answer = this.db.Answer;
         const surveyId = masterId.surveyId;
-        return this.surveyQuestion.listSurveyQuestions(surveyId, true)
+        return this.validateAnswerValues(answers)
+            .then(() => this.surveyQuestion.listSurveyQuestions(surveyId, true))
             .then((surveyQuestions) => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
                 return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
