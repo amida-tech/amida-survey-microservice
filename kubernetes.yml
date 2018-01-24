@@ -43,6 +43,8 @@ spec:
           value: 0a6b944d-d2fb-46fc-a85e-0295c986cd9f
         - name: DEBUGXX
           value: swagger-tools:middleware:*
+        - name: SURVEY_SERVICE_CORS_ORIGIN
+          value: http://a3e0efcdbf19011e7b4a1060c5163e47-1300555791.us-west-2.elb.amazonaws.com:3000 http://a93777759f18511e7b4a1060c5163e47-2052654379.us-west-2.elb.amazonaws.com:3005
         ports:
         - name: nodejs-port
           containerPort: 9005
