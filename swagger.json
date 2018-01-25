@@ -2536,6 +2536,10 @@
         "newSection": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -2557,7 +2561,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 4,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "section": {
