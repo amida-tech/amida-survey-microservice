@@ -44,6 +44,8 @@ describe('assessment answer unit', function answerAssessmentUnit() {
 
     before(shared.setUpFn());
 
+
+
     it('sanity checks', function sanityChecks() {
         expect(userCount).to.be.above(0);
         expect(questionCount).to.be.above(0);
@@ -51,6 +53,14 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         expect(stageCount).to.be.above(0);
     });
 
+
+    const getSurveyIds = function() {
+        let ids = [];
+        hxSurvey.server.forEach(s => {
+            ids.push(s.id);
+        })
+        return ids
+    }
     _.range(userCount).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
     });
@@ -91,4 +101,9 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
+
+    const getNumberOfUsersBySurvey = function getNumberOfUsersBySurvey() {
+        let surveyIds = getSurveyIds();
+    }
+
 });

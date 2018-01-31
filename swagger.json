@@ -401,6 +401,36 @@
                 }
             }
         },
+        "/numberUsersBySurvey/{id}": {
+                "x-swagger-router-controller": "survey.controller",
+                "get": {
+                    "summary": "returns the number of users that have submitted an answer to the requested survey",
+                    "operationId": "getNumberOfUsersBySurvey",
+                    "parameters": [{
+                        "name": "id",
+                        "in":"path",
+                        "required": true,
+                        "type": "integer"
+                    }, {
+                        "name": "include_soft_delete",
+                        "in": "query",
+                        "required": false,
+                        "type": "boolean"
+                    }],
+                    "responses": {
+                        "200": {
+                            "description": "Successful response",
+                            "schema": {
+                                "type": "integer"
+                            }
+                        },
+                        "default": {
+                            "$ref": "#/responses/genericError"
+                        }
+                    }
+
+                }
+        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {

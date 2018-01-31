@@ -87,3 +87,11 @@ exports.importSurveys = function importSurveys(req, res) {
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
+
+exports.getNumberOfUsersBySurvey = function getNumberOfUsersBySurvey(req, res) {
+    const surveyId = _.get(req, 'swagger.params.id.value');
+    const softDelete = _.get(req, 'swagger.params.include_soft_delete.value');
+    req.models.survey.getNumberOfUsersBySurvey({surveyId, softDelete})
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+}
