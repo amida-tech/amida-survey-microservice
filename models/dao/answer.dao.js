@@ -401,11 +401,11 @@ module.exports = class AnswerDAO extends Base {
         }
 
         if (assessmentIds) {
-            where.assessment_id = { $in: assessmentIds };
+            where.assessmentId = { $in: assessmentIds };
         }
 
         if (questionIds) {
-            where.question_id = { $in: questionIds };
+            where.questionId = { $in: questionIds };
         }
 
         if (scope === 'history-only') {
@@ -488,6 +488,7 @@ module.exports = class AnswerDAO extends Base {
                         questionId: v[0]['question.id'],
                         language: v[0].language,
                     };
+
                     const vWithMata = v.find(e => e.meta);
                     if (vWithMata) {
                         r.meta = vWithMata.meta;

@@ -18,7 +18,7 @@ const questionCommon = require('./util/question-common');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
 
-const answerSession = require('./fixtures/answer-session/assessment-0');
+const answerSession = require('./fixtures/answer-session/assessment-2');
 
 const expect = chai.expect;
 
@@ -82,12 +82,14 @@ describe('assessment answer unit', function answerAssessmentUnit() {
             assessmentIndexSet.add(assessmentIndex);
             if (stage > 0) {
                 const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+
                 it(`user ${userIndex} copies assessesment ${name} ${stage}`,
                     tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
             }
         }
+
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });

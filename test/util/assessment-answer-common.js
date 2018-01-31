@@ -72,7 +72,7 @@ const SpecTests = class AnswerSpecTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices, languageOverride) {
         const generator = this.generator;
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
@@ -89,7 +89,8 @@ const SpecTests = class AnswerSpecTests {
             const input = { userId, surveyId, answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
             input.assessmentId = assessmentId;
-            const language = generator.nextLanguage();
+            const language = languageOverride || generator.nextLanguage();
+
             if (language) {
                 input.language = language;
             }
@@ -289,7 +290,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices, languageOverride) {
         const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
@@ -304,7 +305,7 @@ const IntegrationTests = class AnswerIntegrationTests {
             expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const input = { answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
-            const language = generator.nextLanguage();
+            const language = languageOverride || generator.nextLanguage();
             if (language) {
                 input.language = language;
             }

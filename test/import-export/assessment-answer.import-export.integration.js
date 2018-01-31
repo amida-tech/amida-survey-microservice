@@ -19,7 +19,7 @@ const questionCommon = require('../util/question-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
 const SurveySuperTest = require('../util/survey-super-test');
-const answerSession = require('../fixtures/answer-session/assessment-0');
+const answerSession = require('../fixtures/answer-session/assessment-2');
 const ExportBuilder = require('./assessment-answer.export-builder');
 
 const expect = chai.expect;
@@ -110,10 +110,10 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
         // TODO add section ids to tests
         return function verify() {
-            const options = { 'question_id': index, 'survey_id': 1 };
+            const options = { question_id: index, survey_id: 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
                 .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question_id'], surveyId: options['survey_id'] }));
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options.question_id, surveyId: options.survey_id }));
                     expect(_.sortBy(answers.body, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
                 });
         };

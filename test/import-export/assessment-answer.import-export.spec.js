@@ -20,7 +20,7 @@ const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
 // const ExportCSVConverter = require('../../import/csv-converter.js');
 const ExportBuilder = require('./assessment-answer.export-builder');
-const answerSession = require('../fixtures/answer-session/assessment-0');
+const answerSession = require('../fixtures/answer-session/assessment-2');
 
 const expect = chai.expect;
 
@@ -84,9 +84,20 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
         const questionIndices = questions;
         const commentIndices = commentQuestions;
         const assessmentIndex = (name * stageCount) + stage;
-        assessmentIndexSet.add(assessmentIndex);
+        if (!assessmentIndexSet.has(assessmentIndex)) {
+            assessmentIndexSet.add(assessmentIndex);
+            if (stage > 0) {
+                const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`,
+                    tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+            }
+        }
+
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-                tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
+        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
+            tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
     const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
@@ -101,8 +112,8 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
         };
     };
 
-    _.range(1, questionCount + 1).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
             verifyExportAssessmentAnswers(index));
     });
 
