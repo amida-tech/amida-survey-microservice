@@ -2615,6 +2615,10 @@
         "newSection": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -2636,7 +2640,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 4,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "section": {
@@ -2724,8 +2728,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/newSection"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/newSurveyQuestions"
@@ -2843,8 +2846,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/surveyQuestion"
-            },
-            "minItems": 1
+            }
         },
         "survey": {
             "type": "object",
@@ -2877,8 +2879,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/section"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/surveyQuestions"
