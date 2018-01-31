@@ -97,7 +97,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
         }
 
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
 
