@@ -104,6 +104,9 @@ describe('assessment answer unit', function answerAssessmentUnit() {
 
     const getNumberOfUsersBySurvey = function getNumberOfUsersBySurvey() {
         let surveyIds = getSurveyIds();
+        surveyIds.forEach(id => {
+            it(`verify number of users have answered survey ${id}`, tests.getNumberOfUsersBySurveyfn(id))
+        })
     }
 
 });
