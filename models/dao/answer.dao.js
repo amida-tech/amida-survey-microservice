@@ -396,12 +396,13 @@ module.exports = class AnswerDAO extends Base {
         if (surveyId) {
             where.surveyId = surveyId;
         }
-        if (assessmentId) {
-            where.assessmentId = assessmentId;
-        }
 
         if (assessmentIds) {
             where.assessmentId = { $in: assessmentIds };
+        }
+
+        if (assessmentId) {
+            where.assessmentId = assessmentId;
         }
 
         if (questionIds) {
@@ -429,7 +430,7 @@ module.exports = class AnswerDAO extends Base {
         }
 
         if (!(assessmentId || assessmentIds)) {
-            where.assessment_id = null;
+            where.assessmentId = null;
         }
 
         const include = [
@@ -450,7 +451,7 @@ module.exports = class AnswerDAO extends Base {
                 if (scope === 'export') {
                     return result.map((p) => {
                         const r = { surveyId: p.surveyId };
-                        if (assessmentId || assessmentIds) {
+                        if (attributes.includes('assessmentId') || attributes.includes('assessmentIds')) {
                             r.assessmentId = p.assessmentId;
                         }
                         if (attributes.includes('userId')) {

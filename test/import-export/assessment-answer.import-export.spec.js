@@ -18,14 +18,12 @@ const assessmentAnswerCommon = require('../util/assessment-answer-common');
 const questionCommon = require('../util/question-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
-// const ExportCSVConverter = require('../../import/csv-converter.js');
 const ExportBuilder = require('./assessment-answer.export-builder');
 const answerSession = require('../fixtures/answer-session/assessment-2');
 
 const expect = chai.expect;
 
-describe('export assessment answers unit', function answerAssessmentUnit() {
-    // TODO: verify import scripts work for assessment-answers
+describe('export assessment answers unit', function answerAssessmentImportExportUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const hxUser = new History();
@@ -71,7 +69,7 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage, group: String(nameIndex) };
+            const override = { name, stage, group: `${nameIndex}` };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
@@ -100,14 +98,14 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
-    const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
+    const verifyExportAssessmentAnswers = function (index) {
         // TODO add section ids to tests
         return function verify() {
             const options = { questionId: index, surveyId: 1 };
             return models.assessmentAnswer.exportAssessmentAnswers(options)
                 .then((answers) => {
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
-                    expect(_.sortBy(answers, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
+                    expect(answers).to.deep.equal(expected);
                 });
         };
     };
@@ -117,16 +115,16 @@ describe('export assessment answers unit', function answerAssessmentUnit() {
             verifyExportAssessmentAnswers(index));
     });
 
-    const verifyErrorMsgBothQuestionIdSectionId = function verifyErrorMsg() {
-        return function verifyErr() {
+    const verifyErrorMsgBothQuestionIdSectionId = function () {
+        return function verify() {
             const options = { questionId: 1, surveyId: 1, sectionId: 1 };
             return models.assessmentAnswer.exportAssessmentAnswers(options)
             .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
         };
     };
 
-    const verifyErrorMsgNoSurveyId = function verifyErrorMsg() {
-        return function verifyErr() {
+    const verifyErrorMsgNoSurveyId = function () {
+        return function verify() {
             const options = { questionId: 1, sectionId: 1 };
             return models.assessmentAnswer.exportAssessmentAnswers(options)
             .then(res => shared.verifyErrorMessage(res, 'surveyMustBeSpecified'));

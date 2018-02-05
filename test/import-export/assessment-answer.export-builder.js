@@ -127,7 +127,9 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));
         expected = _.flatten(expected);
-        return this.filterForLatestStage(expected);
+        expected = this.filterForLatestStage(expected);
+        expected = _.sortBy(expected, a => a.assessmentId);
+        return expected;
     }
 
 

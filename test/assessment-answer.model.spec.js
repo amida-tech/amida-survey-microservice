@@ -18,7 +18,7 @@ const questionCommon = require('./util/question-common');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
 
-const answerSession = require('./fixtures/answer-session/assessment-2');
+const answerSession = require('./fixtures/answer-session/assessment-0');
 
 const expect = chai.expect;
 
@@ -89,7 +89,7 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         }
 
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });

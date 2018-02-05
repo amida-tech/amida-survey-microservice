@@ -1832,29 +1832,22 @@
         "/assessment-answers/csv" : {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters":[{
-                "description": "survey Id that of the assessments' anwers that will be returned",
+                "description": "survey Id that of the assessments' answers that will be returned",
                 "name": "survey-id",
                 "in": "query",
-                "required": false,
+                "required": true,
                 "type":"integer"
             }, {
                 "description": "questionId filter on the assessments' anwers that will be returned",
                 "name": "question-id",
                 "in": "query",
-                "required": false,
-                "type":"integer"
-            },
-            {
-                "name": "section-id",
-                "description": "sectionId filter on the assessments' anwers that will be returned",
-                "in": "query",
-                "required": false,
+                "required": true,
                 "type":"integer"
             }],
             "get": {
-                "summary":"currently just gets assessments with the specified survey id(incomplete)",
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in json format",
                 "operationId":"assessmentAnswersCSV",
-                "produces": ["text/csv"],
+                "produces": ["text/csv", "application/json"],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1872,27 +1865,20 @@
         "/assessment-answers/export" : {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters":[{
-                "description": "survey Id that of the assessments' anwers that will be returned",
+                "description": "survey Id that of the assessments' answers that will be returned",
                 "name": "survey_id",
                 "in": "query",
-                "required": false,
+                "required": true,
                 "type":"integer"
             }, {
                 "description": "questionId filter on the assessments' anwers that will be returned",
                 "name": "question_id",
                 "in": "query",
-                "required": false,
-                "type":"integer"
-            },
-            {
-                "name": "section_id",
-                "description": "sectionId filter on the assessments' anwers that will be returned",
-                "in": "query",
-                "required": false,
+                "required": true,
                 "type":"integer"
             }],
             "get": {
-                "summary":"currently just gets assessments with the specified survey id(incomplete)",
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in csv format",
                 "operationId":"exportAssessmentAnswers",
                 "produces": ["application/json"],
                 "responses": {

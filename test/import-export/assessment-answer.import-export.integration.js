@@ -24,7 +24,7 @@ const ExportBuilder = require('./assessment-answer.export-builder');
 
 const expect = chai.expect;
 
-describe('export assessment answers integration', function answerAssessmentUnit() {
+describe('export assessment answers integration', function answerAssessmentImportExportIntegration() {
     const generator = new Generator();
     const surveySuperTest = new SurveySuperTest();
     const shared = new SharedIntegration(surveySuperTest, generator);
@@ -70,7 +70,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage, group: String(nameIndex) };
+            const override = { name, stage, group: `${nameIndex}` };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
@@ -107,14 +107,15 @@ describe('export assessment answers integration', function answerAssessmentUnit(
 
     it('login as super', shared.loginFn(config.superUser));
 
-    const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
+    const verifyExportAssessmentAnswers = function (index) {
         // TODO add section ids to tests
         return function verify() {
             const options = { question_id: index, survey_id: 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
                 .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options.question_id, surveyId: options.survey_id }));
-                    expect(_.sortBy(answers.body, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
+                    const controllerOptions = Object.assign({}, { questionId: options.question_id, surveyId: options.survey_id });
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
+                    expect(answers.body).to.deep.equal(expected);
                 });
         };
     };

@@ -240,12 +240,10 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     exportAssessmentAnswers(options) {
         const surveyId = options.surveyId;
-        const sectionId = options.sectionId;
         const questionId = options.questionId;
+        // TODO: const sectionId = options.sectionId;
+        // TODO: const userIds = options.userIds
 
-        if (sectionId && questionId) {
-            SurveyError.reject('surveyBothQuestionsSectionsSpecified');
-        }
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
         }
@@ -262,7 +260,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     raw: true,
                     attributes: ['id', 'group', 'stage'],
                 }).then((assessments) => {
-                    const mapInput = assessments.map(r => [r.id, r.group, r.stage]);
+                    const mapInput = assessments.map(r => [r.id, r.group]);
                     const groupMap = new Map(mapInput);
                     const latestAssessments = new Map();
                     assessments.forEach((a) => {
@@ -276,7 +274,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         const group = groupMap.get(a.assessmentId);
                         return a.assessmentId === latestAssessments[group].id;
                     });
-                    return final;
+
+                    return _.sortBy(final, a => a.assessmentId);
                 }));
         });
     }
