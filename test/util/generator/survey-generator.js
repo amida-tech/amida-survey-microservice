@@ -97,6 +97,7 @@ module.exports = class SurveyGenerator {
     }
 
     newSurvey(options = {}) {
+        //console.log("hopefully this will createa survey with sections")
         const result = this.newBody();
         if (options.status) {
             result.status = options.status;
@@ -132,13 +133,53 @@ module.exports = class SurveyGenerator {
         const name = `name_${surveyIndex}`;
         const result = { name };
 
-        result.questions = questionIds.map((id) => {
-            let required = Boolean(surveyIndex % 2);
-            if (options.noneRequired) {
-                required = false;
+        if(options.noSection === false) {
+
+            let sectionCount = this._getSectionsCount(questionIds)
+            let sectionSize = Math.floor(questionIds.length / sectionCount) === 0 ? 1 : Math.floor(questionIds.length / sectionCount);
+            let sections = _.range(sectionCount).map(index => {
+                let questions = _.slice(questionIds,(index * sectionSize), (index * sectionSize) + sectionSize);
+                return { questions };
+            })
+            if(sectionSize * sectionCount < questionIds.length) {
+                let questions = _.slice(questionIds,(sectionSize * sectionCount), questionIds.length);
+                sections.push({questions});
             }
-            return { id, required };
-        });
+            sections.forEach( (section, indx) => {
+                section.name  = `section_${indx}`
+                section.description = `description_${indx}`
+                section.questions = section.questions.map((id) => {
+                    let required = Boolean(surveyIndex % 2);
+                    if (options.noneRequired) {
+                        required = false;
+                    }
+                    return { id, required };
+                });
+
+            })
+            result.sections = sections;
+
+        } else {
+            result.questions = questionIds.map((id) => {
+                let required = Boolean(surveyIndex % 2);
+                if (options.noneRequired) {
+                    required = false;
+                }
+                return { id, required };
+            });
+        }
+
         return result;
+    }
+
+    _getSectionsCount(questionIds) {
+        let sectionCount = 3 - (this.surveyIndex % 3);
+        if(questionIds.length === 0) {
+            return 1;
+        }
+        while(sectionCount > questionIds.length) {
+            sectionCount = sectionCount - 1;
+        }
+        return sectionCount;
     }
 };

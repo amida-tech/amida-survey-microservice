@@ -378,12 +378,16 @@ module.exports = class AnswerDAO extends Base {
     }
 
     listAnswers({ userId, userIds, surveyId, assessmentId,
-                  assessmentIds, scope, history, ids, questionIds }) {
+                  assessmentIds, scope, history, ids, questionIds, sectionId }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
         scope = scope || 'survey'; // eslint-disable-line no-param-reassign
         const where = {};
+
+        if (sectionId && questionIds) {
+            SurveyError.reject('surveyBothQuestionsSectionsSpecified');
+        }
         if (ids) {
             where.id = { $in: ids };
         }
@@ -403,8 +407,21 @@ module.exports = class AnswerDAO extends Base {
         if (assessmentIds) {
             where.assessment_id = { $in: assessmentIds };
         }
+        console.log(sectionId)
+        console.log(questionIds)
+        if(sectionId) {
+            console.log("yes")
+            let questionIds = []
+            this.surveySection.surveySectionQuestion.listSurveySectionQuestions([sectionId])
+            .then(sections => {
+                sections.forEach(s => {
+                    questionIds.push(s.questionId);
+                })
+            });
 
-        if (questionIds) {
+            where.question_id = { $in: questionIds };
+        } else if (questionIds) {
+            console.log("yes2")
             where.question_id = { $in: questionIds };
         }
 
@@ -447,6 +464,7 @@ module.exports = class AnswerDAO extends Base {
                 return result;
             })
             .then((result) => {
+
                 if (scope === 'export') {
                     return result.map((p) => {
                         const r = { surveyId: p.surveyId };

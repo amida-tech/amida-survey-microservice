@@ -204,20 +204,46 @@ const SpecTests = class SurveySpecTests {
     }
 
     createSurveyQxHxFn(questionIndices, options = {}) {
+
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const survey = generator.newSurveyQuestionIds(questionIds, options);
+            console.log(questionIndices)
+            console.log(survey)
+
             return models.survey.createSurvey(survey)
                 .then((id) => {
                     const fullSurvey = _.cloneDeep(survey);
-                    fullSurvey.questions = questionIndices.map((qxIndex, index) => {
-                        const question = Object.assign({}, survey.questions[index]);
-                        Object.assign(question, hxQuestion.server(qxIndex));
-                        return question;
-                    });
+
+                    if(options.noSection === false) {
+                        console.log("&&&&&&&&")
+                        console.log(questionIndices)
+                        console.log(questionIds)
+                        console.log(fullSurvey)
+
+                        survey.sections.forEach( (section, indx) => {
+                            console.log(indx, section)
+                            let questions = section.questions;
+                            console.log(questions)
+                            fullSurvey.sections[indx] = questions.map(surveyQuestion => {
+                                const fullSurveyQuestion = Object.assign({}, surveyQuestion);
+                                let qxIndex = _.indexOf(questionIndices, surveyQuestion.id);
+                                Object.assign(fullSurveyQuestion, hxQuestion.server(qxIndex));
+                                return fullSurveyQuestion;
+                            })
+                        })
+                        console.log(fullSurvey)
+                        console.log("&&&&&&&&")
+                    } else {
+                        fullSurvey.questions = questionIndices.map((qxIndex, index) => {
+                            const question = Object.assign({}, survey.questions[index]);
+                            Object.assign(question, hxQuestion.server(qxIndex));
+                            return question;
+                        });
+                    }
                     hxSurvey.push(fullSurvey, { id });
                 });
         };

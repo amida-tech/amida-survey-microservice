@@ -129,8 +129,6 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         expected = _.flatten(expected);
         return this.filterForLatestStage(expected);
     }
-
-
 };
 
 module.exports = {

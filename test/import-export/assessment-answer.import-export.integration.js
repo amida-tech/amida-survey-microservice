@@ -120,7 +120,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     };
 
     _.range(0, questionCount + 2).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
+        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
             verifyExportAssessmentAnswers(index));
     });
 

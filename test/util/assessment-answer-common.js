@@ -87,6 +87,9 @@ const SpecTests = class AnswerSpecTests {
             expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
+            console.log(assesmentIndex)
+            console.log(hxAssessment)
+
             const assessmentId = hxAssessment.id(assessmentIndex);
             input.assessmentId = assessmentId;
             const language = generator.nextLanguage();

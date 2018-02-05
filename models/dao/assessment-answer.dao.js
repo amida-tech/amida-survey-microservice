@@ -242,7 +242,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const surveyId = options.surveyId;
         const sectionId = options.sectionId;
         const questionId = options.questionId;
-        let questionIds = []
+
 
         if (sectionId && questionId) {
             SurveyError.reject('surveyBothQuestionsSectionsSpecified');
@@ -250,23 +250,16 @@ module.exports = class AnswerAssessmentDAO extends Base {
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
         }
-        if(sectionId) {
-            console.log(this)
-            questionIds = this.surveySection.surveySectionQuestion.listSurveySectionQuestions([sectionId]);
-            console.log(questionIds)
-        } else {
-            questionIds.push(questionId)
-        }
-        questionIds.forEach(q => {
 
-        })
         return this.db.AssessmentSurvey.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
-            const newOptions = { surveyId, assessmentIds, questionIds: [questionId], sectionId, scope: 'export' };
+            const newOptions = { surveyId, assessmentIds, scope: 'export' };
+            questionId !== undefined ? newOptions.questionIds = [questionId] : newOptions.sectionId = sectionId;
+
             return this.answer.listAnswers(newOptions)
                 .then(answers => this.db.Assessment.findAll({
                     where: { id: { $in: assessmentIds } },
