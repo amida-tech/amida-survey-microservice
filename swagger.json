@@ -1866,13 +1866,13 @@
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters":[{
                 "description": "survey Id that of the assessments' answers that will be returned",
-                "name": "survey_id",
+                "name": "survey-id",
                 "in": "query",
                 "required": true,
                 "type":"integer"
             }, {
                 "description": "questionId filter on the assessments' anwers that will be returned",
-                "name": "question_id",
+                "name": "question-id",
                 "in": "query",
                 "required": true,
                 "type":"integer"
@@ -1885,7 +1885,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "file"
+                            "$ref": "#/definitions/assessmentAnswersExportList"
                         }
                     },
                     "default": {
@@ -4317,6 +4317,52 @@
                 }
             },
             "additionalProperties": false
+        },
+        "assessmentAnswersExportList": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentAnswersExport"
+            }
+        },
+        "assessmentAnswersExport": {
+            "type": "object",
+            "required": [
+                "surveyId",
+                "assessmentId",
+                "userId",
+                "questionId",
+                "questionType"
+            ],
+            "properties": {
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "assessmentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionType": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "value": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "questionChoiceId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
         },
         "assessmentAnswersDashboard": {
             "type": "array",

@@ -4,17 +4,12 @@
 
 const _ = require('lodash');
 
-const filterDuplicates = function filterDuplicates(duplicates) {
+const filterDuplicateAssessmentAnswers = function filterDuplicates(duplicates) {
     const expected = [];
-    duplicates.forEach((curr1) => {
-        const filtered = _.filter(duplicates, curr2 => curr1.userIndex === curr2.userIndex);
-        if (filtered.length > 1 && !_.filter(expected, ele => ele.userIndex === curr1.userIndex).length) {
-            expected.push(filtered[filtered.length - 1]);
-        } else if (!_.filter(expected, ele => ele.userIndex === curr1.userIndex).length) {
-            expected.push(curr1);
-        }
+    let groupByAssessmentId = _.groupBy(duplicates, answer => answer.ownerId);
+    _.each(groupByAssessmentId,assessments => {
+        expected.push(assessments.pop());
     });
-
     return expected;
 };
 
@@ -36,14 +31,14 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
         if (answer) {
             expected.surveyId = hxSurvey.id(expected.surveyIndex);
-            expected.assessmentId = expected.userIndex + 1;
+            expected.assessmentId = expected.ownerId + 1;
             expected.questionId = questionAnswer.questionId;
             expected.questionType = hxQuestion.serverById(expected.questionId).type;
 
             delete expected.surveyIndex;
             delete expected.remaining;
             delete expected.removed;
-            delete expected.userIndex;
+            delete expected.ownerId;
             delete expected.answers;
 
 
@@ -123,12 +118,13 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const hxAnswer = this.hxAnswer;
         const expectedWithDuplicates = _.filter(hxAnswer.store, answers => _.filter(answers.answers, answer => answer.questionId === options.questionId).length
                     && hxSurvey.id(answers.surveyIndex) === options.surveyId);
-        let expected = filterDuplicates(expectedWithDuplicates);
+        let expected = filterDuplicateAssessmentAnswers(expectedWithDuplicates);
 
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));
         expected = _.flatten(expected);
         expected = this.filterForLatestStage(expected);
         expected = _.sortBy(expected, a => a.assessmentId);
+
         return expected;
     }
 

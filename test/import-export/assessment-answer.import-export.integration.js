@@ -110,10 +110,10 @@ describe('export assessment answers integration', function answerAssessmentImpor
     const verifyExportAssessmentAnswers = function (index) {
         // TODO add section ids to tests
         return function verify() {
-            const options = { question_id: index, survey_id: 1 };
+            const options = { 'question-id': index, 'survey-id': 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
                 .then((answers) => {
-                    const controllerOptions = Object.assign({}, { questionId: options.question_id, surveyId: options.survey_id });
+                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId:options['survey-id'] });
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
                     expect(answers.body).to.deep.equal(expected);
                 });

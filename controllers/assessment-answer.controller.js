@@ -57,8 +57,8 @@ exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
 };
 
 exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
-    const surveyId = _.get(req, 'swagger.params.survey_id.value');
-    const questionId = _.get(req, 'swagger.params.question_id.value');
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
 // TODO:    const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
     const options = { surveyId, questionId };
@@ -68,8 +68,8 @@ exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
 };
 
 exports.assessmentAnswersCSV = function assessmentAnswersCSV(req, res) {
-    const surveyId = _.get(req, 'swagger.params.survey_id.value');
-    const questionId = _.get(req, 'swagger.params.question_id.value');
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
 // TODO:    const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
     const options = { surveyId, questionId };
