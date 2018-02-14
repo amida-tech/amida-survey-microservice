@@ -30,17 +30,20 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const answer = questionAnswer.answer;
 
         if (answer) {
+
             expected.surveyId = hxSurvey.id(expected.surveyIndex);
+            expected.surveyName = hxSurvey.clients[expected.surveyIndex].name;
             expected.assessmentId = expected.ownerId + 1;
             expected.questionId = questionAnswer.questionId;
             expected.questionType = hxQuestion.serverById(expected.questionId).type;
+
+
 
             delete expected.surveyIndex;
             delete expected.remaining;
             delete expected.removed;
             delete expected.ownerId;
             delete expected.answers;
-
 
             if (answer.boolValue !== undefined) {
                 expected.value = answer.boolValue ? 'true' : 'false';
@@ -59,6 +62,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
             } else if (answer.dateValue) {
                 expected.value = String(answer.dateValue);
             }
+            console.log(expected)
             return expected;
         }
         return [];
@@ -118,6 +122,17 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const hxAnswer = this.hxAnswer;
         const expectedWithDuplicates = _.filter(hxAnswer.store, answers => _.filter(answers.answers, answer => answer.questionId === options.questionId).length
                     && hxSurvey.id(answers.surveyIndex) === options.surveyId);
+        // hxAnswer.store.forEach(x => {
+        //     console.log(x)
+        //     if(x.answers.contains(questionId === 9) {
+        //         console.log(x.answers)
+        //     }
+        //
+        // })
+        //console.log(this.hxQuestion)
+        console.log(this.hxAssessment)
+        //console.log(hxSurvey.clients[0].questions)
+        //console.log(hxSurvey.clients[0].questions[2].choices)
         let expected = filterDuplicateAssessmentAnswers(expectedWithDuplicates);
 
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));

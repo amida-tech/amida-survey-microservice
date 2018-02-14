@@ -244,45 +244,103 @@ module.exports = class AnswerAssessmentDAO extends Base {
         // TODO: const sectionId = options.sectionId;
         // TODO: const userIds = options.userIds
 
+
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
         }
-        return this.db.AssessmentSurvey.findAll({
+
+        return this.db.SurveyText.findAll({
             where: { survey_id: surveyId },
             raw: true,
-            attributes: ['assessmentId', 'surveyId'],
-        }).then((surveyAssessments) => {
-            const assessmentIds = surveyAssessments.map(r => r.assessmentId);
-            const newOptions = { surveyId, assessmentIds, questionIds: [questionId], scope: 'export' };
-            return this.answer.listAnswers(newOptions)
-                .then(answers => this.db.Assessment.findAll({
-                    where: { id: { $in: assessmentIds } },
-                    raw: true,
-                    attributes: ['id', 'group', 'stage'],
-                }).then((assessments) => {
-                    const mapInput = assessments.map(r => [r.id, r.group]);
-                    const groupMap = new Map(mapInput);
-                    const latestAssessments = new Map();
-                    assessments.forEach((a) => {
-                        if ((latestAssessments[a.group] &&
-                            a.stage > latestAssessments[a.group].stage) ||
-                            !latestAssessments[a.group]) {
-                            latestAssessments[a.group] = a;
-                        }
-                    });
-                    const final = answers.filter((a) => {
-                        const group = groupMap.get(a.assessmentId);
-                        return a.assessmentId === latestAssessments[group].id;
-                    });
+            attributes: ['name', 'surveyId']
+        }).then(surveys => {
+            return this.db.AssessmentSurvey.findAll({
+                where: { survey_id: surveyId },
+                raw: true,
+                attributes: ['assessmentId', 'surveyId'],
+            }).then(surveyAssessments => {
+                const assessmentIds = surveyAssessments.map(r => r.assessmentId);
+                const newOptions = { surveyId,
+                                     assessmentIds,
+                                     questionIds: [questionId],
+                                     scope: 'export',
+                                     meta:true,
+                                     createdAt:true };
+                return this.answer.listAnswers(newOptions)
+                    .then(answers => this.db.Assessment.findAll({
+                        where: { id: { $in: assessmentIds } },
+                        raw: true,
+                        attributes: ['id', 'group', 'stage'],
+                    }).then(assessments => this.db.QuestionText.findAll({
+                        where: {id: {$in: [questionId]}},
+                        raw:true,
+                        attributes:['id','text', 'instruction']
+                    }).then(questionTexts => {
+                        const qTextsMapInput = questionTexts.map(r => [r.id, {text:r.text,instruction:r.instruction}]);
+                        const qTextsMap = new Map(qTextsMapInput);
+                        const surveyNames = surveys.map(r =>[r.surveyId,r.name]);
+                        const surveyNameMap = new Map(surveyNames);
+                        const assessmentMapInput = assessments.map(r => [r.id, {group:r.group,stage:r.stage}]);
+                        const assessmentMap = new Map(assessmentMapInput);
 
-                    return _.sortBy(final, a => a.assessmentId);
-                }));
+                        const latestAssessments = new Map();
+                        answers = answers.map(a => {
+                            a = Object.assign(a, {
+                                group:assessmentMap.get(a.assessmentId).group,
+                                stage:assessmentMap.get(a.assessmentId).stage,
+                                surveyName: surveyNameMap.get(surveyId),
+                                weight:null,
+                                date: a.createdAt.slice(0,10),
+                                questionText: qTextsMap.get(a.questionId).text,
+                                questionInstruction: qTextsMap.get(a.questionId).instruction
+                            });
+                            delete a.createdAt;
+                            return a;
+                        });
+
+                        assessments.forEach((a) => {
+                            if ((latestAssessments[a.group] &&
+                                a.stage > latestAssessments[a.group].stage) ||
+                                !latestAssessments[a.group]) {
+                                latestAssessments[a.group] = a;
+                            }
+                        });
+
+
+                        if(answers.length && _.some(answers, a => !!a.questionChoiceId)) {
+                            return this.question.questionChoice.getAllQuestionChoices(newOptions.questionIds)
+                                .then(res => {
+
+                                    let choiceMapInput = res.map(r => [r.id, r.text])//_.groupBy(res, curr => curr.id);
+                                    let choiceTextMap = new Map(choiceMapInput);
+                                    let answersWithValues = answers.map(a => {
+                                        a = Object.assign(a,{ value: choiceTextMap.get(a.questionChoiceId) });
+                                        delete a.questionChoiceId;
+                                        return a;
+                                    })
+
+                                    const final = answersWithValues.filter(a => a.assessmentId === latestAssessments[a.group].id);
+                                    return _.sortBy(final, a => a.assessmentId);
+                                });
+
+                        } else {
+                            const final = answers.filter((a) => {
+                                const group = assessmentMap.get(a.assessmentId).group;
+                                return a.assessmentId === latestAssessments[group].id;
+                            });
+
+                            return _.sortBy(final, a => a.assessmentId);
+                        }
+                    })));
+
+            });
         });
+
     }
 
     exportAssessmentAnswersCSV(options) {
         const csvConverter = new CSVConverterExport();
         return this.exportAssessmentAnswers(options)
-            .then(answers => (answers ? csvConverter.dataToCSV(answers) : ''));
+            .then(answers => answers.length ? csvConverter.dataToCSV(answers) : "");
     }
 };

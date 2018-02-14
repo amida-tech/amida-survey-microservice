@@ -61,7 +61,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const filter = new FilterDAO(db, { filterAnswer });
     const file = new FileDAO(db);
     const answerComment = new AnswerCommentDAO(db);
-    const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, answerComment, assessment });
+    const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, question, answerComment, assessment });
 
     return {
         sequelize: db.sequelize,

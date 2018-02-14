@@ -104,13 +104,14 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             const options = { questionId: index, surveyId: 1 };
             return models.assessmentAnswer.exportAssessmentAnswers(options)
                 .then((answers) => {
+                //    console.log(answers)
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
                     expect(answers).to.deep.equal(expected);
                 });
         };
     };
 
-    _.range(1, questionCount + 1).forEach((index) => {
+    _.range(8, 9).forEach((index) => {
         it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
             verifyExportAssessmentAnswers(index));
     });
