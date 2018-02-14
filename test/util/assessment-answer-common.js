@@ -275,23 +275,7 @@ const SpecTests = class AnswerSpecTests {
         };
     }
 
-    getNumberOfUsersBySurveyfn(id) {
-        const hxAnswer = this.hxAnswer;
-        return function getNumberOfUsersBySurvey() {
-            return models.survey.getNumberOfUsersBySurvey({surveyId = id})
-                .then(res => {
-                    usersFound = new Set();
-                    totalUsers = [];
-                    hxAnswer.server.forEach(a => {
-                        if(!usersFound.has(a.userId) {
-                            totalUsers.push(a.userId);
-                        }
-                    });
-                    expect(totalUsers.length()).to.equal(res);
-                });
 
-        }
-    }
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
@@ -499,24 +483,6 @@ const IntegrationTests = class AnswerIntegrationTests {
         };
     }
 
-    getNumberOfUsersBySurveyfn(id) {
-        const hxAnswer = this.hxAnswer;
-        const self = this;
-        return function getNumberOfUsersBySurvey() {
-            return self.surveySuperTest.get(`/numberUsersBySurvey/${id}`,null,)
-                .then(res => {
-                    usersFound = new Set();
-                    totalUsers = [];
-                    hxAnswer.server.forEach(a => {
-                        if(!usersFound.has(a.userId) {
-                            totalUsers.push(a.userId);
-                        }
-                    });
-                    expect(totalUsers.length()).to.equal(res);
-            });
-
-        }
-    }
 };
 
 module.exports = {

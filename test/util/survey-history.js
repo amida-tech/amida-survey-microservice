@@ -81,4 +81,12 @@ module.exports = class SurveyHistory extends History {
         }
         throw new Error('survey scope not implemented.');
     }
+
+    getSurveyIds() {
+        let ids = [];
+        this.servers.forEach(s => {
+            ids.push(s.id);
+        })
+        return ids;
+    }
 };

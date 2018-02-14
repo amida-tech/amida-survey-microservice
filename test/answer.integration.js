@@ -40,10 +40,10 @@ describe('answer integration', () => {
 
     const opt = { generator, hxUser, hxSurvey, hxQuestion };
     const tests = new answerCommon.IntegrationTests(surveySuperTest, opt);
-
+    const hxAnswers = tests.hxAnswer;
     const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
-    const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion);
+    const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion, hxAnswers);
 
     before(shared.setUpFn());
 
@@ -208,6 +208,57 @@ describe('answer integration', () => {
     it('user 2 gets answers to survey 14', tests.getAnswersFn(2, 14));
     it('logout as  user 2', shared.logoutFn());
 
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 answers survey 13', tests.answerSurveyFn(1, 13, [52, 53, 54, 55, 56]));
+    it('user 1 gets answers to survey 13', tests.getAnswersFn(1, 13));
+    it('logout as  user 1', shared.logoutFn());
+
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 answers survey 14', tests.answerSurveyFn(1, 14, [57, 58, 59, 60, 61]));
+    it('user 1 gets answers to survey 14', tests.getAnswersFn(1, 14));
+    it('logout as  user 1', shared.logoutFn());
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 answers survey 13', tests.answerSurveyFn(2, 13, [52, 53, 54, 55, 56]));
+    it('user 2 gets answers to survey 13', tests.getAnswersFn(2, 13));
+    it('logout as  user 2', shared.logoutFn());
+
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 answers survey 14', tests.answerSurveyFn(3, 14, [57, 58, 59, 60, 61]));
+    it('user 3 gets answers to survey 14', tests.getAnswersFn(3, 14));
+    it('logout as  user 3', shared.logoutFn());
+
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 answers survey 7', tests.answerSurveyFn(1, 7, [22, 34, 35, 36]));
+    it('user 1 gets answers to survey 7', tests.getAnswersFn(1, 7));
+    it('logout as  user 1', shared.logoutFn());
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 answers survey 7', tests.answerSurveyFn(2, 7, [22, 34, 35, 36]));
+    it('user 2 gets answers to survey 7', tests.getAnswersFn(2, 7));
+    it('logout as  user 2', shared.logoutFn());
+
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 answers survey 8', tests.answerSurveyFn(1, 8, [37, 23, 38, 39, 24]));
+    it('user 1 gets answers to survey 8', tests.getAnswersFn(1, 8));
+    it('logout as  user 1', shared.logoutFn());
+
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 answers survey 9', tests.answerSurveyFn(3, 9, [25, 40, 41, 42, 26, 27]));
+    it('user 3 gets answers to survey 9', tests.getAnswersFn(3, 9));
+    it('logout as  user 3', shared.logoutFn());
+
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 answers survey 10', tests.answerSurveyFn(3, 10, [43, 44, 28, 45]));
+    it('user 3 gets answers to survey 10', tests.getAnswersFn(3, 10));
+    it('logout as  user 3', shared.logoutFn());
+
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    _.range(15).forEach(id => {
+        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id))
+    })
+    it('logout as  user 2', shared.logoutFn());
     shared.verifyUserAudit();
 
     // it('release connections', shared.shutDownFn());

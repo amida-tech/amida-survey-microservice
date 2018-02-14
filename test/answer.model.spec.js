@@ -38,7 +38,7 @@ describe('answer unit', () => {
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
-    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
+    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion, hxAnswers);
 
     before(shared.setUpFn());
 
@@ -202,4 +202,22 @@ describe('answer unit', () => {
     it('user 3 gets answers to survey 13', tests.getAnswersFn(3, 13));
     it('user 2 answers survey 14', tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
     it('user 2 gets answers to survey 14', tests.getAnswersFn(2, 14));
+
+    it('user 1 answers survey 10', tests.answerSurveyFn(1, 10, [43, 44, 28, 45]));
+    it('user 2 answers survey 11', tests.answerSurveyFn(2, 11, [46, 29, 30, 47, 48]));
+    it('user 3 answers survey 12', tests.answerSurveyFn(3, 12, [31, 49, 32, 50, 33, 51]));
+
+    it('user 1 answers survey 7', tests.answerSurveyFn(1, 7, [22, 34, 35, 36]));
+    it('user 1 answers survey 8', tests.answerSurveyFn(1, 8, [37, 23, 38, 39, 24]));
+    it('user 2 answers survey 9', tests.answerSurveyFn(2, 9, [25, 40, 41, 42, 26, 27]));
+
+    it('user 2 answers survey 10', tests.answerSurveyFn(1, 10, [43, 44, 28, 45]));
+    it('user 1 answers survey 11', tests.answerSurveyFn(1, 11, [46, 29, 30, 47, 48]));
+    it('user 1 answers survey 12', tests.answerSurveyFn(1, 12, [31, 49, 32, 50, 33, 51]));
+
+
+    _.range(15).forEach(id => {
+
+        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id))
+    })
 });
