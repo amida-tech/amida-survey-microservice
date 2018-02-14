@@ -83,10 +83,10 @@ module.exports = class SurveyHistory extends History {
     }
 
     getSurveyIds() {
-        let ids = [];
-        this.servers.forEach(s => {
+        const ids = [];
+        this.servers.forEach((s) => {
             ids.push(s.id);
-        })
+        });
         return ids;
     }
 };

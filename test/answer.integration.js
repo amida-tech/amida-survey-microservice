@@ -255,9 +255,9 @@ describe('answer integration', () => {
 
 
     it('login as user 2', shared.loginIndexFn(hxUser, 2));
-    _.range(15).forEach(id => {
-        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id))
-    })
+    _.range(15).forEach((id) => {
+        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id));
+    });
     it('logout as  user 2', shared.logoutFn());
     shared.verifyUserAudit();
 

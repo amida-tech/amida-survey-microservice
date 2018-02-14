@@ -91,5 +91,4 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
-
 });

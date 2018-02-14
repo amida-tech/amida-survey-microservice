@@ -924,19 +924,15 @@ module.exports = class SurveyDAO extends Translatable {
                 });
                 return this.importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options); // eslint-disable-line no-param-reassign, max-len
             });
-
-
     }
 
-    getNumberOfUsersBySurvey({surveyId, softDelete}) {
-        let paranoid = (softDelete === true) ? false : true;
+    getNumberOfUsersBySurvey({ surveyId, softDelete }) {
+        const paranoid = softDelete !== true;
         return this.db.Answer.count({
-            where: {surveyId},
+            where: { surveyId },
             raw: true,
             group: ['user_id'],
-            paranoid
-        }).then(answers => {
-            return answers.length;
-        })
+            paranoid,
+        }).then(answers => answers.length);
     }
 };

@@ -216,8 +216,7 @@ describe('answer unit', () => {
     it('user 1 answers survey 12', tests.answerSurveyFn(1, 12, [31, 49, 32, 50, 33, 51]));
 
 
-    _.range(15).forEach(id => {
-
-        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id))
-    })
+    _.range(15).forEach((id) => {
+        it(`verify number of users have answered survey ${id}`, surveyTests.getNumberOfUsersBySurveyfn(id));
+    });
 });

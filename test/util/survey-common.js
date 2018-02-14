@@ -267,25 +267,22 @@ const SpecTests = class SurveySpecTests {
 
     getNumberOfUsersBySurveyfn(id) {
         const hxAnswer = this.hxAnswer;
-        const hxSurvey = this.hxSurvey
+        const hxSurvey = this.hxSurvey;
         return function getNumberOfUsersBySurvey() {
-            return models.survey.getNumberOfUsersBySurvey({surveyId: id})
-                .then(res => {
-                    let totalUsers = new Set();
-                    hxAnswer.store.forEach(ans => {
+            return models.survey.getNumberOfUsersBySurvey({ surveyId: id })
+                .then((res) => {
+                    const totalUsers = new Set();
+                    hxAnswer.store.forEach((ans) => {
+                        const ansSurveyId = hxSurvey.id(ans.surveyIndex);
 
-                        let ansSurveyId = hxSurvey.id(ans.surveyIndex)
-
-                        if(!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
+                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
                             totalUsers.add(ans.userIndex);
                         }
-
                     });
-                    let expected = totalUsers.size;
+                    const expected = totalUsers.size;
                     expect(res).to.equal(expected);
                 });
-
-        }
+        };
     }
 };
 
@@ -403,20 +400,19 @@ const IntegrationTests = class SurveyIntegrationTests {
         const hxSurvey = this.hxSurvey;
         const self = this;
         return function getNumberOfUsersBySurvey() {
-            return self.surveySuperTest.get(`/numberUsersBySurvey/${id}`,true,200)
-                .then(res => {
-                    let totalUsers = new Set();
-                    hxAnswer.store.forEach(ans => {
-                        let ansSurveyId = hxSurvey.id(ans.surveyIndex)
-                        if(!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
+            return self.surveySuperTest.get(`/numberUsersBySurvey/${id}`, true, 200)
+                .then((res) => {
+                    const totalUsers = new Set();
+                    hxAnswer.store.forEach((ans) => {
+                        const ansSurveyId = hxSurvey.id(ans.surveyIndex);
+                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
                             totalUsers.add(ans.userIndex);
                         }
                     });
-                    let expected = totalUsers.size;
+                    const expected = totalUsers.size;
                     expect(res.body).to.equal(expected);
-            });
-
-        }
+                });
+        };
     }
 };
 
