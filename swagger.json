@@ -412,7 +412,7 @@
                         "required": true,
                         "type": "integer"
                     }, {
-                        "name": "include_soft_delete",
+                        "name": "include-soft-delete",
                         "in": "query",
                         "required": false,
                         "type": "boolean"
