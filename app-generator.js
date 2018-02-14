@@ -47,24 +47,22 @@ const authorization = function (req, res, next) {
     }
     const token = cookieToken || authToken;
 
-    // if (!token && !isDocs && !isHealthCheck) {
-    //     res.statusCode = 401;
-    //     res.send(noAuth);
-    // } else if (token) {
-    //     jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-    //         if (!err) {
-    //             req.user = payload;
-    //             return next();
-    //         }
-    //         res.statusCode = 401;
-    //         res.send(invalidAuth);
-    //         return null;
-    //     });
-    // } else if (isDocs || isHealthCheck) {
-    //     next();
-    // }
-    req.user = {id:2, username: 'super'}
-    next();
+    if (!token && !isDocs && !isHealthCheck) {
+        res.statusCode = 401;
+        res.send(noAuth);
+    } else if (token) {
+        jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+            if (!err) {
+                req.user = payload;
+                return next();
+            }
+            res.statusCode = 401;
+            res.send(invalidAuth);
+            return null;
+        });
+    } else if (isDocs || isHealthCheck) {
+        next();
+    }
 };
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
@@ -86,7 +84,7 @@ const userAudit = function (req, res, next) {
         if (req.swagger.params) {
             _.forOwn(req.swagger.params, (description, name) => {
                 const value = description && description.value;
-                if (value && _.get(description, 'schema.in') === 'path') {
+                if (value !== undefined && _.get(description, 'schema.in') === 'path') {
                     endpoint = endpoint.replace(`{${name}}`, value);
                 }
             });
