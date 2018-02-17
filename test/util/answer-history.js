@@ -95,7 +95,16 @@ module.exports = class AnswerHistory {
         }
         const index = this.store.length;
         const record = toAnswerRecord(answers, language);
-        const value = Object.assign({ ownerId, surveyIndex, userId }, record);
+        let currentdate = new Date();
+        let currMonth = (currentdate.getMonth()+1).length > 1 ?
+                        currentdate.getMonth() :
+                        "0" + (currentdate.getMonth()+1);
+        let currYear = currentdate.getFullYear();
+        let currDay = currentdate.getDate();
+        let date = currYear + "-"
+                   + currMonth + "-"
+                   + currDay;
+        const value = Object.assign({ ownerId, surveyIndex, userId, date }, record);
         this.store.push(value);
         this.serverStore.push(null);
         indexHistory.push(index);

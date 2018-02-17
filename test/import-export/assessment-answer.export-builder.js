@@ -10,6 +10,7 @@ const filterDuplicateAssessmentAnswers = function filterDuplicates(duplicates) {
     _.each(groupByAssessmentId,assessments => {
         expected.push(assessments.pop());
     });
+
     return expected;
 };
 
@@ -25,19 +26,29 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     formatAnswerJSON(currExpected, options) {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
+        const hxAssessment = this.hxAssessment;
         const expected = Object.assign({}, currExpected);
         const questionAnswer = expected.answers.find(answer => answer.questionId === options.questionId);
         const answer = questionAnswer.answer;
 
         if (answer) {
+            let question =  hxQuestion.serverById(questionAnswer.questionId);
+            let survey = hxSurvey.clients[expected.surveyIndex];
+            let assessment = hxAssessment.idIndex[expected.ownerId + 1];
 
             expected.surveyId = hxSurvey.id(expected.surveyIndex);
             expected.surveyName = hxSurvey.clients[expected.surveyIndex].name;
             expected.assessmentId = expected.ownerId + 1;
             expected.questionId = questionAnswer.questionId;
-            expected.questionType = hxQuestion.serverById(expected.questionId).type;
-
-
+            expected.questionType = question.type;
+            expected.stage = assessment.stage;
+            expected.group = assessment.group;
+            expected.meta = questionAnswer.meta || null;
+            expected.weight = questionAnswer.weight || null;
+            expected.questionInstruction = question.instruction || null
+            expected.questionText = question.text || null;
+            expected.code = answer.code || null;
+            expected.choiceText = null;
 
             delete expected.surveyIndex;
             delete expected.remaining;
@@ -47,10 +58,13 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
             if (answer.boolValue !== undefined) {
                 expected.value = answer.boolValue ? 'true' : 'false';
-            } else if (answer.choices) {
-                return this.formatChoicesAnswerJSON(expected, answer, options);
-            } else if (answer.choice) {
-                expected.questionChoiceId = answer.choice;
+            }  else if (answer.choice) {
+                let choiceMapInput = question.choices.map(r => [r.id, r.text])
+                let choiceTextMap = new Map(choiceMapInput);
+
+                expected.choiceText = choiceTextMap.get(answer.choice) || null;
+                expected.value = answer.textValue || null;
+
             } else if (answer.textValue) {
                 expected.value = answer.textValue;
             } else if (answer.integerValue) {
@@ -61,20 +75,28 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
                 expected.value = String(answer.numberValue);
             } else if (answer.dateValue) {
                 expected.value = String(answer.dateValue);
+            } else if (answer.choices) {
+                return this.formatChoicesAnswerJSON(expected, answer, options);
+            } else if (!answer.choices && !answer.choices) {
+                expected.choiceText = null;
             }
-            console.log(expected)
+
             return expected;
         }
         return [];
     }
 
     formatChoicesAnswerJSON(expected, answer) {
+
         const hxQuestion = this.hxQuestion;
         const choicesExpected = [];
+        let question =  hxQuestion.serverById(expected.questionId);
+        let choiceMapInput = question.choices.map(r => [r.id, r.text])
+        let choiceTextMap = new Map(choiceMapInput);
+
         answer.choices.forEach((choice) => {
             const currExpected = Object.assign({}, expected);
-
-            currExpected.questionChoiceId = choice.id;
+            currExpected.choiceText = choiceTextMap.get(choice.id) || null;
             currExpected.choiceType =
                 hxQuestion.serverById(expected.questionId).choices.find(questionChoice => questionChoice.id === choice.id).type;
             choicesExpected.push(currExpected);
@@ -86,7 +108,6 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         });
 
         expected = choicesExpected;
-
         return expected;
     }
 
@@ -122,17 +143,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const hxAnswer = this.hxAnswer;
         const expectedWithDuplicates = _.filter(hxAnswer.store, answers => _.filter(answers.answers, answer => answer.questionId === options.questionId).length
                     && hxSurvey.id(answers.surveyIndex) === options.surveyId);
-        // hxAnswer.store.forEach(x => {
-        //     console.log(x)
-        //     if(x.answers.contains(questionId === 9) {
-        //         console.log(x.answers)
-        //     }
-        //
-        // })
-        //console.log(this.hxQuestion)
-        console.log(this.hxAssessment)
-        //console.log(hxSurvey.clients[0].questions)
-        //console.log(hxSurvey.clients[0].questions[2].choices)
+
         let expected = filterDuplicateAssessmentAnswers(expectedWithDuplicates);
 
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));

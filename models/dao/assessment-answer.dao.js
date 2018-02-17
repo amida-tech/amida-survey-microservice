@@ -243,7 +243,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const questionId = options.questionId;
         // TODO: const sectionId = options.sectionId;
         // TODO: const userIds = options.userIds
-
+        // TODO: change questionIds to questionId and make function return all questions in the absence of a questionId
 
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
@@ -265,7 +265,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                      questionIds: [questionId],
                                      scope: 'export',
                                      meta:true,
-                                     createdAt:true };
+                                     createdAt:true
+                                   };
                 return this.answer.listAnswers(newOptions)
                     .then(answers => this.db.Assessment.findAll({
                         where: { id: { $in: assessmentIds } },
@@ -276,6 +277,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         raw:true,
                         attributes:['id','text', 'instruction']
                     }).then(questionTexts => {
+
                         const qTextsMapInput = questionTexts.map(r => [r.id, {text:r.text,instruction:r.instruction}]);
                         const qTextsMap = new Map(qTextsMapInput);
                         const surveyNames = surveys.map(r =>[r.surveyId,r.name]);
@@ -285,6 +287,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
                         const latestAssessments = new Map();
                         answers = answers.map(a => {
+
                             a = Object.assign(a, {
                                 group:assessmentMap.get(a.assessmentId).group,
                                 stage:assessmentMap.get(a.assessmentId).stage,
@@ -292,7 +295,10 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                 weight:null,
                                 date: a.createdAt.slice(0,10),
                                 questionText: qTextsMap.get(a.questionId).text,
-                                questionInstruction: qTextsMap.get(a.questionId).instruction
+                                questionInstruction: qTextsMap.get(a.questionId).instruction,
+                                choiceText: null,
+                                code: null,
+                                value: a.value || null
                             });
                             delete a.createdAt;
                             return a;
@@ -306,15 +312,15 @@ module.exports = class AnswerAssessmentDAO extends Base {
                             }
                         });
 
-
                         if(answers.length && _.some(answers, a => !!a.questionChoiceId)) {
                             return this.question.questionChoice.getAllQuestionChoices(newOptions.questionIds)
                                 .then(res => {
-
-                                    let choiceMapInput = res.map(r => [r.id, r.text])//_.groupBy(res, curr => curr.id);
+                                    let choiceMapInput = res.map(r => [r.id, r.text])
                                     let choiceTextMap = new Map(choiceMapInput);
                                     let answersWithValues = answers.map(a => {
-                                        a = Object.assign(a,{ value: choiceTextMap.get(a.questionChoiceId) });
+                                        a = Object.assign(a,{ choiceText: choiceTextMap.get(a.questionChoiceId) || null,
+                                                              code: a.code || null
+                                                            });
                                         delete a.questionChoiceId;
                                         return a;
                                     })
