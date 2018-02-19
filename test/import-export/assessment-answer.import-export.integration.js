@@ -109,13 +109,19 @@ describe('export assessment answers integration', function answerAssessmentImpor
 
     const verifyExportAssessmentAnswers = function (index) {
         // TODO add section ids to tests
+        const options = { 'survey-id': 1 };
+        if (index || index === 0) {
+            options['question-id'] = index;
+        }
         return function verify() {
-            const options = { 'question-id': index, 'survey-id': 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
-                .then((answers) => {
-                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId:options['survey-id'] });
+                .then((res) => {
+                    const answers = res.body;
+                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] });
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
-                    expect(answers.body).to.deep.equal(expected);
+                    expected.forEach((e, indx) => {
+                        expect(answers[indx]).to.deep.equal(e);
+                    });
                 });
         };
     };
@@ -124,6 +130,8 @@ describe('export assessment answers integration', function answerAssessmentImpor
         it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
             verifyExportAssessmentAnswers(index));
     });
+
+    it('export assessment answers no questionId', verifyExportAssessmentAnswers());
 
     it('logout as super', shared.logoutFn());
 });

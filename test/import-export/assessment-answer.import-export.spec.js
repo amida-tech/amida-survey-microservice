@@ -46,6 +46,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
 
     before(shared.setUpFn());
+    it('reset database', shared.setUpFn());
 
     it('sanity checks', function sanityChecks() {
         expect(userCount).to.be.above(0);
@@ -100,14 +101,17 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
     const verifyExportAssessmentAnswers = function (index) {
         // TODO add section ids to tests
+        const options = { surveyId: 1 };
+        if (index || index === 0) {
+            options.questionId = index;
+        }
         return function verify() {
-            const options = { questionId: index, surveyId: 1 };
             return models.assessmentAnswer.exportAssessmentAnswers(options)
                 .then((answers) => {
-
-
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
-                    expect(answers).to.deep.equal(expected);
+                    expected.forEach((e, indx) => {
+                        expect(answers[indx]).to.deep.equal(e);
+                    });
                 });
         };
     };
@@ -117,13 +121,14 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             verifyExportAssessmentAnswers(index));
     });
 
-    const verifyErrorMsgBothQuestionIdSectionId = function () {
-        return function verify() {
-            const options = { questionId: 1, surveyId: 1, sectionId: 1 };
-            return models.assessmentAnswer.exportAssessmentAnswers(options)
-            .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
-        };
-    };
+    it('export assessment answers no questionId', verifyExportAssessmentAnswers());
+    // const verifyErrorMsgBothQuestionIdSectionId = function () {
+    //     return function verify() {
+    //         const options = { questionId: 1, surveyId: 1, sectionId: 1 };
+    //         return models.assessmentAnswer.exportAssessmentAnswers(options)
+    //         .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
+    //     };
+    // };
 
     const verifyErrorMsgNoSurveyId = function () {
         return function verify() {
@@ -133,6 +138,6 @@ describe('export assessment answers unit', function answerAssessmentImportExport
         };
     };
 
-    //to be uncommented for SER-30 it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsgBothQuestionIdSectionId);
+    // to be uncommented for SER-30 it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsgBothQuestionIdSectionId);
     it('verifyErrorMsgNoSurveyId', verifyErrorMsgNoSurveyId);
 });

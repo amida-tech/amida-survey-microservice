@@ -379,7 +379,7 @@ module.exports = class AnswerDAO extends Base {
 
     listAnswers({ userId, userIds, surveyId, assessmentId,
                   assessmentIds, scope, history, ids, questionIds,
-                  meta, createdAt}) {
+                  meta, createdAt }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -419,7 +419,6 @@ module.exports = class AnswerDAO extends Base {
         }
 
 
-
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
 
         if (scope !== 'export') {
@@ -435,16 +434,15 @@ module.exports = class AnswerDAO extends Base {
             attributes.push('userId');
         }
         if (assessmentIds && surveyId) {
-            attributes.push('userId', 'assessmentId');
+            attributes.push('userId', 'assessmentId', 'questionId');
         }
         if (createdAt) {
             attributes.push('createdAt');
         }
 
-        if(meta) {
-            attributes.push('meta')
+        if (meta) {
+            attributes.push('meta');
         }
-
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
@@ -461,9 +459,7 @@ module.exports = class AnswerDAO extends Base {
             })
             .then((result) => {
                 if (scope === 'export') {
-
                     return result.map((p) => {
-
                         const r = { surveyId: p.surveyId };
                         r.questionId = p['question.id'];
                         r.questionType = p['question.type'];
@@ -473,10 +469,10 @@ module.exports = class AnswerDAO extends Base {
                         if (attributes.includes('userId')) {
                             r.userId = p.userId;
                         }
-                        if(attributes.includes('meta')) {
-                            r.meta = p.meta;
+                        if (attributes.includes('meta')) {
+                            r.meta = p.meta || {};
                         }
-                        if(attributes.includes('createdAt')) {
+                        if (attributes.includes('createdAt')) {
                             r.createdAt = p.createdAt;
                         }
 
