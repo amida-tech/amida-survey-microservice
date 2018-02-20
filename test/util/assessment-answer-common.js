@@ -274,8 +274,6 @@ const SpecTests = class AnswerSpecTests {
                 .then(() => self.mapStatus.set(key, 'completed'));
         };
     }
-
-
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
@@ -482,7 +480,6 @@ const IntegrationTests = class AnswerIntegrationTests {
                 .then(() => self.mapStatus.set(key, 'completed'));
         };
     }
-
 };
 
 module.exports = {
