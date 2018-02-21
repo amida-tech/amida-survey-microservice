@@ -37,6 +37,17 @@ exports.getAssessmentAnswersStatus = function getAssessmentAnswersStatus(req, re
         .catch(shared.handleError(res));
 };
 
+exports.patchAssessmentAnswersStatus = function patchAssessmentAnswersStatus(req, res) {
+    console.log('*******************');
+    console.log('GOOD NEWS');
+    const status = req.body;
+    status.assessmentId = _.get(req, 'swagger.params.id.value');
+    console.log(status);
+    req.models.assessmentAnswer.patchAssessmentAnswersStatus(status)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.getAssessmentAnswersList = function getAssessmentAnswersStatus(req, res) {
     const group = _.get(req, 'swagger.params.group.value');
     const assessmentAnswersStatus = _.get(req, 'swagger.params.assessment-answers-status.value');

@@ -208,6 +208,14 @@ module.exports = class AnswerAssessmentDAO extends Base {
             .then(record => (record ? record.status : 'new'));
     }
 
+    patchAssessmentAnswersStatus(status) {
+        console.log('************************');
+        console.log(status);
+        const where = { assessmentId: status.assessmentId };
+        return this.db.AssessmentAnswer
+                    .update({ status }, { where });
+    }
+
     getAssessmentAnswersList(options = {}) {
         return this.assessment.listAssessments(options)
             .then((assessments) => {

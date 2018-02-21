@@ -1888,6 +1888,28 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "patch": {
+                "description": "Allows the Status of the assessment answers to be updated.",
+                "summary": "Allows for assessment answer Status to be updated",
+                "operationId": "patchAssessmentAnswersStatus",
+                "parameters": [{
+                    "name": "status",
+                    "in": "body",
+                    "description": "The new status to set the assessment to",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerStatus"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/choice-sets": {
