@@ -282,28 +282,16 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const questionId = options.questionId;
         // TODO: const sectionId = options.sectionId;
         // TODO: const userIds = options.userIds
-
-        let questionIds = [questionId];
-        let questionLinesMap;
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
         }
 
 
-        this.db.SurveyQuestion.findAll({
+        return this.db.SurveyQuestion.findAll({
             where: { surveyId },
             raw: true,
             attrubutes: ['questionId', 'line'],
-        }).then((surveyQuestions) => {
-            if (!questionId && questionId !== 0) {
-                questionIds = surveyQuestions.map(r => r.questionId);
-            }
-            const questionLines = surveyQuestions.map(r => [r.questionId, r.line]);
-            questionLinesMap = new Map(questionLines);
-        });
-
-
-        return this.db.SurveyText.findAll({
+        }).then(surveyQuestions => this.db.SurveyText.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['name', 'surveyId'],
@@ -312,6 +300,12 @@ module.exports = class AnswerAssessmentDAO extends Base {
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
+            let questionIds = [questionId];
+            if (!questionId && questionId !== 0) {
+                questionIds = surveyQuestions.map(r => r.questionId);
+            }
+            const questionLines = surveyQuestions.map(r => [r.questionId, r.line]);
+            const questionLinesMap = new Map(questionLines);
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
             const newOptions = {
                 surveyId,
@@ -330,7 +324,14 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         where: { id: { $in: questionIds } },
                         raw: true,
                         attributes: ['id', 'text', 'instruction'],
-                    }).then((questionTexts) => {
+                    }).then(questionTexts => this.db.AssessmentAnswer.findAll({
+                        where: { assessment_id: { $in: assessmentIds } },
+                        raw: true,
+                        attributes: ['assessmentId', 'status'],
+                    }).then((assessmentStatuses) => {
+                        const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
+                        const assessmentStatusMap = new Map(assessmentStatusInput);
+
                         const qTextsMapInput = questionTexts.map(r => [r.id, { text: r.text, instruction: r.instruction }]);// eslint-disable-line max-len
                         const qTextsMap = new Map(qTextsMapInput);
                         const surveyNames = surveys.map(r => [r.surveyId, r.name]);
@@ -391,7 +392,9 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     });
 
                                     const latestAnswers =
-                                        answersWithValues.filter(a => a.assessmentId === latestAssessments[a.group].id);// eslint-disable-line max-len
+                                        answersWithValues.filter(a => assessmentStatusMap.get(a.assessmentId) === 'completed' && // eslint-disable-line max-len
+                                                   a.assessmentId === latestAssessments[a.group].id);// eslint-disable-line max-len
+
                                     const answersWithComments =
                                         this.appendCommentsToExport(latestAnswers);
                                     const finalAnswers =
@@ -406,8 +409,10 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     ]);
                                 });
                         }
+
                         const latestAnswers =
-                            newAnswers.filter(a => a.assessmentId === latestAssessments[a.group].id); // eslint-disable-line max-len
+                            newAnswers.filter(a => assessmentStatusMap.get(a.assessmentId) === 'completed' &&
+                                       a.assessmentId === latestAssessments[a.group].id);
                         const answersWithComments =
                             this.appendCommentsToExport(latestAnswers);
                         const finalAnswers =
@@ -416,9 +421,9 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         if (questionId) {
                             return _.sortBy(finalAnswers, a => a.group);
                         }
-                        return _.sortBy(finalAnswers, [a => a.group, a => questionLinesMap[a.questionId]]); // eslint-disable-line max-len
-                    })));
-        }));
+                        return _.sortBy(finalAnswers, [a => a.group, a => questionLinesMap.get(a.questionId)]); // eslint-disable-line max-len
+                    }))));
+        })));
     }
 
     exportAssessmentAnswersCSV(options) {
