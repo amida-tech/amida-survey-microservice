@@ -39,6 +39,14 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected)
          }));
 };
 
+const getAssessmentGroupMap = function getAssessmentGroupMap(hxAssessment) {
+    const assessmentGroup = new Map();
+    hxAssessment.listServers().forEach((assessment) => {
+        assessmentGroup[assessment.id] = assessment.group;
+    });
+    return assessmentMap
+}
+
 const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
     constructor(options) {
@@ -190,17 +198,36 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     }
     appendCommentByAssessmentAnswer(answer) {
         const hxAnswer = this.hxAnswer;
-
+        const hxAssessment = this.hxAssessment;
         let answerKey = `${answer.assessmentId - 1}` + "-" + `${answer.surveyId - 1}` + "-" + answer.questionId;
         let comment = hxAnswer.comments[answerKey] ? hxAnswer.comments[answerKey] : {};
     //    console.log(this.hxAnswer.expectedAnswers(11, 0,{}));
-        Object.assign(answer, comment);
+        // Object.assign(answer, comment);
+         // console.log(hxAnswer.expectedAnswers(11, 0, {group:[0]}))
+         console.log(hxAnswer.comments)
+        _.each(hxAnswer.comments, (commentObject, key) => {
+            let comment = commentObject.comment;
+            let commentQid = key.match(/\d{1,2}-\d{1,2}-(\d{1,2})/)[1]
+
+
+        })
+        // let commentMap = new Map;
+        // commentMap[5] = []
+        // _.each(hxAnswer.comments, (commentObject, key) => {
+        //     let comment = commentObject.comment;
+        //     let commentQid = key.match(/\d{1,2}-\d{1,2}-(\d{1,2})/)[1];
+        //     if(commentMap[commentQid]) {
+        //         commentMap[commentQid].push(comment);
+        //     } else {
+        //         else
+        //     }
+        // })
 
         //console.log(hxAnswer.getGroupComments(answer.group, answer.assessmentId - 1, answer.surveyId - 1))
     //    console.log(hxAnswer.expectedAnswers(answer.assessmentId - 1, 0,[answer.group]))
-
-        console.log(hxAnswer.getGroupComments([answer.group], answer.assessmentId - 1, 0))
-console.log("\n\n\n")
+//         console.log("group comments")
+         // console.log(hxAnswer.getGroupComments([answer.group], answer.assessmentId - 1, 0))
+// console.log("\n\n\n")
     }
 
 
