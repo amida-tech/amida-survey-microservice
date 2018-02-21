@@ -62,5 +62,4 @@ module.exports = class AssessmentDAO extends Base {
         return Assessment.findAll(findOptions)
             .then(assessments => assessments.map(assessment => _.omitBy(assessment, _.isNil)));
     }
-
 };

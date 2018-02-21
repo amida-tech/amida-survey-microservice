@@ -1871,7 +1871,7 @@
                 "required": true,
                 "type":"integer"
             }, {
-                "description": "questionId filter on the assessments' anwers that will be returned",
+                "description": "questionId filter on the assessments' answers that will be returned",
                 "name": "question-id",
                 "in": "query",
                 "required": false,
@@ -1898,7 +1898,6 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
-
             }
         },
         "/assessment-answers/{id}/status": {
