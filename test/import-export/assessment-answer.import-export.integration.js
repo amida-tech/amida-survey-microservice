@@ -21,6 +21,7 @@ const assessmentCommon = require('../util/assessment-common');
 const SurveySuperTest = require('../util/survey-super-test');
 const answerSession = require('../fixtures/answer-session/assessment-2');
 const ExportBuilder = require('./assessment-answer.export-builder');
+const CSVConverterExport = require('../../export/csv-converter');
 
 const expect = chai.expect;
 
@@ -126,12 +127,36 @@ describe('export assessment answers integration', function answerAssessmentImpor
         };
     };
 
-    _.range(0, questionCount + 2).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index + 1}`,
+    const verifyExportAssessmentAnswersCSV = function (index) {
+        // TODO add section ids to tests
+        const options = { 'survey-id': 1 };
+        if (index || index === 0) {
+            options['question-id'] = index;
+        }
+        return function verify() {
+            return surveySuperTest.get('/assessment-answers/csv', true, 200, options)
+                .then((res) => {
+                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] });
+                    const csvConverter = new CSVConverterExport();
+                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
+                    expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                    expect(res.text).to.deep.equal(expected);
+                });
+        };
+    };
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers JSON, surveyId: 1, questionId: ${index + 1}`,
             verifyExportAssessmentAnswers(index));
     });
 
-    it('export assessment answers no questionId', verifyExportAssessmentAnswers());
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers CSV, surveyId: 1, questionId: ${index + 1}`,
+            verifyExportAssessmentAnswersCSV(index));
+    });
+
+    it('export assessment answers no questionId JSON', verifyExportAssessmentAnswers());
+    it('export assessment answers no questionId CSV', verifyExportAssessmentAnswers());
 
     it('logout as super', shared.logoutFn());
 });
