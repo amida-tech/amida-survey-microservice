@@ -11,7 +11,7 @@ const CSVConverterExport = require('../../export/csv-converter');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
-const mergeAnswerComments = function (answers, comments) {
+const mergeAnswerComments = function (answers, comments, scope) {
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
@@ -22,12 +22,19 @@ const mergeAnswerComments = function (answers, comments) {
             const { comment, commentHistory } = commentObject;
             if (comment) {
                 Object.assign(answer, { comment });
+            } else if(scope === "export") {
+                Object.assign(answer, { comment:{} });
             }
             if (commentHistory) {
                 Object.assign(answer, { commentHistory });
+            }else if(scope === "export") {
+                Object.assign(answer, { commentHistory:[] });
             }
         }
     });
+    if(scope === "export") {
+        return answers;
+    }
     comments.forEach((commentObject) => {
         const { questionId, comment, commentHistory } = commentObject;
         if (!insertedComments.has(questionId)) {
@@ -63,6 +70,8 @@ const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportO
         choiceText: e.choiceText,
         choiceType: e.choiceType || '',
         code: e.code,
+        comment:e.comment || {},
+        commentHistory: e.commentHistory || []
     }));
 };
 
@@ -260,21 +269,24 @@ module.exports = class AnswerAssessmentDAO extends Base {
     }
 
 
-    getAssessmentAnswerComments(answer) {
-        const assessmentId = answer.assessmentId;
-        const questionId = answer.questionId;
-        return this.db.AnswerComment.findAll({
-            where: { assessmentId, questionId },
-            raw: true,
-            attributes: ['assessmentId', 'userId', 'questionId', 'reason', 'text'],
-        }).then(comments => comments);
-    }
 
     appendCommentsToExport(answers) {
-        return answers.map((a) => {
-            const comments = this.getAssessmentAnswerComments(a);
-            return Object.assign(a, { comments });
-        });
+        let promises = answers.map(a => this.answerComment.listAnswerCommentsWithHistory({assessmentId:a.assessmentId}));
+
+        return Promise.all(promises).then(comments => {
+
+            let x = answers.map((a,indx) => {
+                if(comments.length) {
+                    return mergeAnswerComments([a],comments[indx], "export");
+                } else {
+                    return [Object.append(a,{comments:{}, commentHistory:[]})]
+                }
+
+            })
+
+            return _.flatten(x);
+        })
+
     }
 
     exportAssessmentAnswers(options) {
@@ -390,33 +402,44 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                         return newAnswer;
                                     });
 
-                                    const latestAnswers =
+                                    const latestStageAnswers =
                                         answersWithValues.filter(a => a.assessmentId === latestAssessments[a.group].id);// eslint-disable-line max-len
-                                    const answersWithComments =
-                                        this.appendCommentsToExport(latestAnswers);
-                                    const finalAnswers =
-                                        orderAssessmentAnswerExportObjects(answersWithComments);
-                                    if (questionId || questionId === 0) {
-                                        return _.sortBy(finalAnswers, a => a.group);
-                                    }
+                                        console.log("this happens")
+                                    return this.appendCommentsToExport(latestStageAnswers)
+                                            .then(answersWithComments => {
+                                                // console.log("answers with comments after function call")
+                                                // console.log(answersWithComments)
+                                                const finalAnswers =
+                                                    orderAssessmentAnswerExportObjects(answersWithComments);
+                                                if (questionId || questionId === 0) {
+                                                    return _.sortBy(finalAnswers, a => a.group);
+                                                }
 
-                                    return _.sortBy(finalAnswers, [
-                                        a => a.group,
-                                        a => questionLinesMap.get(a.questionId),
-                                    ]);
+                                                return _.sortBy(finalAnswers, [
+                                                    a => a.group,
+                                                    a => questionLinesMap.get(a.questionId),
+                                                ]);
+                                            });
                                 });
-                        }
-                        const latestAnswers =
-                            newAnswers.filter(a => a.assessmentId === latestAssessments[a.group].id); // eslint-disable-line max-len
-                        const answersWithComments =
-                            this.appendCommentsToExport(latestAnswers);
-                        const finalAnswers =
-                            orderAssessmentAnswerExportObjects(answersWithComments);
+                        } else {
+                            const latestStageAnswers =
+                                newAnswers.filter(a => a.assessmentId === latestAssessments[a.group].id); // eslint-disable-line max-len
 
-                        if (questionId) {
-                            return _.sortBy(finalAnswers, a => a.group);
+                            return this.appendCommentsToExport(latestStageAnswers)
+                                    .then(answersWithComments => {
+                                        // console.log("?")
+                                        // console.log(answersWithComments)
+                                        const finalAnswers =
+                                            orderAssessmentAnswerExportObjects(answersWithComments);
+
+                                        if (questionId) {
+                                            return _.sortBy(finalAnswers, a => a.group);
+                                        }
+                                        return _.sortBy(finalAnswers, [a => a.group, a => questionLinesMap[a.questionId]]); // eslint-disable-line max-len
+                                    })
                         }
-                        return _.sortBy(finalAnswers, [a => a.group, a => questionLinesMap[a.questionId]]); // eslint-disable-line max-len
+
+
                     })));
         }));
     }

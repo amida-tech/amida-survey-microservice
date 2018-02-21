@@ -34,6 +34,8 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected)
              choiceText: e.choiceText,
              choiceType: e.choiceType || '',
              code: e.code,
+             comment: e.comment || {},
+             commentHistory: e.commentHistory || []
          }));
 };
 
@@ -186,6 +188,20 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         expected = orderExpectedAnswerObjects(expected);
         return expected;
     }
+    appendCommentByAssessmentAnswer(answer) {
+        const hxAnswer = this.hxAnswer;
+
+        let answerKey = `${answer.assessmentId - 1}` + "-" + `${answer.surveyId - 1}` + "-" + answer.questionId;
+        let comment = hxAnswer.comments[answerKey] ? hxAnswer.comments[answerKey] : {};
+    //    console.log(this.hxAnswer.expectedAnswers(11, 0,{}));
+        Object.assign(answer, comment);
+
+        //console.log(hxAnswer.getGroupComments(answer.group, answer.assessmentId - 1, answer.surveyId - 1))
+    //    console.log(hxAnswer.expectedAnswers(answer.assessmentId - 1, 0,[answer.group]))
+
+        console.log(hxAnswer.getGroupComments([answer.group], answer.assessmentId - 1, 0))
+console.log("\n\n\n")
+    }
 
 
     getExpectedExportedAsessmentAnswers(options) {
@@ -201,6 +217,9 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         } else {
             expected = this.getExpectedByQuestionId(options);
         }
+        expected.forEach(e => {
+            this.appendCommentByAssessmentAnswer(e);
+        })
 
 
         return this.sortExpected(expected, options);
