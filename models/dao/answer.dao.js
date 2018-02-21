@@ -486,7 +486,6 @@ module.exports = class AnswerDAO extends Base {
                             r.choiceType = p.choiceType;
                         }
 
-
                         return r;
                     });
                 }
