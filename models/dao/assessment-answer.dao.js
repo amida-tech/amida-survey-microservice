@@ -211,7 +211,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
     patchAssessmentAnswersStatus(status) {
         console.log('************************');
         console.log(status);
-        const where = status.assessmentId;
+        const where = { assessmentId: status.assessmentId };
         return this.db.AssessmentAnswer
                     .update({ status }, { where });
     }
