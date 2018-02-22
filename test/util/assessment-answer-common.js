@@ -59,6 +59,7 @@ const findGroup = function (hxAssessment, assessmentIndex) {
     }, []);
 };
 
+
 const SpecTests = class AnswerSpecTests {
     constructor(options) {
         this.generator = options.generator;
