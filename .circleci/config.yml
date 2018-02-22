@@ -45,6 +45,12 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
       - run: sudo npm install -g istanbul
       - run: yarn coverage
+      - run:
+          name: set up DB for testing
+          command: |
+            echo '/usr/lib/postgresql/9.6/bin/:$PATH' >> $BASH_ENV
+            createdb -U postgres survey
+            createdb -U postgres surveyServicetest
       - store_artifacts:
           path: coverage
           prefix: coverage
