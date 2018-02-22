@@ -52,8 +52,8 @@ jobs:
           name: set up DB for testing
           command: |
             export PGPASSWORD=postgres
-            sudo psql -c "create database survey" -U postgres -h localhost
             sudo psql -c "create database surveyServicetest" -U postgres -h localhost
+            sudo psql -c "create database survey" -U postgres -h localhost
       - run: yarn coverage
       - store_artifacts:
           path: coverage
