@@ -51,9 +51,8 @@ jobs:
       - run:
           name: set up DB for testing
           command: |
-            echo '/usr/lib/postgresql/9.6/bin/:$PATH' >> $BASH_ENV
-            psql -c "create database survey" -U postgres
-            psql -c "create database surveyServicetest" -U postgres
+            psql -c "create database survey" -U postgres -h localhost
+            psql -c "create database surveyServicetest" -U postgres -h localhost
       - run: yarn coverage
       - store_artifacts:
           path: coverage
