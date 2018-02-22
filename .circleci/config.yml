@@ -43,7 +43,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      - run: npm install -g istanbul
+      - run: sudo npm install -g istanbul
       - run: yarn coverage
       - store_artifacts:
           path: coverage
