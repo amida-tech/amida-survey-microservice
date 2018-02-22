@@ -43,13 +43,17 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      - run: sudo npm install -g istanbul
+      - run:
+          name: install global tools
+          command: |
+            sudo npm install -g istanbul
+            sudo apt-get install postgresql-client
       - run:
           name: set up DB for testing
           command: |
             echo '/usr/lib/postgresql/9.6/bin/:$PATH' >> $BASH_ENV
-            createdb -U postgres survey
-            createdb -U postgres surveyServicetest
+            psql -c "create database survey" -U postgres
+            psql -c "create database surveyServicetest" -U postgres
       - run: yarn coverage
       - store_artifacts:
           path: coverage
