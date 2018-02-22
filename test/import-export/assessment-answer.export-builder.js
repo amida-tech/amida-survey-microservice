@@ -14,29 +14,51 @@ const filterDuplicateAssessmentAnswers = function filterDuplicates(duplicates) {
     return expected;
 };
 
-const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected) {
-    return expected.map(e =>
-         Object.assign({}, {
-             surveyId: e.surveyId,
-             questionId: e.questionId,
-             questionType: e.questionType,
-             assessmentId: e.assessmentId,
-             userId: e.userId,
-             meta: e.meta,
-             value: e.value,
-             group: e.group,
-             stage: e.stage,
-             surveyName: e.surveyName,
-             weight: e.weight,
-             date: e.date,
-             questionText: e.questionText,
-             questionInstruction: e.questionInstruction,
-             choiceText: e.choiceText,
-             choiceType: e.choiceType || '',
-             code: e.code,
-             comment: e.comment || {},
-             commentHistory: e.commentHistory || []
-         }));
+const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected, includeComments) {
+    return expected.map((e) => {
+        if (includeComments) {
+            return Object.assign({}, {
+                surveyId: e.surveyId,
+                questionId: e.questionId,
+                questionType: e.questionType,
+                assessmentId: e.assessmentId,
+                userId: e.userId,
+                meta: e.meta,
+                value: e.value,
+                group: e.group,
+                stage: e.stage,
+                surveyName: e.surveyName,
+                weight: e.weight,
+                date: e.date,
+                questionText: e.questionText,
+                questionInstruction: e.questionInstruction,
+                choiceText: e.choiceText,
+                choiceType: e.choiceType || '',
+                code: e.code,
+                comment: e.comment || {},
+                commentHistory: e.commentHistory || [],
+            });
+        }
+        return Object.assign({}, {
+            surveyId: e.surveyId,
+            questionId: e.questionId,
+            questionType: e.questionType,
+            assessmentId: e.assessmentId,
+            userId: e.userId,
+            meta: e.meta,
+            value: e.value,
+            group: e.group,
+            stage: e.stage,
+            surveyName: e.surveyName,
+            weight: e.weight,
+            date: e.date,
+            questionText: e.questionText,
+            questionInstruction: e.questionInstruction,
+            choiceText: e.choiceText,
+            choiceType: e.choiceType || '',
+            code: e.code,
+        });
+    });
 };
 
 const getAssessmentGroupMap = function getAssessmentGroupMap(hxAssessment) {
@@ -44,8 +66,8 @@ const getAssessmentGroupMap = function getAssessmentGroupMap(hxAssessment) {
     hxAssessment.listServers().forEach((assessment) => {
         assessmentGroup[assessment.id] = assessment.group;
     });
-    return assessmentMap
-}
+    return assessmentGroup;
+};
 
 const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
@@ -145,13 +167,12 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
     filterForLatestStage(expected) {
         const hxAssessment = this.hxAssessment;
-        const assessmentGroup = new Map();
+        const assessmentGroup = getAssessmentGroupMap(hxAssessment);
         const latestAssessment = new Map();
         const finalExpected = [];
 
 
         hxAssessment.listServers().forEach((assessment) => {
-            assessmentGroup[assessment.id] = assessment.group;
             if (latestAssessment[assessment.group] &&
                  assessment.stage > latestAssessment[assessment.group].stage) {
                 latestAssessment[assessment.group] = assessment;
@@ -193,41 +214,32 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));
         expected = _.flatten(expected);
         expected = this.filterForLatestStage(expected);
-        expected = orderExpectedAnswerObjects(expected);
+        expected = orderExpectedAnswerObjects(expected, options.includeComments);
         return expected;
     }
     appendCommentByAssessmentAnswer(answer) {
         const hxAnswer = this.hxAnswer;
         const hxAssessment = this.hxAssessment;
-        let answerKey = `${answer.assessmentId - 1}` + "-" + `${answer.surveyId - 1}` + "-" + answer.questionId;
-        let comment = hxAnswer.comments[answerKey] ? hxAnswer.comments[answerKey] : {};
-    //    console.log(this.hxAnswer.expectedAnswers(11, 0,{}));
-        // Object.assign(answer, comment);
-         // console.log(hxAnswer.expectedAnswers(11, 0, {group:[0]}))
-         console.log(hxAnswer.comments)
+        const assessmentGroup = getAssessmentGroupMap(hxAssessment);
+        const answerWithComments = Object.assign({}, answer);
+        const answerKey = `${answer.assessmentId - 1}-${answer.surveyId - 1}-${answer.questionId}`;
+        const comment = hxAnswer.comments[answerKey] ? hxAnswer.comments[answerKey].comment : {};
+        let commentHistory = [];
+
         _.each(hxAnswer.comments, (commentObject, key) => {
-            let comment = commentObject.comment;
-            let commentQid = key.match(/\d{1,2}-\d{1,2}-(\d{1,2})/)[1]
-
-
-        })
-        // let commentMap = new Map;
-        // commentMap[5] = []
-        // _.each(hxAnswer.comments, (commentObject, key) => {
-        //     let comment = commentObject.comment;
-        //     let commentQid = key.match(/\d{1,2}-\d{1,2}-(\d{1,2})/)[1];
-        //     if(commentMap[commentQid]) {
-        //         commentMap[commentQid].push(comment);
-        //     } else {
-        //         else
-        //     }
-        // })
-
-        //console.log(hxAnswer.getGroupComments(answer.group, answer.assessmentId - 1, answer.surveyId - 1))
-    //    console.log(hxAnswer.expectedAnswers(answer.assessmentId - 1, 0,[answer.group]))
-//         console.log("group comments")
-         // console.log(hxAnswer.getGroupComments([answer.group], answer.assessmentId - 1, 0))
-// console.log("\n\n\n")
+            const currComment = commentObject.comment;
+            const commentQuestionId = key.match(/\d{1,2}-\d{1,2}-(\d{1,2})/)[1];
+            const commentOwnerId = key.match(/(\d{1,2})-\d{1,2}-\d{1,2}/)[1];
+            if (`${answer.questionId}` === commentQuestionId &&
+                assessmentGroup[commentOwnerId] === answer.group &&
+               commentOwnerId !== `${answer.assessmentId - 1}`) {
+                commentHistory.push(currComment);
+            }
+        });
+        commentHistory = _.sortBy(commentHistory, c => c.reason);
+        answerWithComments.comment = comment;
+        answerWithComments.commentHistory = commentHistory;
+        return answerWithComments;
     }
 
 
@@ -244,11 +256,9 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         } else {
             expected = this.getExpectedByQuestionId(options);
         }
-        expected.forEach(e => {
-            this.appendCommentByAssessmentAnswer(e);
-        })
-
-
+        if (options.includeComments) {
+            expected = expected.map(e => this.appendCommentByAssessmentAnswer(e));
+        }
         return this.sortExpected(expected, options);
     }
 
