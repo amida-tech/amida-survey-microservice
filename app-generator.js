@@ -84,7 +84,6 @@ const userAudit = function (req, res, next) {
         if (req.swagger.params) {
             _.forOwn(req.swagger.params, (description, name) => {
                 const value = description && description.value;
-
                 if (value !== undefined && _.get(description, 'schema.in') === 'path') {
                     endpoint = endpoint.replace(`{${name}}`, value);
                 }

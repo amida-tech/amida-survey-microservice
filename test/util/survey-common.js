@@ -187,10 +187,11 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
 };
 
 const SpecTests = class SurveySpecTests {
-    constructor(generator, hxSurvey, hxQuestion) {
+    constructor(generator, hxSurvey, hxQuestion, hxAnswer) {
         this.generator = generator;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion; // not updated in all creates.
+        this.hxAnswer = hxAnswer;
     }
 
     createSurveyFn(options) {
@@ -263,14 +264,35 @@ const SpecTests = class SurveySpecTests {
                 });
         };
     }
+
+    getNumberOfUsersBySurveyfn(id) {
+        const hxAnswer = this.hxAnswer;
+        const hxSurvey = this.hxSurvey;
+        return function getNumberOfUsersBySurvey() {
+            return models.survey.getNumberOfUsersBySurvey({ surveyId: id })
+                .then((res) => {
+                    const totalUsers = new Set();
+                    hxAnswer.store.forEach((ans) => {
+                        const ansSurveyId = hxSurvey.id(ans.surveyIndex);
+
+                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
+                            totalUsers.add(ans.userIndex);
+                        }
+                    });
+                    const expected = totalUsers.size;
+                    expect(res).to.equal(expected);
+                });
+        };
+    }
 };
 
 const IntegrationTests = class SurveyIntegrationTests {
-    constructor(surveySuperTest, generator, hxSurvey, hxQuestion) {
+    constructor(surveySuperTest, generator, hxSurvey, hxQuestion, hxAnswer) {
         this.surveySuperTest = surveySuperTest;
         this.generator = generator;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion; // not updated in all creates.
+        this.hxAnswer = hxAnswer;
     }
 
     createSurveyFn(options) {
@@ -369,6 +391,26 @@ const IntegrationTests = class SurveyIntegrationTests {
                     const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
                     return res;
+                });
+        };
+    }
+
+    getNumberOfUsersBySurveyfn(id) {
+        const hxAnswer = this.hxAnswer;
+        const hxSurvey = this.hxSurvey;
+        const self = this;
+        return function getNumberOfUsersBySurvey() {
+            return self.surveySuperTest.get(`/numberUsersBySurvey/${id}`, true, 200)
+                .then((res) => {
+                    const totalUsers = new Set();
+                    hxAnswer.store.forEach((ans) => {
+                        const ansSurveyId = hxSurvey.id(ans.surveyIndex);
+                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
+                            totalUsers.add(ans.userIndex);
+                        }
+                    });
+                    const expected = totalUsers.size;
+                    expect(res.body).to.equal(expected);
                 });
         };
     }

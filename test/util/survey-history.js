@@ -81,4 +81,5 @@ module.exports = class SurveyHistory extends History {
         }
         throw new Error('survey scope not implemented.');
     }
+
 };
