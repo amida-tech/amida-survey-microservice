@@ -339,7 +339,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         const assessmentMapInput = assessments.map(r => [r.id, { group: r.group, stage: r.stage }]);// eslint-disable-line max-len
                         const assessmentMap = new Map(assessmentMapInput);
 
-                        const latestAssessments = new Map();
+                        const latestCompleteAssessments = new Map();
                         const newAnswers = answers.map((a) => {
                             const createdAtDate = new Date(a.createdAt);
 
@@ -370,10 +370,12 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         });
 
                         assessments.forEach((a) => {
-                            if ((latestAssessments[a.group] &&
-                                a.stage > latestAssessments[a.group].stage) ||
-                                !latestAssessments[a.group]) {
-                                latestAssessments[a.group] = a;
+                            if ((latestCompleteAssessments[a.group] &&
+                                a.stage > latestCompleteAssessments[a.group].stage &&
+                                assessmentStatusMap.get(a.id) === 'completed') ||
+                                (!latestCompleteAssessments[a.group] &&
+                                assessmentStatusMap.get(a.id) === 'completed')) {
+                                latestCompleteAssessments[a.group] = a;
                             }
                         });
 
@@ -392,8 +394,9 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     });
 
                                     const latestAnswers =
-                                        answersWithValues.filter(a => assessmentStatusMap.get(a.assessmentId) === 'completed' && // eslint-disable-line max-len
-                                                   a.assessmentId === latestAssessments[a.group].id);// eslint-disable-line max-len
+                                        answersWithValues.filter(a =>
+                                          latestCompleteAssessments[a.group] &&
+                                          a.assessmentId === latestCompleteAssessments[a.group].id);// eslint-disable-line max-len
 
                                     const answersWithComments =
                                         this.appendCommentsToExport(latestAnswers);
@@ -411,8 +414,9 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         }
 
                         const latestAnswers =
-                            newAnswers.filter(a => assessmentStatusMap.get(a.assessmentId) === 'completed' &&
-                                       a.assessmentId === latestAssessments[a.group].id);
+                            newAnswers.filter(a =>
+                              latestCompleteAssessments[a.group] &&
+                              a.assessmentId === latestCompleteAssessments[a.group].id);
                         const answersWithComments =
                             this.appendCommentsToExport(latestAnswers);
                         const finalAnswers =
