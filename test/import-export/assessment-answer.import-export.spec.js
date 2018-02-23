@@ -99,9 +99,9 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
-    const verifyExportAssessmentAnswers = function (index) {
+    const verifyExportAssessmentAnswers = function ({ index, includeComments }) {
         // TODO add section ids to tests
-        const options = { surveyId: 1 };
+        const options = { surveyId: 1, includeComments };
         if (index || index === 0) {
             options.questionId = index;
         }
@@ -118,10 +118,17 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
     _.range(0, questionCount + 1).forEach((index) => {
         it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
-            verifyExportAssessmentAnswers(index));
+            verifyExportAssessmentAnswers({ index, includeComments: false }));
     });
 
-    it('export assessment answers no questionId', verifyExportAssessmentAnswers());
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers with comments, surveyId: 1, questionId: ${index}`,
+            verifyExportAssessmentAnswers({ index, includeComments: true }));
+    });
+
+    it('export assessment answers no questionId', verifyExportAssessmentAnswers({ includeComments: false }));
+
+    it('export assessment answers no questionId with comments', verifyExportAssessmentAnswers({ includeComments: true }));
     // const verifyErrorMsgBothQuestionIdSectionId = function () {
     //     return function verify() {
     //         const options = { questionId: 1, surveyId: 1, sectionId: 1 };
