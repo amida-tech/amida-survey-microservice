@@ -275,8 +275,8 @@ const SpecTests = class SurveySpecTests {
                     hxAnswer.store.forEach((ans) => {
                         const ansSurveyId = hxSurvey.id(ans.surveyIndex);
 
-                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
-                            totalUsers.add(ans.userIndex);
+                        if (!totalUsers.has(ans.ownerId) && ansSurveyId === id) {
+                            totalUsers.add(ans.ownerId);
                         }
                     });
                     const expected = totalUsers.size;
@@ -405,8 +405,8 @@ const IntegrationTests = class SurveyIntegrationTests {
                     const totalUsers = new Set();
                     hxAnswer.store.forEach((ans) => {
                         const ansSurveyId = hxSurvey.id(ans.surveyIndex);
-                        if (!totalUsers.has(ans.userIndex) && ansSurveyId === id) {
-                            totalUsers.add(ans.userIndex);
+                        if (!totalUsers.has(ans.ownerId) && ansSurveyId === id) {
+                            totalUsers.add(ans.ownerId);
                         }
                     });
                     const expected = totalUsers.size;

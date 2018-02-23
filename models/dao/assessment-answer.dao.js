@@ -12,7 +12,6 @@ const CSVConverterExport = require('../../export/csv-converter');
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
 const mergeAnswerComments = function (answers, comments, scope) {
-
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
@@ -440,7 +439,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                           a.assessmentId === latestCompleteAssessments[a.group].id);
 
 
-                    if (latestCompletedAnswers.length && _.some(newAnswers, a => !!a.questionChoiceId)) {
+                    if (latestCompletedAnswers.length && _.some(newAnswers, a => !!a.questionChoiceId)) { // eslint-disable-line max-len
                         return this.question.questionChoice.getAllQuestionChoices(newOptions.questionIds) // eslint-disable-line max-len
                             .then((res) => {
                                 const choiceMapInput = res.map(r => [r.id, r.text]);
@@ -454,12 +453,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     return newAnswer;
                                 });
 
-                                if(includeComments) {
-
+                                if (includeComments) {
                                     return this.appendCommentsToExport(answersWithValues)
                                            .then((answersWithComments) => {
                                                const finalAnswers =
-                                                   orderAssessmentAnswerExportObjects(answersWithComments, includeComments);
+                                                   orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                                if (questionId || questionId === 0) {
                                                    return _.sortBy(finalAnswers, a => a.group);
                                                }
@@ -469,26 +467,23 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                                    a => questionLinesMap.get(a.questionId),
                                                ]);
                                            });
-                                } else {
-                                    const finalAnswers =
-                                        orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);
-                                    if (questionId || questionId === 0) {
-                                        return _.sortBy(finalAnswers, a => a.group);
-                                    }
-
-                                    return _.sortBy(finalAnswers, [
-                                        a => a.group,
-                                        a => questionLinesMap.get(a.questionId),
-                                    ]);
+                                }
+                                const finalAnswers =
+                                        orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
+                                if (questionId || questionId === 0) {
+                                    return _.sortBy(finalAnswers, a => a.group);
                                 }
 
-
+                                return _.sortBy(finalAnswers, [
+                                    a => a.group,
+                                    a => questionLinesMap.get(a.questionId),
+                                ]);
                             });
-                    } else if(includeComments) {
+                    } else if (includeComments) {
                         return this.appendCommentsToExport(latestCompletedAnswers)
                                .then((answersWithComments) => {
                                    const finalAnswers =
-                                       orderAssessmentAnswerExportObjects(answersWithComments, includeComments);
+                                       orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                    if (questionId || questionId === 0) {
                                        return _.sortBy(finalAnswers, a => a.group);
                                    }
@@ -498,17 +493,14 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                        a => questionLinesMap.get(a.questionId),
                                    ]);
                                });
-
-                    } else {
-                        const finalAnswers =
-                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);
-
-                        return _.sortBy(finalAnswers, [
-                            a => a.group,
-                            a => questionLinesMap.get(a.questionId),
-                        ]);
                     }
+                    const finalAnswers =
+                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
 
+                    return _.sortBy(finalAnswers, [
+                        a => a.group,
+                        a => questionLinesMap.get(a.questionId),
+                    ]);
                 }))));
         })));
     }
