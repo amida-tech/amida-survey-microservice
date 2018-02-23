@@ -50,9 +50,10 @@ jobs:
             sudo apt-get install postgresql-client
       - run:
           name: set up DB for testing
-          command: export PGPASSWORD=postgres
-          command: sudo psql -u postgres -p 5432 -c "create database survey;"
-          command: sudo psql -u postgres -p 5432 -c "create database surveyServicetest;"
+          command: |
+            export PGPASSWORD=postgres
+            sudo psql -U postgres -h localhost -p 5432 -c "create database survey;"
+            sudo psql -U postgres -h localhost -p 5432 -c "create database \"surveyServicetest\";"
       - run: yarn coverage
       - store_artifacts:
           path: coverage
