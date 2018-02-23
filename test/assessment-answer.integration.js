@@ -32,7 +32,7 @@ describe('assessment answer integration', function answerAssessmentIntegration()
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
 
     const questionTests = new questionCommon.IntegrationTests(surveySuperTest, { generator, hxQuestion });
     const surveyTests = new surveyCommon.IntegrationTests(surveySuperTest, generator, hxSurvey, hxQuestion);
@@ -56,10 +56,6 @@ describe('assessment answer integration', function answerAssessmentIntegration()
     });
 
     it('login as super', shared.loginFn(config.superUser));
-
-    _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(hxUser));
-    });
 
     _.range(userCount).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));

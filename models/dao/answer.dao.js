@@ -377,7 +377,9 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, assessmentId, history, ids, userIds }) {
+    listAnswers({ userId, userIds, surveyId, assessmentId,
+                  assessmentIds, scope, history, ids, questionIds,
+                  meta, createdAt }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -395,13 +397,30 @@ module.exports = class AnswerDAO extends Base {
         if (surveyId) {
             where.surveyId = surveyId;
         }
+
+        if (assessmentIds) {
+            where.assessmentId = { $in: assessmentIds };
+        }
+
         if (assessmentId) {
             where.assessmentId = assessmentId;
         }
+
+        if (!(assessmentId || assessmentIds)) {
+            where.assessmentId = null;
+        }
+
+        if (questionIds) {
+            where.questionId = { $in: questionIds };
+        }
+
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
+
+
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
+
         if (scope !== 'export') {
             attributes.push('meta');
         }
@@ -413,6 +432,16 @@ module.exports = class AnswerDAO extends Base {
         }
         if (userIds || assessmentId) {
             attributes.push('userId');
+        }
+        if (assessmentIds && surveyId) {
+            attributes.push('userId', 'assessmentId', 'questionId');
+        }
+        if (createdAt) {
+            attributes.push('createdAt');
+        }
+
+        if (meta) {
+            attributes.push('meta');
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -432,11 +461,21 @@ module.exports = class AnswerDAO extends Base {
                 if (scope === 'export') {
                     return result.map((p) => {
                         const r = { surveyId: p.surveyId };
-                        if (userIds) {
-                            r.userId = p.userId;
-                        }
                         r.questionId = p['question.id'];
                         r.questionType = p['question.type'];
+                        if (attributes.includes('assessmentId') || attributes.includes('assessmentIds')) {
+                            r.assessmentId = p.assessmentId;
+                        }
+                        if (attributes.includes('userId')) {
+                            r.userId = p.userId;
+                        }
+                        if (attributes.includes('meta')) {
+                            r.meta = p.meta || {};
+                        }
+                        if (attributes.includes('createdAt')) {
+                            r.createdAt = p.createdAt;
+                        }
+
                         if (p.questionChoiceId) {
                             r.questionChoiceId = p.questionChoiceId;
                         }
@@ -446,6 +485,7 @@ module.exports = class AnswerDAO extends Base {
                         if (p.choiceType) {
                             r.choiceType = p.choiceType;
                         }
+
                         return r;
                     });
                 }
@@ -465,6 +505,7 @@ module.exports = class AnswerDAO extends Base {
                         questionId: v[0]['question.id'],
                         language: v[0].language,
                     };
+
                     const vWithMata = v.find(e => e.meta);
                     if (vWithMata) {
                         r.meta = vWithMata.meta;

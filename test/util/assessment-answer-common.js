@@ -73,7 +73,7 @@ const SpecTests = class AnswerSpecTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices, languageOverride) {
         const generator = this.generator;
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
@@ -90,7 +90,8 @@ const SpecTests = class AnswerSpecTests {
             const input = { userId, surveyId, answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
             input.assessmentId = assessmentId;
-            const language = generator.nextLanguage();
+            const language = languageOverride || generator.nextLanguage();
+
             if (language) {
                 input.language = language;
             }
@@ -133,7 +134,7 @@ const SpecTests = class AnswerSpecTests {
                 .then(() => {
                     const options = { ignoreComments: true };
                     const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, options);
-                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
                 });
@@ -290,7 +291,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         this.mapStatus = new Map();
     }
 
-    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices) {
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex, commentIndices, languageOverride) {
         const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
@@ -305,7 +306,7 @@ const IntegrationTests = class AnswerIntegrationTests {
             expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const input = { answers };
             const assessmentId = hxAssessment.id(assessmentIndex);
-            const language = generator.nextLanguage();
+            const language = languageOverride || generator.nextLanguage();
             if (language) {
                 input.language = language;
             }
@@ -338,15 +339,18 @@ const IntegrationTests = class AnswerIntegrationTests {
         const surveySuperTest = this.surveySuperTest;
         const hxAnswer = this.hxAnswer;
         const hxAssessment = this.hxAssessment;
+        const hxUser = this.hxUser;
         return function answerSurvey() {
             const assessmentId = hxAssessment.id(assessmentIndex);
             const prevAssessmentId = hxAssessment.id(prevIndex);
             const input = { prevAssessmentId };
+            const userId = hxUser.id(userIndex);
+
             return surveySuperTest.post(`/assessment-answers/${assessmentId}/as-copy`, input, 204)
                 .then(() => {
                     const options = { ignoreComments: true };
                     const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex, options);
-                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex, userId);
                     const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
                     expect(expected).to.deep.equal(prevExpected);
                 });

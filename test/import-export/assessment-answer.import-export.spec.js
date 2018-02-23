@@ -9,33 +9,36 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const SharedSpec = require('./util/shared-spec');
-const Generator = require('./util/generator');
-const History = require('./util/history');
-const SurveyHistory = require('./util/survey-history');
-const assessmentAnswerCommon = require('./util/assessment-answer-common');
-const questionCommon = require('./util/question-common');
-const surveyCommon = require('./util/survey-common');
-const assessmentCommon = require('./util/assessment-common');
-
-const answerSession = require('./fixtures/answer-session/assessment-0');
+const models = require('../../models');
+const SharedSpec = require('../util/shared-spec');
+const Generator = require('../util/generator');
+const History = require('../util/history');
+const SurveyHistory = require('../util/survey-history');
+const assessmentAnswerCommon = require('../util/assessment-answer-common');
+const questionCommon = require('../util/question-common');
+const surveyCommon = require('../util/survey-common');
+const assessmentCommon = require('../util/assessment-common');
+const ExportBuilder = require('./assessment-answer.export-builder');
+const answerSession = require('../fixtures/answer-session/assessment-2');
 
 const expect = chai.expect;
 
-describe('assessment answer unit', function answerAssessmentUnit() {
+describe('export assessment answers unit', function answerAssessmentImportExportUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
     const hxAssessment = new History(['id', 'name', 'stage', 'group']);
+    const hxAnswer = new History();
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
     const assessmentTests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);
     const tests = new assessmentAnswerCommon.SpecTests({
-        generator, hxUser, hxSurvey, hxQuestion, hxAssessment,
+        generator, hxUser, hxSurvey, hxQuestion, hxAssessment, hxAnswer,
     });
+    const exportBuilder = new ExportBuilder.AssessmentAnswerExportBuilder({ hxSurvey, hxQuestion, hxAssessment, tests });
 
     const userCount = assessmentAnswerCommon.findMax(answerSession, 'user');
     const questionCount = assessmentAnswerCommon.findQuestionCount(answerSession);
@@ -43,6 +46,7 @@ describe('assessment answer unit', function answerAssessmentUnit() {
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
 
     before(shared.setUpFn());
+    it('reset database', shared.setUpFn());
 
     it('sanity checks', function sanityChecks() {
         expect(userCount).to.be.above(0);
@@ -66,10 +70,11 @@ describe('assessment answer unit', function answerAssessmentUnit() {
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage, group: name };
+            const override = { name, stage, group: `${nameIndex}` };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
+
 
     const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
@@ -89,8 +94,50 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         }
 
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
+
+    const verifyExportAssessmentAnswers = function (index) {
+        // TODO add section ids to tests
+        const options = { surveyId: 1 };
+        if (index || index === 0) {
+            options.questionId = index;
+        }
+        return function verify() {
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
+                .then((answers) => {
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
+                    expected.forEach((e, indx) => {
+                        expect(answers[indx]).to.deep.equal(e);
+                    });
+                });
+        };
+    };
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
+            verifyExportAssessmentAnswers(index));
+    });
+
+    it('export assessment answers no questionId', verifyExportAssessmentAnswers());
+    // const verifyErrorMsgBothQuestionIdSectionId = function () {
+    //     return function verify() {
+    //         const options = { questionId: 1, surveyId: 1, sectionId: 1 };
+    //         return models.assessmentAnswer.exportAssessmentAnswers(options)
+    //         .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
+    //     };
+    // };
+
+    const verifyErrorMsgNoSurveyId = function () {
+        return function verify() {
+            const options = { questionId: 1, sectionId: 1 };
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
+            .then(res => shared.verifyErrorMessage(res, 'surveyMustBeSpecified'));
+        };
+    };
+
+    // to be uncommented for SER-30 it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsgBothQuestionIdSectionId);
+    it('verifyErrorMsgNoSurveyId', verifyErrorMsgNoSurveyId);
 });

@@ -90,6 +90,7 @@ const IntegrationTests = class AssessmentSpecTests {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
+
         return function createAssessment() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
             const assessment = Object.assign(generator.newAssessment(surveyIds), override);
