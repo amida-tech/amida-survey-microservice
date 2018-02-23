@@ -12,8 +12,7 @@ const CSVConverterExport = require('../../export/csv-converter');
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
 const mergeAnswerComments = function (answers, comments, scope) {
-    // console.log("answers passed ito mergeAnswerComments")
-    // console.log(answers)
+
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
@@ -385,20 +384,17 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     raw: true,
                     attributes: ['assessmentId', 'status'],
                 }).then((assessmentStatuses) => {
-                    const assessmentStatusInput =
-                        assessmentStatuses.map(r => [r.assessmentId, r.status]);
+                    const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
                     const assessmentStatusMap = new Map(assessmentStatusInput);
 
-                    const qTextsMapInput =
-                        questionTexts.map(r => [r.id, { text: r.text, instruction: r.instruction }]);// eslint-disable-line max-len
+                    const qTextsMapInput = questionTexts.map(r => [r.id, { text: r.text, instruction: r.instruction }]);// eslint-disable-line max-len
                     const qTextsMap = new Map(qTextsMapInput);
                     const surveyNames = surveys.map(r => [r.surveyId, r.name]);
                     const surveyNameMap = new Map(surveyNames);
-                    const assessmentMapInput =
-                        assessments.map(r => [r.id, { group: r.group, stage: r.stage }]);
+                    const assessmentMapInput = assessments.map(r => [r.id, { group: r.group, stage: r.stage }]);// eslint-disable-line max-len
                     const assessmentMap = new Map(assessmentMapInput);
 
-                    const latestAssessments = new Map();
+                    const latestCompleteAssessments = new Map();
                     const newAnswers = answers.map((a) => {
                         const createdAtDate = new Date(a.createdAt);
 
@@ -429,24 +425,27 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     });
 
                     assessments.forEach((a) => {
-                        if ((latestAssessments[a.group] &&
-                            a.stage > latestAssessments[a.group].stage) ||
-                            !latestAssessments[a.group]) {
-                            latestAssessments[a.group] = a;
+                        if ((latestCompleteAssessments[a.group] &&
+                            a.stage > latestCompleteAssessments[a.group].stage &&
+                            assessmentStatusMap.get(a.id) === 'completed') ||
+                            (!latestCompleteAssessments[a.group] &&
+                            assessmentStatusMap.get(a.id) === 'completed')) {
+                            latestCompleteAssessments[a.group] = a;
                         }
                     });
 
-                    const latestStageAnswers =
-                        newAnswers.filter(a => assessmentStatusMap.get(a.assessmentId) === 'completed' &&
-                            a.assessmentId === latestAssessments[a.group].id);// eslint-disable-line max-len
+                    const latestCompletedAnswers =
+                        newAnswers.filter(a =>
+                          latestCompleteAssessments[a.group] &&
+                          a.assessmentId === latestCompleteAssessments[a.group].id);
 
-                    if (latestStageAnswers.length &&
-                        _.some(latestStageAnswers, a => !!a.questionChoiceId)) {
+
+                    if (latestCompletedAnswers.length && _.some(newAnswers, a => !!a.questionChoiceId)) {
                         return this.question.questionChoice.getAllQuestionChoices(newOptions.questionIds) // eslint-disable-line max-len
                             .then((res) => {
                                 const choiceMapInput = res.map(r => [r.id, r.text]);
                                 const choiceTextMap = new Map(choiceMapInput);
-                                const answersWithValues = latestStageAnswers.map((a) => {
+                                const answersWithValues = latestCompletedAnswers.map((a) => {
                                     const newAnswer = Object.assign(a, {
                                         choiceText: choiceTextMap.get(a.questionChoiceId) || '',
                                         code: a.code || '',
@@ -454,55 +453,62 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     delete newAnswer.questionChoiceId;
                                     return newAnswer;
                                 });
-                                if (includeComments) {
+
+                                if(includeComments) {
+
                                     return this.appendCommentsToExport(answersWithValues)
-                                            .then((answersWithComments) => {
-                                                const finalAnswers = orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
-                                                if (questionId || questionId === 0) {
-                                                    return _.sortBy(finalAnswers, a => a.group);
-                                                }
+                                           .then((answersWithComments) => {
+                                               const finalAnswers =
+                                                   orderAssessmentAnswerExportObjects(answersWithComments, includeComments);
+                                               if (questionId || questionId === 0) {
+                                                   return _.sortBy(finalAnswers, a => a.group);
+                                               }
 
-                                                return _.sortBy(finalAnswers, [
-                                                    a => a.group,
-                                                    a => questionLinesMap.get(a.questionId),
-                                                ]);
-                                            });
+                                               return _.sortBy(finalAnswers, [
+                                                   a => a.group,
+                                                   a => questionLinesMap.get(a.questionId),
+                                               ]);
+                                           });
+                                } else {
+                                    const finalAnswers =
+                                        orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);
+                                    if (questionId || questionId === 0) {
+                                        return _.sortBy(finalAnswers, a => a.group);
+                                    }
+
+                                    return _.sortBy(finalAnswers, [
+                                        a => a.group,
+                                        a => questionLinesMap.get(a.questionId),
+                                    ]);
                                 }
 
-                                const finalAnswers = orderAssessmentAnswerExportObjects(answersWithValues, includeComments);// eslint-disable-line max-len
-                                if (questionId || questionId === 0) {
-                                    return _.sortBy(finalAnswers, a => a.group);
-                                }
 
-                                return _.sortBy(finalAnswers, [
-                                    a => a.group,
-                                    a => questionLinesMap.get(a.questionId),
-                                ]);
                             });
-                    }
-                    if (includeComments) {
-                        return this.appendCommentsToExport(latestStageAnswers)
-                            .then((answersWithComments) => {
-                                const finalAnswers = orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
-                                if (questionId || questionId === 0) {
-                                    return _.sortBy(finalAnswers, a => a.group);
-                                }
+                    } else if(includeComments) {
+                        return this.appendCommentsToExport(latestCompletedAnswers)
+                               .then((answersWithComments) => {
+                                   const finalAnswers =
+                                       orderAssessmentAnswerExportObjects(answersWithComments, includeComments);
+                                   if (questionId || questionId === 0) {
+                                       return _.sortBy(finalAnswers, a => a.group);
+                                   }
 
-                                return _.sortBy(finalAnswers, [
-                                    a => a.group,
-                                    a => questionLinesMap.get(a.questionId),
-                                ]);
-                            });
-                    }
-                    const finalAnswers = orderAssessmentAnswerExportObjects(latestStageAnswers, includeComments);// eslint-disable-line max-len
-                    if (questionId || questionId === 0) {
-                        return _.sortBy(finalAnswers, a => a.group);
+                                   return _.sortBy(finalAnswers, [
+                                       a => a.group,
+                                       a => questionLinesMap.get(a.questionId),
+                                   ]);
+                               });
+
+                    } else {
+                        const finalAnswers =
+                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);
+
+                        return _.sortBy(finalAnswers, [
+                            a => a.group,
+                            a => questionLinesMap.get(a.questionId),
+                        ]);
                     }
 
-                    return _.sortBy(finalAnswers, [
-                        a => a.group,
-                        a => questionLinesMap.get(a.questionId),
-                    ]);
                 }))));
         })));
     }
