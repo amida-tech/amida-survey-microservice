@@ -127,16 +127,23 @@ describe('export assessment answers integration', function answerAssessmentImpor
         };
     };
 
-    const verifyExportAssessmentAnswersCSV = function (index) {
+    const verifyExportAssessmentAnswersCSV = function (index, includeComments) {
         // TODO add section ids to tests
         const options = { 'survey-id': 1 };
         if (index || index === 0) {
             options['question-id'] = index;
         }
+        if (includeComments) {
+            options['include-comments'] = true;
+        }
         return function verify() {
             return surveySuperTest.get('/assessment-answers/csv', true, 200, options)
                 .then((res) => {
-                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] });
+                    const controllerOptions = Object.assign({}, {
+                        questionId: options['question-id'],
+                        surveyId: options['survey-id'],
+                        includeComments,
+                    });
                     const csvConverter = new CSVConverterExport();
                     let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
                     expected = expected.length ? csvConverter.dataToCSV(expected) : '';
@@ -147,7 +154,12 @@ describe('export assessment answers integration', function answerAssessmentImpor
 
     _.range(0, questionCount + 1).forEach((index) => {
         it(`exported assessment-answers JSON, surveyId: 1, questionId: ${index + 1}`,
-            verifyExportAssessmentAnswers(index));
+            verifyExportAssessmentAnswers(index, false));
+    });
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers JSON with comments, surveyId: 1, questionId: ${index + 1}`,
+            verifyExportAssessmentAnswers(index, true));
     });
 
     _.range(0, questionCount + 1).forEach((index) => {
