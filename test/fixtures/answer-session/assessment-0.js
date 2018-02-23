@@ -9,7 +9,6 @@ module.exports = [{
     name: 0,
     stage: 1,
     user: 3,
-    assessment: 1,
     questions: [3, 4, 6, 7],
 }, {
     name: 1,

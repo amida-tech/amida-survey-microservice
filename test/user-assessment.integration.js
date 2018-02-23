@@ -62,22 +62,22 @@ describe('user assessment integration', () => {
         it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));
     });
 
-    const openUserAssessmentFn = function (userIndex, assessmentIndex, timeIndex) {
+    const openUserAssessmentFn = function (ownerId, assessmentIndex, timeIndex) {
         return function openUserAssessment(done) {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
             surveySuperTest.post('/user-assessments', userAssessment, 201)
                 .expect((res) => {
-                    hxUserAssessment.pushWithId([userIndex, assessmentIndex, timeIndex], userAssessment, res.body.id);
+                    hxUserAssessment.pushWithId([ownerId, assessmentIndex, timeIndex], userAssessment, res.body.id);
                 })
                 .end(done);
         };
     };
 
-    const closeUserAssessmentFn = function (userIndex, assessmentIndex) {
+    const closeUserAssessmentFn = function (ownerId, assessmentIndex) {
         return function closeUserAssessment(done) {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const query = { 'user-id': userId, 'assessment-id': assessmentId };
             surveySuperTest.delete('/user-assessments', 204, query).end(done);
@@ -138,15 +138,15 @@ describe('user assessment integration', () => {
         answersForUser[1] = hxAnswer.listFlatForUser(1);
     });
 
-    const listUserAssessmentsFn = function (userIndex, assessmentIndex) {
+    const listUserAssessmentsFn = function (ownerId, assessmentIndex) {
         return function listUserAssessments(done) {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const query = { 'user-id': userId, 'assessment-id': assessmentId };
             surveySuperTest.get('/user-assessments', true, 200, query)
                 .expect((res) => {
                     const expected = _.range(3).map((index) => {
-                        const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
+                        const id = hxUserAssessment.id([ownerId, assessmentIndex, index]);
                         return Object.assign({ version: index }, { id });
                     });
                     expect(res.body).to.deep.equal(expected);
@@ -155,9 +155,9 @@ describe('user assessment integration', () => {
         };
     };
 
-    const listUserAssessmentAnswersFn = function (userIndex, assessmentIndex, timeIndex) {
+    const listUserAssessmentAnswersFn = function (ownerId, assessmentIndex, timeIndex) {
         return function listUserAssessmentAnswers(done) {
-            const id = hxUserAssessment.id([userIndex, assessmentIndex, timeIndex]);
+            const id = hxUserAssessment.id([ownerId, assessmentIndex, timeIndex]);
             const [minSurveyIndex, maxSurveyIndex] = assessmentIndex === 0 ? [0, 2] : [3, 5];
             const surveyTimeIndices = _.range(minSurveyIndex, maxSurveyIndex + 1).reduce((r, surveyIndex) => {
                 r[surveyIndex] = 0;
@@ -166,7 +166,7 @@ describe('user assessment integration', () => {
             surveySuperTest.get(`/user-assessments/${id}/answers`, true, 200)
                 .expect((res) => {
                     const expected = hxAnswer.store.reduce((r, record) => {
-                        if (record.userIndex !== userIndex) {
+                        if (record.ownerId !== ownerId) {
                             return r;
                         }
                         const surveyTimeIndex = surveyTimeIndices[record.surveyIndex];

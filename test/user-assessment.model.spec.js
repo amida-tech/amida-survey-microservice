@@ -57,19 +57,19 @@ describe('user assessment unit', () => {
         it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));
     });
 
-    const openUserAssessmentFn = function (userIndex, assessmentIndex, timeIndex) {
+    const openUserAssessmentFn = function (ownerId, assessmentIndex, timeIndex) {
         return function v() {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
             return models.userAssessment.openUserAssessment(userAssessment)
-                .then(({ id }) => hxUserAssessment.pushWithId([userIndex, assessmentIndex, timeIndex], userAssessment, id));
+                .then(({ id }) => hxUserAssessment.pushWithId([ownerId, assessmentIndex, timeIndex], userAssessment, id));
         };
     };
 
-    const closeUserAssessmentFn = function (userIndex, assessmentIndex) {
+    const closeUserAssessmentFn = function (ownerId, assessmentIndex) {
         return function closeUserAssessment() {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
             return models.userAssessment.closeUserAssessment(userAssessment);
@@ -112,14 +112,14 @@ describe('user assessment unit', () => {
         answersForUser[1] = hxAnswer.listFlatForUser(1);
     });
 
-    const listUserAssessmentsFn = function (userIndex, assessmentIndex) {
+    const listUserAssessmentsFn = function (ownerId, assessmentIndex) {
         return function listUserAssessments() {
-            const userId = hxUser.id(userIndex);
+            const userId = hxUser.id(ownerId);
             const assessmentId = hxAssessment.id(assessmentIndex);
             return models.userAssessment.listUserAssessments(userId, assessmentId)
                 .then((actual) => {
                     const expected = _.range(3).map((index) => {
-                        const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
+                        const id = hxUserAssessment.id([ownerId, assessmentIndex, index]);
                         return Object.assign({ version: index }, { id });
                     });
                     expect(actual).to.deep.equal(expected);
@@ -127,9 +127,9 @@ describe('user assessment unit', () => {
         };
     };
 
-    const listUserAssessmentAnswersFn = function (userIndex, assessmentIndex, timeIndex) {
+    const listUserAssessmentAnswersFn = function (ownerId, assessmentIndex, timeIndex) {
         return function listUserAssessmentAnswers() {
-            const id = hxUserAssessment.id([userIndex, assessmentIndex, timeIndex]);
+            const id = hxUserAssessment.id([ownerId, assessmentIndex, timeIndex]);
             const [minSurveyIndex, maxSurveyIndex] = assessmentIndex === 0 ? [0, 2] : [3, 5];
             const surveyTimeIndices = _.range(minSurveyIndex, maxSurveyIndex + 1).reduce((r, surveyIndex) => {
                 r[surveyIndex] = 0;
@@ -138,7 +138,7 @@ describe('user assessment unit', () => {
             return models.userAssessment.listUserAssessmentAnswers(id)
                 .then((actual) => {
                     const expected = hxAnswer.store.reduce((r, record) => {
-                        if (record.userIndex !== userIndex) {
+                        if (record.ownerId !== ownerId) {
                             return r;
                         }
                         const surveyTimeIndex = surveyTimeIndices[record.surveyIndex];
