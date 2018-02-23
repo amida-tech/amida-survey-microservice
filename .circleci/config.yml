@@ -53,9 +53,7 @@ jobs:
           command: |
             export PGPASSWORD=postgres
             sudo psql -U postgres -h localhost -p 5432 -c "create database survey;"
-            sudo psql -U postgres -h localhost -p 5432 -c "create database surveyServicetest;"
-            sudo psql -U postgres -h localhost -l
-            psql -U postgres -h localhost -l
+            sudo psql -U postgres -h localhost -p 5432 -c "create database \"surveyServicetest\";"
       - run: yarn coverage
       - store_artifacts:
           path: coverage
