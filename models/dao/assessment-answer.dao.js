@@ -382,7 +382,9 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     where: { assessment_id: { $in: assessmentIds } },
                     raw: true,
                     attributes: ['assessmentId', 'status'],
-                }).then((assessmentStatuses) => {
+                }).then(assessmentStatuses => this.db.QuestionChoice.findAll({
+                    where: { id: { $in: answers.map(a => a.questionChoiceId) } },
+                }).then((questionChoices) => {
                     const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
                     const assessmentStatusMap = new Map(assessmentStatusInput);
 
@@ -406,11 +408,15 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                     month}-${
                                     day}`;
 
+                        const weight = a.questionChoiceId !== undefined ?
+                        questionChoices.find(questionChoice =>
+                          questionChoice.id === a.questionChoiceId).weight :
+                        null;
                         const newAnswer = Object.assign(a, {
                             group: `${assessmentMap.get(a.assessmentId).group}`,
                             stage: `${assessmentMap.get(a.assessmentId).stage}`,
                             surveyName: surveyNameMap.get(surveyId),
-                            weight: '',
+                            weight,
                             date,
                             questionText: qTextsMap.get(a.questionId).text || '',
                             questionInstruction: qTextsMap.get(a.questionId).instruction || '',
@@ -501,7 +507,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         a => a.group,
                         a => questionLinesMap.get(a.questionId),
                     ]);
-                }))));
+                })))));
         })));
     }
 
