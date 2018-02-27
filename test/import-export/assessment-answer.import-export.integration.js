@@ -121,10 +121,17 @@ describe('export assessment answers integration', function answerAssessmentImpor
                     const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] });
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
                     expected.forEach((e, indx) => {
-                        expect(answers[indx]).to.deep.equal(e);
+                        // cheat questionIndex out of the comparison because we don't have access to them
+                        // in the expected values
+                        expect(answers[indx]).to.deep.equal(Object.assign({}, e, { questionIndex: answers[indx].questionIndex }));
+                        expect(answers[indx].questionIndex).to.be.a('number');
                     });
                 });
         };
+    };
+
+    const escapeRegExp = function (string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
     const verifyExportAssessmentAnswersCSV = function (index, includeComments) {
@@ -147,7 +154,10 @@ describe('export assessment answers integration', function answerAssessmentImpor
                     const csvConverter = new CSVConverterExport();
                     let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
                     expected = expected.length ? csvConverter.dataToCSV(expected) : '';
-                    expect(res.text).to.deep.equal(expected);
+                    // match against any integer value for questionIndex because we don't have access to them
+                    // in the expected values
+                    const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                    expect(res.text).to.match(new RegExp(expectedRegExpString));
                 });
         };
     };
