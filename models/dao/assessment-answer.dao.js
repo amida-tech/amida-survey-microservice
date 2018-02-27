@@ -345,7 +345,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         return this.db.SurveyQuestion.findAll({
             where: { surveyId },
             raw: true,
-            attrubutes: ['questionId', 'line'],
+            attributes: ['questionId', 'line'],
         }).then(surveyQuestions => this.db.SurveyText.findAll({
             where: { survey_id: surveyId },
             raw: true,
