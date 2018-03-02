@@ -64,5 +64,8 @@
 	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})",
 	"answerInvalidAssesSurveys": "Survey assigned to assessment is not unique.",
 	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
-	"answerOutOfScale": "Answer {{0}} is out of scale."
+	"answerOutOfScale": "Answer {{0}} is out of scale.",
+	"IntegerAnswerNotProvidedForIntegerQuestion:": "Integer value not provided for integer question",
+	"multipleAnswersNotAllowedForThisQuestion": "Multiple Answers Not Allowed for This Question",
+	"moreAnswersProvidedThanAllowed": "More answers provided than allowed by this question"
 }

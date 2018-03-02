@@ -227,35 +227,52 @@ module.exports = class AnswerDAO extends Base {
 
     validateAnswerValues(userAnswers) {
         const ids = userAnswers.map(({ questionId }) => questionId);
-        const attributes = ['id', 'type', 'parameter'];
+        const attributes = ['id', 'type', 'parameter', 'maxCount', 'multiple'];
         const where = { id: { $in: ids } };
         return this.db.Question.findAll({ where, attributes, raw: true })
             .then(questions => _.keyBy(questions, 'id'))
             .then((questionMap) => {
+
                 userAnswers.forEach(({ questionId, answer, answers }) => {
                     const question = questionMap[questionId];
+                    const { type, parameter, multiple, maxCount } = question;
                     if (!question) {
                         throw new SurveyError('answerQxNotInSurvey');
                     }
-                    const { type, parameter } = question;
-                    if (type === 'scale' && (answer || answers)) { // only for scale currently
-                        const paramSplit = parameter.split(':');
-                        const [min, max] = paramSplit.map(v => (v ? parseFloat(v) : null));
-                        let values;
-                        if (answer) {
-                            values = [answer.numberValue];
+                    if(answers) {
+                        if(!multiple) {
+                            throw new SurveyError('multipleAnswersNotAllowedForThisQuestion');
+                        } else if(multiple && maxCount && answers.length > maxCount) {
+                            throw new SurveyError('moreAnswersProvidedThanAllowed');
                         }
-                        if (answers) {
-                            values = answers.map(({ numberValue }) => numberValue);
-                        }
-                        values.forEach((value) => {
-                            if (min !== null && value < min) {
-                                throw new SurveyError('answerOutOfScale', value);
+                        let answersWithIds = answers.map(a => Object.assign({},a, {questionId}));
+                        this.validateAnswerValues(answersWithIds);
+                    }
+
+                    switch(type) {
+                        case "integer":
+                            if(!answer.integerValue) {
+                                //doesn't check if there are additional invalid types, but
+                                //that's checked in the swagger.
+                                throw new SurveyError('IntegerAnswerNotProvidedForIntegerQuestion');
                             }
-                            if (max !== null && value > max) {
-                                throw new SurveyError('answerOutOfScale', value);
+                            break;
+                        case "scale":
+                            const paramSplit = parameter.split(':');
+                            const [min, max] = paramSplit.map(v => (v ? parseFloat(v) : null));
+                            if(answer) {
+                                let value = answer.numberValue;
+                                if(!value) {
+                                    throw new SurveyError('NumberValueAnswerNotProvidedForScaleQuestion');
+                                }
+                                if (min !== null && value < min) {
+                                    throw new SurveyError('answerOutOfScale', value);
+                                }
+                                if (max !== null && value > max) {
+                                    throw new SurveyError('answerOutOfScale', value);
+                                }
                             }
-                        });
+                            break;
                     }
                 });
             });
@@ -263,6 +280,7 @@ module.exports = class AnswerDAO extends Base {
 
     validateAnswers(masterId, answers, status) {
         const Answer = this.db.Answer;
+        console.log(answers)
         const surveyId = masterId.surveyId;
         return this.validateAnswerValues(answers)
             .then(() => this.surveyQuestion.listSurveyQuestions(surveyId, true))
