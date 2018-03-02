@@ -319,6 +319,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, userId, transaction) {
+        if(survey.sections && !survey.sections.length) {
+            return SurveyError.reject('needAtLeastOneEmptySection');
+        } else if(!survey.questions && !survey.sections) {
+            survey.questions = [];
+        }
+
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
         fields.authorId = userId;
         return this.db.Survey.create(fields, { transaction })
