@@ -134,7 +134,131 @@ const searchParticipantConditionMaker = {
         return { question_choice_id: answer.questionChoiceId };
     },
 };
+/**
+* helper function for validateAnswerValues. Validates a single answer value.
+* @param {Object} answer contains an answer value
+* @param {Object} question contains information about the question being
+*                           answered
+*
+* Note: both parameters are passed within a single object.
+*/
+const validateValue = function ({ answer, question }) {
+    const { type, parameter } = question;
 
+    const paramSplit = parameter ?
+                       parameter.split(':') :
+                       undefined;
+    const [min, max] = parameter ?
+                       paramSplit.map(v => (v ? parseFloat(v) : null)) :
+                       [undefined, undefined];
+
+
+    switch (type) {
+    case 'file':
+        if (!answer.fileValue) {
+            throw new SurveyError('FileValueNotProvidedForFileQuestion');
+        }
+        break;
+    case 'bullet':
+        if (!answer.textValue) {
+            throw new SurveyError('TextValueNotProvidedForBulletQuestion');
+        }
+        break;
+    case 'zip':
+        if (!answer.zipcodeValue) {
+            throw new SurveyError('zipcodeValueNotProvidedForZipcodeQuestion');
+        }
+        break;
+    case 'date':
+        if (!answer.dateValue) {
+            throw new SurveyError('dateValueNotProvidedForDateQuestion');
+        }
+        break;
+    case 'day':
+        if (!answer.dayValue) {
+            throw new SurveyError('DayValueNotProvidedForDayQuestion');
+        }
+        break;
+    case 'month':
+        if (!answer.monthValue) {
+            throw new SurveyError('monthValueNotProvidedForMonthQuestion');
+        }
+        break;
+    case 'year':
+        if (!answer.yearValue) {
+            throw new SurveyError('yearValueNotProvidedForYearQuestion');
+        }
+        break;
+    case 'feet-inches':
+        if (!answer.feetInchesValue) {
+            throw new SurveyError('feetInchesValueNotProvidedForfeetInchesQuestion');
+        }
+        break;
+    case 'text':
+        if (!answer.textValue) {
+            throw new SurveyError('textValueNotProvidedForTextQuestion');
+        }
+        break;
+    case 'pounds':
+        if (answer.numberValue === undefined) {
+            throw new SurveyError('numberValueAnswerNotProvidedForPoundsQuestion');
+        }
+        break;
+    case 'integer':
+        if (answer.integerValue === undefined) {
+            throw new SurveyError('integerAnswerNotProvidedForIntegerQuestion');
+        }
+        break;
+    case 'float':
+        if (answer.floatValue === undefined) {
+            throw new SurveyError('floatAnswerNotProvidedForFloatQuestion');
+        }
+        break;
+    case 'choice':
+        if (!answer.choice) {
+            throw new SurveyError('choiceAnswerNotProvidedForChoiceQuestion');
+        }
+        break;
+    case 'choice-ref':
+        if (!answer.choice) {
+            throw new SurveyError('choiceAnswerNotProvidedForChoiceQuestion');
+        }
+        break;
+    case 'choices':
+        if (!answer.choices) {
+            throw new SurveyError('choicesAnswerNotProvidedForChoicesQuestion');
+        }
+        break;
+    case 'bool':
+        if (answer.boolValue === undefined) {
+            throw new SurveyError('booleanValueNotProvidedForBooleanQuestion');
+        }
+        break;
+    case 'open-choice':
+        if (!answer.textValue && !answer.choice) {
+            throw new SurveyError('NeithertextValueorChoiceValueProvidedForOpenChoiceQuestion');
+        }
+        break;
+    case 'blood-pressure':
+        if (!answer.bloodPressureValue) {
+            throw new SurveyError('BloodPressureValueNotProvidedForBloodPressureQuestion');
+        }
+        break;
+    case 'scale':
+        if (answer.numberValue === undefined) {
+            throw new SurveyError('NumberValueAnswerNotProvidedForScaleQuestion');
+        }
+        if (min !== null && answer.numberValue < min) {
+            throw new SurveyError('answerOutOfScale', answer.numberValue);
+        }
+        if (max !== null && answer.numberValue > max) {
+            throw new SurveyError('answerOutOfScale', answer.numberValue);
+        }
+        break;
+    default:
+        throw new SurveyError('QuestionTypeNotFound');
+    }
+};
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -225,6 +349,12 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
+
+    /**
+    * Validates user answers
+    * @param {Object} userAnswers Answers to be validated. May contain within
+    *                             a nested answers object of the same structure.
+    */
     validateAnswerValues(userAnswers) {
         const ids = userAnswers.map(({ questionId }) => questionId);
         const attributes = ['id', 'type', 'parameter', 'maxCount', 'multiple'];
@@ -232,47 +362,25 @@ module.exports = class AnswerDAO extends Base {
         return this.db.Question.findAll({ where, attributes, raw: true })
             .then(questions => _.keyBy(questions, 'id'))
             .then((questionMap) => {
-
                 userAnswers.forEach(({ questionId, answer, answers }) => {
                     const question = questionMap[questionId];
-                    const { type, parameter, multiple, maxCount } = question;
                     if (!question) {
                         throw new SurveyError('answerQxNotInSurvey');
                     }
-                    if(answers) {
-                        if(!multiple) {
+                    const { type, multiple, maxCount } = question;
+                    // If answers, check count and send back through with
+                    // proper format
+                    if (answers) {
+                        if (!multiple && !type === 'choices') {
                             throw new SurveyError('multipleAnswersNotAllowedForThisQuestion');
-                        } else if(multiple && maxCount && answers.length > maxCount) {
+                        } else if (multiple && maxCount && answers.length > maxCount) {
                             throw new SurveyError('moreAnswersProvidedThanAllowed');
                         }
-                        let answersWithIds = answers.map(a => Object.assign({},a, {questionId}));
-                        this.validateAnswerValues(answersWithIds);
-                    }
-
-                    switch(type) {
-                        case "integer":
-                            if(!answer.integerValue) {
-                                //doesn't check if there are additional invalid types, but
-                                //that's checked in the swagger.
-                                throw new SurveyError('IntegerAnswerNotProvidedForIntegerQuestion');
-                            }
-                            break;
-                        case "scale":
-                            const paramSplit = parameter.split(':');
-                            const [min, max] = paramSplit.map(v => (v ? parseFloat(v) : null));
-                            if(answer) {
-                                let value = answer.numberValue;
-                                if(!value) {
-                                    throw new SurveyError('NumberValueAnswerNotProvidedForScaleQuestion');
-                                }
-                                if (min !== null && value < min) {
-                                    throw new SurveyError('answerOutOfScale', value);
-                                }
-                                if (max !== null && value > max) {
-                                    throw new SurveyError('answerOutOfScale', value);
-                                }
-                            }
-                            break;
+                        answers.forEach((a) => {
+                            validateValue({ answer: a, question });
+                        });
+                    } else if (answer) {
+                        validateValue({ answer, question });
                     }
                 });
             });
@@ -280,7 +388,6 @@ module.exports = class AnswerDAO extends Base {
 
     validateAnswers(masterId, answers, status) {
         const Answer = this.db.Answer;
-        console.log(answers)
         const surveyId = masterId.surveyId;
         return this.validateAnswerValues(answers)
             .then(() => this.surveyQuestion.listSurveyQuestions(surveyId, true))
@@ -435,7 +542,6 @@ module.exports = class AnswerDAO extends Base {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-
 
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
 

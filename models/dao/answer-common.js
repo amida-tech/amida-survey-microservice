@@ -7,7 +7,7 @@ const SurveyError = require('../../lib/survey-error');
 const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
-        zip(value) { return { textValue: value }; },
+        zip(value) { return { zipcodeValue: value }; },
         date(value) { return { dateValue: value }; },
         year(value) { return { yearValue: value }; },
         month(value) { return { monthValue: value }; },
@@ -221,6 +221,9 @@ const answerValueToDBFormat = {
         return { value: `${min}:${max}` };
     },
     filename(value) {
+        return { value };
+    },
+    zipcodeValue(value) {
         return { value };
     },
 };
