@@ -32,6 +32,7 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected,
                 date: e.date,
                 questionText: e.questionText,
                 questionInstruction: e.questionInstruction,
+                questionIndex: e.questionIndex,
                 choiceText: e.choiceText,
                 choiceType: e.choiceType || '',
                 code: e.code,
@@ -54,6 +55,7 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected,
             date: e.date,
             questionText: e.questionText,
             questionInstruction: e.questionInstruction,
+            questionIndex: e.questionIndex,
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
             code: e.code,
@@ -97,9 +99,10 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
             expected.stage = `${assessment.stage}`;
             expected.group = `${assessment.group}`;
             expected.meta = questionAnswer.meta || {};
-            expected.weight = questionAnswer.weight || '';
+            expected.weight = questionAnswer.weight || null;
             expected.questionInstruction = question.instruction || '';
             expected.questionText = question.text || '';
+            expected.questionIndex = 'QUESTION_INDEX_CONSTANT';
             expected.code = answer.code || '';
             expected.choiceText = '';
             expected.choiceType = expected.choiceType || '';

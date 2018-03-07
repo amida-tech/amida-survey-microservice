@@ -28,12 +28,10 @@ module.exports = class SectionDAO extends Base {
     }
 
     bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // eslint-disable-line max-len
-        if (!flattenedSections.length) {
-            return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
-        }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, description }) => { // eslint-disable-line max-len
                 const record = { name, surveyId, line, parentIndex, description };
+
                 if (questionIndex !== undefined) {
                     record.parentQuestionId = surveyQuestionIds[questionIndex];
                 }
