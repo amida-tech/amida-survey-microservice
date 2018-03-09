@@ -61,7 +61,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const filter = new FilterDAO(db, { filterAnswer });
     const file = new FileDAO(db);
     const answerComment = new AnswerCommentDAO(db);
-    const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, answerComment, assessment });
+    const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, question, answerComment, assessment }); // eslint-disable-line max-len
 
     return {
         sequelize: db.sequelize,

@@ -11,7 +11,7 @@ const CSVConverterExport = require('../../export/csv-converter');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
-const mergeAnswerComments = function (answers, comments) {
+const mergeAnswerComments = function (answers, comments, scope) {
     const commentsMap = _.keyBy(comments, 'questionId');
     const insertedComments = new Set();
     answers.forEach((answer) => {
@@ -22,12 +22,20 @@ const mergeAnswerComments = function (answers, comments) {
             const { comment, commentHistory } = commentObject;
             if (comment) {
                 Object.assign(answer, { comment });
+            } else if (scope === 'export') {
+                Object.assign(answer, { comment: {} });
             }
             if (commentHistory) {
                 Object.assign(answer, { commentHistory });
+            } else if (scope === 'export') {
+                Object.assign(answer, { commentHistory: [] });
             }
         }
     });
+
+    if (scope === 'export') {
+        return answers;
+    }
     comments.forEach((commentObject) => {
         const { questionId, comment, commentHistory } = commentObject;
         if (!insertedComments.has(questionId)) {
@@ -44,6 +52,54 @@ const mergeAnswerComments = function (answers, comments) {
     return answers;
 };
 
+const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportObjects(answers, includeComments) { // eslint-disable-line max-len
+    return answers.map((e) => {
+        if (includeComments) {
+            return Object.assign({}, {
+                surveyId: e.surveyId,
+                questionId: e.questionId,
+                questionType: e.questionType,
+                assessmentId: e.assessmentId,
+                userId: e.userId,
+                meta: e.meta,
+                value: e.value,
+                group: e.group,
+                stage: e.stage,
+                surveyName: e.surveyName,
+                weight: e.weight,
+                date: e.date,
+                questionText: e.questionText,
+                questionInstruction: e.questionInstruction,
+                questionIndex: e.questionIndex,
+                choiceText: e.choiceText,
+                choiceType: e.choiceType || '',
+                code: e.code,
+                comment: e.comment || {},
+                commentHistory: e.commentHistory || [],
+            });
+        }
+        return Object.assign({}, {
+            surveyId: e.surveyId,
+            questionId: e.questionId,
+            questionType: e.questionType,
+            assessmentId: e.assessmentId,
+            userId: e.userId,
+            meta: e.meta,
+            value: e.value,
+            group: e.group,
+            stage: e.stage,
+            surveyName: e.surveyName,
+            weight: e.weight,
+            date: e.date,
+            questionText: e.questionText,
+            questionInstruction: e.questionInstruction,
+            questionIndex: e.questionIndex,
+            choiceText: e.choiceText,
+            choiceType: e.choiceType || '',
+            code: e.code,
+        });
+    });
+};
 
 module.exports = class AnswerAssessmentDAO extends Base {
     constructor(db, dependencies) {
@@ -238,56 +294,239 @@ module.exports = class AnswerAssessmentDAO extends Base {
             });
     }
 
+
+    appendCommentsToExport(answers) {
+        const promises = answers.map(a => this.answerComment.listAnswerCommentsWithHistory({ assessmentId: a.assessmentId }));// eslint-disable-line max-len
+
+        return Promise.all(promises).then((comments) => {
+            const answersWithComments = answers.map((a, indx) => {
+                if (comments.length) {
+                    let currComments = comments[indx];
+
+                    currComments = currComments.map((commentObject) => {
+                        const sansIds = commentObject;
+                        if (sansIds.comment) {
+                            sansIds.comment = _.omit(sansIds.comment, 'id');
+                        }
+                        if (sansIds.commentHistory) {
+                            sansIds.commentHistory =
+                                sansIds.commentHistory.map(comment => _.omit(comment, 'id'));
+                        }
+                        return sansIds;
+                    });
+
+                    const answerWithComments = mergeAnswerComments([a], currComments, 'export');
+                    if (answerWithComments[0].commentHistory &&
+                        answerWithComments[0].commentHistory.length) {
+                        answerWithComments[0].commentHistory =
+                            _.sortBy(answerWithComments[0].commentHistory, comment => comment.reason);// eslint-disable-line max-len
+                    }
+
+                    return answerWithComments;
+                }
+                return [Object.append(a, { comments: {}, commentHistory: [] })];
+            });
+
+            return _.flatten(answersWithComments);
+        });
+    }
+
     exportAssessmentAnswers(options) {
         const surveyId = options.surveyId;
-        const sectionId = options.sectionId;
         const questionId = options.questionId;
-
+        const includeComments = options.includeComments;
+        // TODO: const sectionId = options.sectionId;
+        // TODO: const userIds = options.userIds
 
         if (sectionId && questionId) {
             SurveyError.reject('surveyBothQuestionsSectionsSpecified');
         }
+
         if (!surveyId) {
             SurveyError.reject('surveyMustBeSpecified');
         }
 
-        return this.db.AssessmentSurvey.findAll({
+
+        return this.db.SurveyQuestion.findAll({
+            where: { surveyId },
+            raw: true,
+            attributes: ['questionId', 'line'],
+        }).then(surveyQuestions => this.db.SurveyText.findAll({
+            where: { survey_id: surveyId },
+            raw: true,
+            attributes: ['name', 'surveyId'],
+        }).then(surveys => this.db.AssessmentSurvey.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
+            let questionIds = [questionId];
+            if (!questionId && questionId !== 0) {
+                questionIds = surveyQuestions.map(r => r.questionId);
+            }
+            const questionLines = surveyQuestions.map(r => [r.questionId, r.line]);
+            const questionLinesMap = new Map(questionLines);
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
-            const newOptions = { surveyId, assessmentIds, scope: 'export' };
-            questionId !== undefined ? newOptions.questionIds = [questionId] : newOptions.sectionId = sectionId;
 
+            const newOptions = {
+                surveyId,
+                questionIds,
+                assessmentIds,
+                scope: 'export',
+                meta: true,
+                createdAt: true,
+            };
             return this.answer.listAnswers(newOptions)
                 .then(answers => this.db.Assessment.findAll({
                     where: { id: { $in: assessmentIds } },
                     raw: true,
                     attributes: ['id', 'group', 'stage'],
-                }).then((assessments) => {
-                    const mapInput = assessments.map(r => [r.id, r.group, r.stage]);
-                    const groupMap = new Map(mapInput);
-                    const latestAssessments = new Map();
+                }).then(assessments => this.db.QuestionText.findAll({
+                    where: { id: { $in: questionIds } },
+                    raw: true,
+                    attributes: ['id', 'text', 'instruction'],
+                }).then(questionTexts => this.db.AssessmentAnswer.findAll({
+                    where: { assessment_id: { $in: assessmentIds } },
+                    raw: true,
+                    attributes: ['assessmentId', 'status'],
+                }).then(assessmentStatuses => this.db.QuestionChoice.findAll({
+                    where: { id: { $in: answers.map(a => a.questionChoiceId) } },
+                }).then((questionChoices) => {
+                    const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
+                    const assessmentStatusMap = new Map(assessmentStatusInput);
+
+                    const qTextsMapInput = questionTexts.map(r => [r.id, { text: r.text, instruction: r.instruction }]);// eslint-disable-line max-len
+                    const qTextsMap = new Map(qTextsMapInput);
+                    const surveyNames = surveys.map(r => [r.surveyId, r.name]);
+                    const surveyNameMap = new Map(surveyNames);
+                    const assessmentMapInput = assessments.map(r => [r.id, { group: r.group, stage: r.stage }]);// eslint-disable-line max-len
+                    const assessmentMap = new Map(assessmentMapInput);
+
+                    const latestCompleteAssessments = new Map();
+                    const newAnswers = answers.map((a) => {
+                        const createdAtDate = new Date(a.createdAt);
+
+                        const month = (createdAtDate.getMonth() + 1).length > 1 ?
+                                        createdAtDate.getMonth() :
+                                        `0${createdAtDate.getMonth() + 1}`;
+                        const year = createdAtDate.getFullYear();
+                        const day = createdAtDate.getDate();
+                        const date = `${year}-${
+                                    month}-${
+                                    day}`;
+
+                        const weight = a.questionChoiceId !== undefined ?
+                        questionChoices.find(questionChoice =>
+                          questionChoice.id === a.questionChoiceId).weight :
+                        null;
+                        const newAnswer = Object.assign(a, {
+                            group: `${assessmentMap.get(a.assessmentId).group}`,
+                            stage: `${assessmentMap.get(a.assessmentId).stage}`,
+                            surveyName: surveyNameMap.get(surveyId),
+                            weight,
+                            date,
+                            questionText: qTextsMap.get(a.questionId).text || '',
+                            questionInstruction: qTextsMap.get(a.questionId).instruction || '',
+                            questionIndex: questionLinesMap.get(a.questionId),
+                            choiceText: '',
+                            choiceType: a.choiceType || '',
+                            code: '',
+                            value: a.value || '',
+                        });
+                        delete newAnswer.createdAt;
+                        return newAnswer;
+                    });
+
                     assessments.forEach((a) => {
-                        if ((latestAssessments[a.group] &&
-                            a.stage > latestAssessments[a.group].stage) ||
-                            !latestAssessments[a.group]) {
-                            latestAssessments[a.group] = a;
+                        if ((latestCompleteAssessments[a.group] &&
+                            a.stage > latestCompleteAssessments[a.group].stage &&
+                            assessmentStatusMap.get(a.id) === 'completed') ||
+                            (!latestCompleteAssessments[a.group] &&
+                            assessmentStatusMap.get(a.id) === 'completed')) {
+                            latestCompleteAssessments[a.group] = a;
                         }
                     });
-                    const final = answers.filter((a) => {
-                        const group = groupMap.get(a.assessmentId);
-                        return a.assessmentId === latestAssessments[group].id;
-                    });
-                    return final;
-                }));
-        });
+
+                    const latestCompletedAnswers =
+                        newAnswers.filter(a =>
+                          latestCompleteAssessments[a.group] &&
+                          a.assessmentId === latestCompleteAssessments[a.group].id);
+
+
+                    if (latestCompletedAnswers.length && _.some(newAnswers, a => !!a.questionChoiceId)) { // eslint-disable-line max-len
+                        return this.question.questionChoice.getAllQuestionChoices(newOptions.questionIds) // eslint-disable-line max-len
+                            .then((res) => {
+                                const choiceMapInput = res.map(r => [r.id, r.text]);
+                                const choiceTextMap = new Map(choiceMapInput);
+                                const answersWithValues = latestCompletedAnswers.map((a) => {
+                                    const newAnswer = Object.assign(a, {
+                                        choiceText: choiceTextMap.get(a.questionChoiceId) || '',
+                                        code: a.code || '',
+                                    });
+                                    delete newAnswer.questionChoiceId;
+                                    return newAnswer;
+                                });
+
+                                if (includeComments) {
+                                    return this.appendCommentsToExport(answersWithValues)
+                                           .then((answersWithComments) => {
+                                               const finalAnswers =
+                                                   orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
+                                               if (questionId || questionId === 0) {
+                                                   return _.sortBy(finalAnswers, a => a.group);
+                                               }
+
+                                               return _.sortBy(finalAnswers, [
+                                                   a => a.group,
+                                                   a => questionLinesMap.get(a.questionId),
+                                               ]);
+                                           });
+                                }
+                                const finalAnswers =
+                                        orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
+                                if (questionId || questionId === 0) {
+                                    return _.sortBy(finalAnswers, a => a.group);
+                                }
+
+                                return _.sortBy(finalAnswers, [
+                                    a => a.group,
+                                    a => questionLinesMap.get(a.questionId),
+                                ]);
+                            });
+                    } else if (includeComments) {
+                        return this.appendCommentsToExport(latestCompletedAnswers)
+                               .then((answersWithComments) => {
+                                   const finalAnswers =
+                                       orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
+                                   if (questionId || questionId === 0) {
+                                       return _.sortBy(finalAnswers, a => a.group);
+                                   }
+
+                                   return _.sortBy(finalAnswers, [
+                                       a => a.group,
+                                       a => questionLinesMap.get(a.questionId),
+                                   ]);
+                               });
+                    }
+                    const finalAnswers =
+                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
+
+                    return _.sortBy(finalAnswers, [
+                        a => a.group,
+                        a => questionLinesMap.get(a.questionId),
+                    ]);
+                })))));
+        })));
     }
 
     exportAssessmentAnswersCSV(options) {
         const csvConverter = new CSVConverterExport();
         return this.exportAssessmentAnswers(options)
-            .then(answers => (answers ? csvConverter.dataToCSV(answers) : ''));
+                .then((answers) => {
+                    if (answers.length) {
+                        return csvConverter.dataToCSV(answers);
+                    }
+                    return '';
+                });
     }
 };

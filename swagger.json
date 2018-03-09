@@ -401,6 +401,35 @@
                 }
             }
         },
+        "/numberUsersBySurvey/{id}": {
+                "x-swagger-router-controller": "survey.controller",
+                "get": {
+                    "summary": "returns the number of users that have submitted an answer to the requested survey",
+                    "operationId": "getNumberOfUsersBySurvey",
+                    "parameters": [{
+                        "name": "id",
+                        "in":"path",
+                        "required": true,
+                        "type": "integer"
+                    }, {
+                        "name": "include-soft-delete",
+                        "in": "query",
+                        "required": false,
+                        "type": "boolean"
+                    }],
+                    "responses": {
+                        "200": {
+                            "description": "Successful response",
+                            "schema": {
+                                "type": "integer"
+                            }
+                        },
+                        "default": {
+                            "$ref": "#/responses/genericError"
+                        }
+                    }
+                }
+        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
@@ -1832,10 +1861,10 @@
         "/assessment-answers/csv" : {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters":[{
-                "description": "survey Id that of the assessments' anwers that will be returned",
+                "description": "survey Id that of the assessments' answers that will be returned",
                 "name": "survey-id",
                 "in": "query",
-                "required": false,
+                "required": true,
                 "type":"integer"
             }, {
                 "description": "questionId filter on the assessments' anwers that will be returned",
@@ -1843,18 +1872,11 @@
                 "in": "query",
                 "required": false,
                 "type":"integer"
-            },
-            {
-                "name": "section-id",
-                "description": "sectionId filter on the assessments' anwers that will be returned",
-                "in": "query",
-                "required": false,
-                "type":"integer"
             }],
             "get": {
-                "summary":"currently just gets assessments with the specified survey id(incomplete)",
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in json format",
                 "operationId":"assessmentAnswersCSV",
-                "produces": ["text/csv"],
+                "produces": ["text/csv", "application/json"],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1872,41 +1894,39 @@
         "/assessment-answers/export" : {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters":[{
-                "description": "survey Id that of the assessments' anwers that will be returned",
-                "name": "survey_id",
+                "description": "survey Id that of the assessments' answers that will be returned",
+                "name": "survey-id",
+                "in": "query",
+                "required": true,
+                "type":"integer"
+            }, {
+                "description": "questionId filter on the assessments' answers that will be returned",
+                "name": "question-id",
                 "in": "query",
                 "required": false,
                 "type":"integer"
             }, {
-                "description": "questionId filter on the assessments' anwers that will be returned",
-                "name": "question_id",
+                "description": "boolean param to request comments along with question answers",
+                "name": "include-comments",
                 "in": "query",
                 "required": false,
-                "type":"integer"
-            },
-            {
-                "name": "section_id",
-                "description": "sectionId filter on the assessments' anwers that will be returned",
-                "in": "query",
-                "required": false,
-                "type":"integer"
+                "type":"boolean"
             }],
             "get": {
-                "summary":"currently just gets assessments with the specified survey id(incomplete)",
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in csv format",
                 "operationId":"exportAssessmentAnswers",
                 "produces": ["application/json"],
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "file"
+                            "$ref": "#/definitions/assessmentAnswersExportList"
                         }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
                 }
-
             }
         },
         "/assessment-answers/{id}/status": {
@@ -2615,6 +2635,10 @@
         "newSection": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -2636,7 +2660,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 4,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "section": {
@@ -2724,8 +2748,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/newSection"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/newSurveyQuestions"
@@ -2843,8 +2866,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/surveyQuestion"
-            },
-            "minItems": 1
+            }
         },
         "survey": {
             "type": "object",
@@ -2877,8 +2899,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/section"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/surveyQuestions"
@@ -4330,6 +4351,80 @@
                 }
             },
             "additionalProperties": false
+        },
+        "assessmentAnswersExportList": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentAnswersExport"
+            }
+        },
+        "assessmentAnswersExport": {
+            "type": "object",
+            "required": [
+                "surveyId",
+                "assessmentId",
+                "userId",
+                "questionId",
+                "questionType",
+                "value"
+
+            ],
+            "properties": {
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "surveyName": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "assessmentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionType": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "questionText": {
+                    "type":"string",
+                    "minimum": 1
+                },
+                "questionInstruction": {
+                    "type":"string",
+                    "minimum": 1
+                },
+                "date": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "minimum": 1
+                },
+                "group": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "stage": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "code": {
+                    "type": "string"
+                }
+
+            }
         },
         "assessmentAnswersDashboard": {
             "type": "array",

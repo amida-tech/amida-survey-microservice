@@ -19,12 +19,13 @@ const questionCommon = require('../util/question-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
 const SurveySuperTest = require('../util/survey-super-test');
-const answerSession = require('../fixtures/answer-session/assessment-0');
+const answerSession = require('../fixtures/answer-session/assessment-2');
 const ExportBuilder = require('./assessment-answer.export-builder');
+const CSVConverterExport = require('../../export/csv-converter');
 
 const expect = chai.expect;
 
-describe('export assessment answers integration', function answerAssessmentUnit() {
+describe('export assessment answers integration', function answerAssessmentImportExportIntegration() {
     const generator = new Generator();
     const surveySuperTest = new SurveySuperTest();
     const shared = new SharedIntegration(surveySuperTest, generator);
@@ -70,7 +71,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
-            const override = { name, stage, group: String(nameIndex) };
+            const override = { name, stage, group: `${nameIndex}` };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
@@ -97,7 +98,7 @@ describe('export assessment answers integration', function answerAssessmentUnit(
         }
 
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
-            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
+            tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
 
@@ -107,22 +108,77 @@ describe('export assessment answers integration', function answerAssessmentUnit(
 
     it('login as super', shared.loginFn(config.superUser));
 
-    const verifyExportAssessmentAnswers = function verifyExportAssessmentAnswers(index) {
+    const verifyExportAssessmentAnswersJSON = function (index) {
         // TODO add section ids to tests
+        const options = { 'survey-id': 1 };
+        if (index || index === 0) {
+            options['question-id'] = index;
+        }
         return function verify() {
-            const options = { 'question_id': index, 'survey_id': 1 };
             return surveySuperTest.get('/assessment-answers/export', true, 200, options)
-                .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(Object.assign({}, { questionId: options['question_id'], surveyId: options['survey_id'] }));
-                    expect(_.sortBy(answers.body, answr => answr.assessmentId)).to.deep.equal(_.sortBy(expected, expctd => expctd.assessmentId));
+                .then((res) => {
+                    const answers = res.body;
+                    const controllerOptions = Object.assign({}, { questionId: options['question-id'], surveyId: options['survey-id'] });
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
+                    expected.forEach((e, indx) => {
+                        // cheat questionIndex out of the comparison because we don't have access to them
+                        // in the expected values
+                        expect(answers[indx]).to.deep.equal(Object.assign({}, e, { questionIndex: answers[indx].questionIndex }));
+                        expect(answers[indx].questionIndex).to.be.a('number');
+                    });
                 });
         };
     };
 
-    _.range(0, questionCount + 2).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
-            verifyExportAssessmentAnswers(index));
+    const escapeRegExp = function (string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    const verifyExportAssessmentAnswersCSV = function (index, includeComments) {
+        // TODO add section ids to tests
+        const options = { 'survey-id': 1 };
+        if (index || index === 0) {
+            options['question-id'] = index;
+        }
+        if (includeComments) {
+            options['include-comments'] = true;
+        }
+        return function verify() {
+            return surveySuperTest.get('/assessment-answers/csv', true, 200, options)
+                .then((res) => {
+                    const controllerOptions = Object.assign({}, {
+                        questionId: options['question-id'],
+                        surveyId: options['survey-id'],
+                        includeComments,
+                    });
+                    const csvConverter = new CSVConverterExport();
+                    let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
+                    expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                    // match against any integer value for questionIndex because we don't have access to them
+                    // in the expected values
+                    const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                    expect(res.text).to.match(new RegExp(expectedRegExpString));
+                });
+        };
+    };
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers JSON, surveyId: 1, questionId: ${index + 1}`,
+            verifyExportAssessmentAnswersJSON(index, false));
     });
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers JSON with comments, surveyId: 1, questionId: ${index + 1}`,
+            verifyExportAssessmentAnswersJSON(index, true));
+    });
+
+    _.range(0, questionCount + 1).forEach((index) => {
+        it(`exported assessment-answers CSV, surveyId: 1, questionId: ${index + 1}`,
+            verifyExportAssessmentAnswersCSV(index));
+    });
+
+    it('export assessment answers no questionId JSON', verifyExportAssessmentAnswers());
+    it('export assessment answers no questionId CSV', verifyExportAssessmentAnswers());
 
     it('logout as super', shared.logoutFn());
 });

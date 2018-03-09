@@ -57,24 +57,23 @@ exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
 };
 
 exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
-    const surveyId = _.get(req, 'swagger.params.survey_id.value');
-    const questionId = _.get(req, 'swagger.params.question_id.value');
-    const sectionId = _.get(req, 'swagger.params.section_id.value');
-// TODO:    const userIds = _.get(req, 'swagger.params.section-id.value');
-    const options = { surveyId, questionId, sectionId };
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
+    const includeComments = _.get(req, 'swagger.params.include-comments.value');
+    const sectionId = _.get(req, 'swagger.params.section-id.value');
+// TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
+    const options = { surveyId, questionId, includeComments };
     req.models.assessmentAnswer.exportAssessmentAnswers(options)
-        .then((result) => {
-            res.status(200).send(result);
-        })
+        .then(result => res.status(200).send(result))
         .catch(shared.handleError(res));
 };
 
 exports.assessmentAnswersCSV = function assessmentAnswersCSV(req, res) {
-    const surveyId = _.get(req, 'swagger.params.survey_id.value');
-    const questionId = _.get(req, 'swagger.params.question_id.value');
-    const sectionId = _.get(req, 'swagger.params.section_id.value');
-// TODO:    const userIds = _.get(req, 'swagger.params.section-id.value');
-    const options = { surveyId, questionId, sectionId };
+    const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const questionId = _.get(req, 'swagger.params.question-id.value');
+    const sectionId = _.get(req, 'swagger.params.section-id.value');
+// TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
+    const options = { surveyId, questionId };
     req.models.assessmentAnswer.exportAssessmentAnswersCSV(options)
         .then((result) => {
             res.type('text/csv');

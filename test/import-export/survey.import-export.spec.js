@@ -47,7 +47,7 @@ describe('survey import-export unit', function surveyImportExportUnit() {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
     const createAndGetEmptySurvey = function (name) {
-        models.survey.createSurvey({ name }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
+        models.survey.createSurvey({ name, questions: [] }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
             const survey = { id, name, questions: [], authorId: 1, status: 'published' };
             expect(emptySurvey).to.deep.equal(survey);
             hxSurvey.push(emptySurvey, { id });

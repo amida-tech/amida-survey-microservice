@@ -71,6 +71,10 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     flattenSectionsHieararchy(sections, result, parentIndex) {
+        if (!sections.length) {
+            result.sections.push({ line: 0 });
+            return result;
+        }
         sections.forEach((section, line) => {
             const { id, name, description, questions, enableWhen } = section;
             const sectionInfo = { name, description, parentIndex, line };
@@ -81,6 +85,7 @@ module.exports = class SurveyDAO extends Translatable {
                 sectionInfo.enableWhen = enableWhen;
             }
             result.sections.push(sectionInfo);
+
             if (questions) {
                 const indices = this.flattenQuestionsHierarchy(questions, result);
                 sectionInfo.indices = indices;
@@ -130,16 +135,19 @@ module.exports = class SurveyDAO extends Translatable {
         if (questions && sections) {
             throw new SurveyError('surveyBothQuestionsSectionsSpecified');
         }
+
         const result = { sections: [], questions: [] };
         if (sections) {
             return this.flattenSectionsHieararchy(sections, result, null);
         }
         if (questions) {
             this.flattenQuestionsHierarchy(questions, result);
+
             if (result.sections.length === 0) {
                 delete result.sections;
             }
         }
+
         return result;
     }
 
@@ -311,6 +319,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, userId, transaction) {
+        if(survey.sections && !survey.sections.length) {
+            return SurveyError.reject('needAtLeastOneEmptySection');
+        } else if(!survey.questions && !survey.sections) {
+            survey.questions = [];
+        }
+
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
         fields.authorId = userId;
         return this.db.Survey.create(fields, { transaction })
@@ -924,5 +938,15 @@ module.exports = class SurveyDAO extends Translatable {
                 });
                 return this.importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options); // eslint-disable-line no-param-reassign, max-len
             });
+    }
+
+    getNumberOfUsersBySurvey({ surveyId, softDelete }) {
+        const paranoid = softDelete !== true;
+        return this.db.Answer.count({
+            where: { surveyId },
+            raw: true,
+            group: ['user_id'],
+            paranoid,
+        }).then(answers => answers.length);
     }
 };

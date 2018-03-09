@@ -378,7 +378,8 @@ module.exports = class AnswerDAO extends Base {
     }
 
     listAnswers({ userId, userIds, surveyId, assessmentId,
-                  assessmentIds, scope, history, ids, questionIds, sectionId }) {
+                  assessmentIds, scope, history, ids, questionIds,
+                  meta, createdAt }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -400,12 +401,17 @@ module.exports = class AnswerDAO extends Base {
         if (surveyId) {
             where.surveyId = surveyId;
         }
+
+        if (assessmentIds) {
+            where.assessmentId = { $in: assessmentIds };
+        }
+
         if (assessmentId) {
             where.assessmentId = assessmentId;
         }
 
-        if (assessmentIds) {
-            where.assessment_id = { $in: assessmentIds };
+        if (!(assessmentId || assessmentIds)) {
+            where.assessmentId = null;
         }
         console.log(sectionId)
         console.log(questionIds)
@@ -419,16 +425,17 @@ module.exports = class AnswerDAO extends Base {
                 })
             });
 
-            where.question_id = { $in: questionIds };
-        } else if (questionIds) {
-            console.log("yes2")
-            where.question_id = { $in: questionIds };
+        if (questionIds) {
+            where.questionId = { $in: questionIds };
         }
 
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
+
+
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
+
         if (scope !== 'export') {
             attributes.push('meta');
         }
@@ -442,13 +449,15 @@ module.exports = class AnswerDAO extends Base {
             attributes.push('userId');
         }
         if (assessmentIds && surveyId) {
-            attributes.push('userId', 'assessmentId');
+            attributes.push('userId', 'assessmentId', 'questionId');
+        }
+        if (createdAt) {
+            attributes.push('createdAt');
         }
 
-        if (!(assessmentId || assessmentIds)) {
-            where.assessment_id = null;
+        if (meta) {
+            attributes.push('meta');
         }
-
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
@@ -468,15 +477,21 @@ module.exports = class AnswerDAO extends Base {
                 if (scope === 'export') {
                     return result.map((p) => {
                         const r = { surveyId: p.surveyId };
-                        if (assessmentId || assessmentIds) {
+                        r.questionId = p['question.id'];
+                        r.questionType = p['question.type'];
+                        if (attributes.includes('assessmentId') || attributes.includes('assessmentIds')) {
                             r.assessmentId = p.assessmentId;
                         }
                         if (attributes.includes('userId')) {
                             r.userId = p.userId;
                         }
+                        if (attributes.includes('meta')) {
+                            r.meta = p.meta || {};
+                        }
+                        if (attributes.includes('createdAt')) {
+                            r.createdAt = p.createdAt;
+                        }
 
-                        r.questionId = p['question.id'];
-                        r.questionType = p['question.type'];
                         if (p.questionChoiceId) {
                             r.questionChoiceId = p.questionChoiceId;
                         }
@@ -506,6 +521,7 @@ module.exports = class AnswerDAO extends Base {
                         questionId: v[0]['question.id'],
                         language: v[0].language,
                     };
+
                     const vWithMata = v.find(e => e.meta);
                     if (vWithMata) {
                         r.meta = vWithMata.meta;
