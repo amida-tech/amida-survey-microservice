@@ -63,8 +63,6 @@ const authorization = function (req, res, next) {
     } else if (isDocs || isHealthCheck) {
         next();
     }
-    // req.user = {id:1};
-    // next();
 };
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
