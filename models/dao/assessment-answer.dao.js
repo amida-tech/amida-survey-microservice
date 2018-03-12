@@ -335,7 +335,8 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const surveyId = options.surveyId;
         const questionId = options.questionId;
         const includeComments = options.includeComments;
-        // TODO: const sectionId = options.sectionId;
+        const sectionId = options.sectionId;
+        let questionsPromise;
         // TODO: const userIds = options.userIds
 
         if (sectionId && questionId) {
@@ -346,12 +347,23 @@ module.exports = class AnswerAssessmentDAO extends Base {
             SurveyError.reject('surveyMustBeSpecified');
         }
 
+        if(sectionId) {
+            questionsPromise = this.db.SurveySectionQuestion.findAll({
+                where: { surveySectionId: { $in: [sectionId] } },
+                attributes: ['questionId', 'line'],
+                raw: true,
+                order: 'line',
+            })
+        } else {
+            questionsPromise = this.db.SurveyQuestion.findAll({
+                where: { surveyId },
+                raw: true,
+                attributes: ['questionId', 'line'],
+            })
+        }
 
-        return this.db.SurveyQuestion.findAll({
-            where: { surveyId },
-            raw: true,
-            attributes: ['questionId', 'line'],
-        }).then(surveyQuestions => this.db.SurveyText.findAll({
+
+        return questionsPromise.then(questions => this.db.SurveyText.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['name', 'surveyId'],
@@ -360,22 +372,28 @@ module.exports = class AnswerAssessmentDAO extends Base {
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
+
             let questionIds = [questionId];
-            if (!questionId && questionId !== 0) {
-                questionIds = surveyQuestions.map(r => r.questionId);
+
+            if (sectionId || (!questionId && questionId !== 0)) {
+
+                questionIds = questions.map(r => r.questionId);
+                console.log("questionIds immediately after assignment")
+                console.log(questionIds)
             }
-            const questionLines = surveyQuestions.map(r => [r.questionId, r.line]);
+            const questionLines = questions.map(r => [r.questionId, r.line]);
             const questionLinesMap = new Map(questionLines);
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
 
             const newOptions = {
-                surveyId,
                 questionIds,
+                surveyId,
                 assessmentIds,
                 scope: 'export',
                 meta: true,
                 createdAt: true,
             };
+
             return this.answer.listAnswers(newOptions)
                 .then(answers => this.db.Assessment.findAll({
                     where: { id: { $in: assessmentIds } },
@@ -392,6 +410,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 }).then(assessmentStatuses => this.db.QuestionChoice.findAll({
                     where: { id: { $in: answers.map(a => a.questionChoiceId) } },
                 }).then((questionChoices) => {
+                    console.log(answers)
                     const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
                     const assessmentStatusMap = new Map(assessmentStatusInput);
 
@@ -411,9 +430,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                         `0${createdAtDate.getMonth() + 1}`;
                         const year = createdAtDate.getFullYear();
                         const day = createdAtDate.getDate();
-                        const date = `${year}-${
-                                    month}-${
-                                    day}`;
+                        const date = `${year}-${month}-${day}`;
 
                         const weight = a.questionChoiceId !== undefined ?
                         questionChoices.find(questionChoice =>

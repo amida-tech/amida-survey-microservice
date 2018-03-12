@@ -1872,6 +1872,12 @@
                 "in": "query",
                 "required": false,
                 "type":"integer"
+            },{
+                "description": "sectionId filter on the assessments' answers that will be returned",
+                "name": "section-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
             }],
             "get": {
                 "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in json format",
@@ -1902,6 +1908,12 @@
             }, {
                 "description": "questionId filter on the assessments' answers that will be returned",
                 "name": "question-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            },{
+                "description": "sectionId filter on the assessments' answers that will be returned",
+                "name": "section-id",
                 "in": "query",
                 "required": false,
                 "type":"integer"

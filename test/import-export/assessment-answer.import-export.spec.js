@@ -147,13 +147,13 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     it('export assessment answers no questionId', verifyExportAssessmentAnswers({ includeComments: false }));
 
     it('export assessment answers no questionId with comments', verifyExportAssessmentAnswers({ includeComments: true }));
-    // const verifyErrorMsgBothQuestionIdSectionId = function () {
-    //     return function verify() {
-    //         const options = { questionId: 1, surveyId: 1, sectionId: 1 };
-    //         return models.assessmentAnswer.exportAssessmentAnswers(options)
-    //         .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
-    //     };
-    // };
+    const verifyErrorMsgBothQuestionIdSectionId = function () {
+        return function verify() {
+            const options = { questionId: 1, surveyId: 1, sectionId: 1 };
+            return models.assessmentAnswer.exportAssessmentAnswers(options)
+            .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
+        };
+    };
 
     const verifyErrorMsgNoSurveyId = function () {
         return function verify() {
@@ -186,7 +186,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex + 3}`;
-            const override = { name, stage, group: String(nameIndex) };
+            const override = { name, stage, group: String(nameIndex + 3) };
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([1], override));
         });
     });

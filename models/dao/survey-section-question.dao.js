@@ -9,6 +9,10 @@ module.exports = class SectionDAO extends Base {
             attributes: ['surveySectionId', 'questionId'],
             raw: true,
             order: 'line',
+        }).then(questions => {
+            console.log("questions")
+            console.log(questions)
+            return questions
         });
     }
 

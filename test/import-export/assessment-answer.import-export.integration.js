@@ -177,8 +177,8 @@ describe('export assessment answers integration', function answerAssessmentImpor
             verifyExportAssessmentAnswersCSV(index));
     });
 
-    it('export assessment answers no questionId JSON', verifyExportAssessmentAnswers());
-    it('export assessment answers no questionId CSV', verifyExportAssessmentAnswers());
+    it('export assessment answers no questionId JSON', verifyExportAssessmentAnswersJSON());
+    it('export assessment answers no questionId CSV', verifyExportAssessmentAnswersCSV());
 
     it('logout as super', shared.logoutFn());
 });

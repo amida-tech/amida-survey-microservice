@@ -62,7 +62,8 @@ exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
     const includeComments = _.get(req, 'swagger.params.include-comments.value');
     const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
-    const options = { surveyId, questionId, includeComments };
+    const options = { surveyId, sectionId, questionId, includeComments };
+    console.log(options)
     req.models.assessmentAnswer.exportAssessmentAnswers(options)
         .then(result => res.status(200).send(result))
         .catch(shared.handleError(res));
@@ -73,7 +74,8 @@ exports.assessmentAnswersCSV = function assessmentAnswersCSV(req, res) {
     const questionId = _.get(req, 'swagger.params.question-id.value');
     const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
-    const options = { surveyId, questionId };
+    const options = { surveyId, sectionId, questionId };
+
     req.models.assessmentAnswer.exportAssessmentAnswersCSV(options)
         .then((result) => {
             res.type('text/csv');
