@@ -155,47 +155,47 @@ const validateValue = function ({ answer, question }) {
 
     switch (type) {
     case 'file':
-        if (!answer.fileValue) {
+        if (answer.fileValue === undefined) {
             throw new SurveyError('FileValueNotProvidedForFileQuestion');
         }
         break;
     case 'bullet':
-        if (!answer.textValue) {
+        if (answer.textValue === undefined) {
             throw new SurveyError('TextValueNotProvidedForBulletQuestion');
         }
         break;
     case 'zip':
-        if (!answer.zipcodeValue) {
+        if (answer.zipcodeValue === undefined) {
             throw new SurveyError('zipcodeValueNotProvidedForZipcodeQuestion');
         }
         break;
     case 'date':
-        if (!answer.dateValue) {
+        if (answer.dateValue === undefined) {
             throw new SurveyError('dateValueNotProvidedForDateQuestion');
         }
         break;
     case 'day':
-        if (!answer.dayValue) {
+        if (answer.dayValue === undefined) {
             throw new SurveyError('DayValueNotProvidedForDayQuestion');
         }
         break;
     case 'month':
-        if (!answer.monthValue) {
+        if (answer.monthValue === undefined) {
             throw new SurveyError('monthValueNotProvidedForMonthQuestion');
         }
         break;
     case 'year':
-        if (!answer.yearValue) {
+        if (answer.yearValue === undefined) {
             throw new SurveyError('yearValueNotProvidedForYearQuestion');
         }
         break;
     case 'feet-inches':
-        if (!answer.feetInchesValue) {
+        if (answer.feetInchesValue === undefined) {
             throw new SurveyError('feetInchesValueNotProvidedForfeetInchesQuestion');
         }
         break;
     case 'text':
-        if (!answer.textValue) {
+        if (answer.textValue === undefined) {
             throw new SurveyError('textValueNotProvidedForTextQuestion');
         }
         break;
@@ -220,12 +220,12 @@ const validateValue = function ({ answer, question }) {
         }
         break;
     case 'choice-ref':
-        if (!answer.choice) {
+        if (answer.choice === undefined) {
             throw new SurveyError('choiceAnswerNotProvidedForChoiceQuestion');
         }
         break;
     case 'choices':
-        if (!answer.choices) {
+        if (answer.choices === undefined) {
             throw new SurveyError('choicesAnswerNotProvidedForChoicesQuestion');
         }
         break;
@@ -235,12 +235,12 @@ const validateValue = function ({ answer, question }) {
         }
         break;
     case 'open-choice':
-        if (!answer.textValue && !answer.choice) {
+        if (answer.textValue === undefined && answer.choice === undefined) {
             throw new SurveyError('NeithertextValueorChoiceValueProvidedForOpenChoiceQuestion');
         }
         break;
     case 'blood-pressure':
-        if (!answer.bloodPressureValue) {
+        if (answer.bloodPressureValue === undefined) {
             throw new SurveyError('BloodPressureValueNotProvidedForBloodPressureQuestion');
         }
         break;
@@ -371,7 +371,7 @@ module.exports = class AnswerDAO extends Base {
                     // If answers, check count and send back through with
                     // proper format
                     if (answers) {
-                        if (!multiple && !type === 'choices') {
+                        if (!multiple && type !== 'choices') {
                             throw new SurveyError('multipleAnswersNotAllowedForThisQuestion');
                         } else if (multiple && maxCount && answers.length > maxCount) {
                             throw new SurveyError('moreAnswersProvidedThanAllowed');
