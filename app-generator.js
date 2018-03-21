@@ -48,24 +48,23 @@ const authorization = function (req, res, next) {
     }
     const token = cookieToken || authToken;
 
-    // if (!token && !isDocs && !isHealthCheck) {
-    //     res.statusCode = 401;
-    //     res.send(noAuth);
-    // } else if (token) {
-    //     jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-    //         if (!err) {
-    //             req.user = payload;
-    //             return next();
-    //         }
-    //         res.statusCode = 401;
-    //         res.send(invalidAuth);
-    //         return null;
-    //     });
-    // } else if (isDocs || isHealthCheck) {
-    //     next();
-    // }
-    req.user  = {id:1}
-    next()
+    if (!token && !isDocs && !isHealthCheck) {
+        res.statusCode = 401;
+        res.send(noAuth);
+    } else if (token) {
+        jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+            if (!err) {
+                req.user = payload;
+                return next();
+            }
+            res.statusCode = 401;
+            res.send(invalidAuth);
+            return null;
+        });
+    } else if (isDocs || isHealthCheck) {
+        next();
+    }
+    
 };
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars

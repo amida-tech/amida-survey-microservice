@@ -289,16 +289,8 @@ class SharedIntegration {
         i18n.init(req, response);
         const expected = (new SurveyError(code, ...params)).getMessage(response);
         let x = unknownError.getMessage(response)
-        console.log("rrrrr")
-        //console.log(response)
-
-
-            console.log(expected)
-        console.log(x)
-        console.log("rrrrr")
         expect(expected).to.not.equal(code);
-        console.log("?????")
-        expect(expected).to.not.equal(x);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
         expect(res.body.message).to.equal(expected);
     }
 
