@@ -371,7 +371,6 @@ module.exports = class AnswerDAO extends Base {
                     // If answers, check count and send back through with
                     // proper format
                     if (answers) {
-                        console.log(answers)
                         if (!multiple && type !== 'choices' && type !== 'scale') {
                             throw new SurveyError('multipleAnswersNotAllowedForThisQuestion');
                         } else if (multiple && maxCount && answers.length > maxCount) {
