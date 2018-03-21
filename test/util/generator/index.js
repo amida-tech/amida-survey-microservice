@@ -85,8 +85,6 @@ class Generator {
     }
 
     answerQuestion(question) {
-        console.log("inside answerQuestion")
-        console.log(question)
         if (question.id < 0) {
             return { questionId: -question.id };
         }

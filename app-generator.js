@@ -19,6 +19,7 @@ const swaggerJson = require('./swagger.json');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
+
 const basePath = swaggerJson.basePath;
 const invalidAuth = {
     message: 'Invalid authorization',
@@ -64,7 +65,6 @@ const authorization = function (req, res, next) {
     } else if (isDocs || isHealthCheck) {
         next();
     }
-    
 };
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
@@ -239,7 +239,7 @@ exports.newExpress = function newExpress(options = {}) {
     app.use(passport.initialize());
 
     // set up express actuator
-    app.use(actuator(basePath + '/actuator'));
+    app.use(actuator(`${basePath}/actuator`));
 
     return app;
 };

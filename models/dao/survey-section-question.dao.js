@@ -9,7 +9,7 @@ module.exports = class SectionDAO extends Base {
             attributes: ['surveySectionId', 'questionId'],
             raw: true,
             order: 'line',
-        })
+        });
     }
 
     groupSurveySectionQuestions(surveySectionIds) {

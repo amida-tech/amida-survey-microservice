@@ -133,11 +133,10 @@ module.exports = class SurveyGenerator {
         const name = `name_${surveyIndex}`;
         const result = { name };
 
-        if(options.noSection === false) {
+        if (options.noSection === false) {
+            const sections = sectionGenerators.oneLevel(questionIds);
 
-            let sections = sectionGenerators.oneLevel(questionIds);
-
-            sections.forEach( (section, indx) => {
+            sections.forEach((section) => {
                 section.questions = section.questions.map((id) => {
                     let required = Boolean(surveyIndex % 2);
                     if (options.noneRequired) {
@@ -145,7 +144,7 @@ module.exports = class SurveyGenerator {
                     }
                     return { id, required };
                 });
-            })
+            });
             result.sections = sections;
         } else {
             result.questions = questionIds.map((id) => {

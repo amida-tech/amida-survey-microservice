@@ -20,7 +20,7 @@ module.exports = [{
     name: 3,
     stage: 3,
     user: 2,
-    questions: [17, 18,19],
+    questions: [17, 18, 19],
 }, {
     name: 4,
     stage: 0,
@@ -37,7 +37,7 @@ module.exports = [{
     stage: 2,
     user: 4,
     questions: [15, 16, 19],
-},{
+}, {
     name: 4,
     stage: 3,
     user: 4,
@@ -52,16 +52,16 @@ module.exports = [{
     stage: 1,
     user: 9,
     assessment: 1,
-    questions: [13, 14, 18,],
+    questions: [13, 14, 18],
 }, {
-    name: 5 ,
+    name: 5,
     stage: 2,
     user: 10,
     questions: [15, 16, 19],
-},{
-    name: 5 ,
+}, {
+    name: 5,
     stage: 3,
     user: 10,
     questions: [17, 11, 19],
-}
+},
 ];

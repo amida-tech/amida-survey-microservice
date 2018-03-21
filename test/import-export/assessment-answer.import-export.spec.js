@@ -16,12 +16,12 @@ const History = require('../util/history');
 const SurveyHistory = require('../util/survey-history');
 const assessmentAnswerCommon = require('../util/assessment-answer-common');
 const questionCommon = require('../util/question-common');
-const sectionCommon = require('../util/section-common');
 const surveyCommon = require('../util/survey-common');
 const assessmentCommon = require('../util/assessment-common');
 const ExportBuilder = require('./assessment-answer.export-builder');
 const answerSession = require('../fixtures/answer-session/assessment-2');
 const answerSessionSections = require('../fixtures/answer-session/assessment-1');
+
 const expect = chai.expect;
 
 describe('export assessment answers unit', function answerAssessmentImportExportUnit() {
@@ -48,7 +48,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     const questionSectionCount = assessmentAnswerCommon.findQuestionCount(answerSessionSections);
     const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
-    const sectionCount =  3;
+    const sectionCount = 3;
 
 
     before(shared.setUpFn());
@@ -116,24 +116,23 @@ describe('export assessment answers unit', function answerAssessmentImportExport
                         expect(a.questionIndex).to.be.a('number');
                     });
                 });
-
         };
     };
 
 
     _.range(0, questionCount + 1).forEach((questionId) => {
         it(`exported assessment-answers, surveyId: 1, questionId: ${questionId}`,
-            verifyExportAssessmentAnswers({ questionId, includeComments: false, surveyId:1 }));
+            verifyExportAssessmentAnswers({ questionId, includeComments: false, surveyId: 1 }));
     });
 
     _.range(0, questionCount + 1).forEach((questionId) => {
-            it(`exported assessment-answers with comments, surveyId: 1, questionId: ${questionId}`,
-            verifyExportAssessmentAnswers({ questionId, includeComments: true, surveyId:1 }));
+        it(`exported assessment-answers with comments, surveyId: 1, questionId: ${questionId}`,
+            verifyExportAssessmentAnswers({ questionId, includeComments: true, surveyId: 1 }));
     });
 
-    it('export assessment answers no questionId or sectionId', verifyExportAssessmentAnswers({ includeComments: false, surveyId:1 }));
+    it('export assessment answers no questionId or sectionId', verifyExportAssessmentAnswers({ includeComments: false, surveyId: 1 }));
 
-    it('export assessment answers no questionId or sectionId with comments', verifyExportAssessmentAnswers({ includeComments: true, surveyId:1 }));
+    it('export assessment answers no questionId or sectionId with comments', verifyExportAssessmentAnswers({ includeComments: true, surveyId: 1 }));
 
     _.range(questionCount, questionSectionCount).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());
@@ -141,7 +140,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     });
 
 
-    const surveyOpts2 = {noneRequired: true, noSection: false};
+    const surveyOpts2 = { noneRequired: true, noSection: false };
     it('create survey 2 with sections', surveyTests.createSurveyQxHxFn(_.range(questionCount, questionSectionCount), surveyOpts2));
 
     _.range(nameCount).forEach((nameIndex) => {
@@ -175,14 +174,11 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({sectionId: index + 1, surveyId:2, includeComments:false}));
+            verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: false }));
     });
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers CSV, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({sectionId: index + 1, surveyId:2, includeComments:true}));
+            verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: true }));
     });
-
-
-
 });

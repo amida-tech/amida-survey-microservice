@@ -490,5 +490,5 @@ module.exports = {
     SpecTests,
     IntegrationTests,
     findMax,
-    findQuestionCount
+    findQuestionCount,
 };

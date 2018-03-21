@@ -461,9 +461,7 @@ module.exports = class AnswerDAO extends Base {
                 return result;
             })
             .then((result) => {
-
                 if (scope === 'export') {
-
                     return result.map((p) => {
                         const r = { surveyId: p.surveyId };
                         r.questionId = p['question.id'];

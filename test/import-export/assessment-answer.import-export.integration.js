@@ -109,23 +109,26 @@ describe('export assessment answers integration', function answerAssessmentImpor
         it(`logout as user ${userIndex}`, shared.logoutFn());
     });
 
+    const escapeRegExp = function (string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
     const verifyExportAssessmentAnswers = function (options, format) {
         return function verify() {
             let call;
-            if(format === "JSON") {
+            if (format === 'JSON') {
                 call = surveySuperTest.get('/assessment-answers/export', true, 200, options);
-            } else if (format === "CSV"){
+            } else if (format === 'CSV') {
                 call = surveySuperTest.get('/assessment-answers/csv', true, 200, options);
             }
             return call.then((res) => {
-
                 const controllerOptions = Object.assign({}, { questionId: options['question-id'],
-                                                              sectionId: options['section-id'],
-                                                              surveyId: options['survey-id'],
-                                                              includeComments: options['include-comments'] });
+                    sectionId: options['section-id'],
+                    surveyId: options['survey-id'],
+                    includeComments: options['include-comments'] });
                 let answers;
                 let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
-                if(format === 'JSON') {
+                if (format === 'JSON') {
                     answers = res.body;
                     expected.forEach((e, indx) => {
                         // cheat questionIndex out of the comparison because we don't have access to them
@@ -133,7 +136,7 @@ describe('export assessment answers integration', function answerAssessmentImpor
                         expect(answers[indx]).to.deep.equal(Object.assign({}, e, { questionIndex: answers[indx].questionIndex }));
                         expect(answers[indx].questionIndex).to.be.a('number');
                     });
-                } else if(format === 'CSV') {
+                } else if (format === 'CSV') {
                     const csvConverter = new CSVConverterExport();
                     expected = expected.length ? csvConverter.dataToCSV(expected) : '';
                     // match against any integer value for questionIndex because we don't have access to them
@@ -145,25 +148,20 @@ describe('export assessment answers integration', function answerAssessmentImpor
         };
     };
 
-
-    const escapeRegExp = function (string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    };
-
     it('login as super', shared.loginFn(config.superUser));
     _.range(1, questionCount + 1).forEach((index) => {
         it(`exported assessment-answers JSON, surveyId: 1, questionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'question-id':index, 'include-comments': false, 'survey-id': 1}, 'JSON'));
+            verifyExportAssessmentAnswers({ 'question-id': index, 'include-comments': false, 'survey-id': 1 }, 'JSON'));
     });
 
     _.range(1, questionCount + 1).forEach((index) => {
         it(`exported assessment-answers JSON with comments, surveyId: 1, questionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'question-id':index, 'include-comments': true,  'survey-id': 1}, 'JSON'));
+            verifyExportAssessmentAnswers({ 'question-id': index, 'include-comments': true, 'survey-id': 1 }, 'JSON'));
     });
 
     _.range(1, questionCount + 1).forEach((index) => {
         it(`exported assessment-answers CSV, surveyId: 1, questionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'question-id':index,'survey-id': 1}, 'CSV'));
+            verifyExportAssessmentAnswers({ 'question-id': index, 'survey-id': 1 }, 'CSV'));
     });
 
 
@@ -173,7 +171,7 @@ describe('export assessment answers integration', function answerAssessmentImpor
     });
 
 
-    const surveyOpts2 = {noneRequired: true, noSection: false};
+    const surveyOpts2 = { noneRequired: true, noSection: false };
     it('create survey 1 with sections', surveyTests.createSurveyQxHxFn(_.range(questionCount, questionSectionCount), surveyOpts2));
 
     _.range(nameCount).forEach((nameIndex) => {
@@ -214,42 +212,42 @@ describe('export assessment answers integration', function answerAssessmentImpor
     it('login as super', shared.loginFn(config.superUser));
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers JSON no comments, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'section-id': index + 1, 'survey-id':2, 'include-comments':false}, 'JSON'));
+            verifyExportAssessmentAnswers({ 'section-id': index + 1, 'survey-id': 2, 'include-comments': false }, 'JSON'));
     });
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers JSON with comments, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'section-id': index + 1, 'survey-id':2, 'include-comments':true}, 'JSON'));
+            verifyExportAssessmentAnswers({ 'section-id': index + 1, 'survey-id': 2, 'include-comments': true }, 'JSON'));
     });
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers CSV, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({'section-id': index + 1, 'survey-id':2}, 'CSV'));
+            verifyExportAssessmentAnswers({ 'section-id': index + 1, 'survey-id': 2 }, 'CSV'));
     });
 
-    it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({'survey-id':1},'JSON'));
-    it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({'survey-id':2},'JSON'));
-    it('export assessment answers no questionId or sectionId JSON comments', verifyExportAssessmentAnswers({'survey-id':1, 'include-comments':true},'JSON'));
-    it('export assessment answers no questionId or sectionId CSV', verifyExportAssessmentAnswers({'survey-id':1},'CSV'));
+    it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({ 'survey-id': 1 }, 'JSON'));
+    it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({ 'survey-id': 2 }, 'JSON'));
+    it('export assessment answers no questionId or sectionId JSON comments', verifyExportAssessmentAnswers({ 'survey-id': 1, 'include-comments': true }, 'JSON'));
+    it('export assessment answers no questionId or sectionId CSV', verifyExportAssessmentAnswers({ 'survey-id': 1 }, 'CSV'));
 
-    const verifyErrorMsg = function(options, error) {
-        let controllerOptions = {'survey-id':options.surveyId,
-                             'question-id': options.questionId,
-                             'include-comments': options.includeComments,
-                             'section-id':options.sectionId}
+    const verifyErrorMsg = function (options, error) {
+        const controllerOptions = { 'survey-id': options.surveyId,
+            'question-id': options.questionId,
+            'include-comments': options.includeComments,
+            'section-id': options.sectionId };
         return function verify() {
             return surveySuperTest.get('/assessment-answers/export', true, 400, controllerOptions)
             .then(res => shared.verifyErrorMessage(res, error));
         };
-    }
+    };
 
     it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsg({ questionId: 1, surveyId: 1, sectionId: 1 }, 'surveyBothQuestionsSectionsSpecified'));
 
-    it('verifyErrorMsgQuestionNotFound', verifyErrorMsg({questionId: 30, surveyId: 1}, 'qxNotFound'));
+    it('verifyErrorMsgQuestionNotFound', verifyErrorMsg({ questionId: 30, surveyId: 1 }, 'qxNotFound'));
 
-    it('verifyErrorMsgSectionNotFound', verifyErrorMsg({sectionId: 2, surveyId:1, includeComments:false}, 'sectionNotFound'));
+    it('verifyErrorMsgSectionNotFound', verifyErrorMsg({ sectionId: 2, surveyId: 1, includeComments: false }, 'sectionNotFound'));
 
-    it('verifyErrorMsgSurveyNotFound', verifyErrorMsg({sectionId: 1, surveyId:5}, 'surveyNotFound'));
+    it('verifyErrorMsgSurveyNotFound', verifyErrorMsg({ sectionId: 1, surveyId: 5 }, 'surveyNotFound'));
 
     it('logout as super', shared.logoutFn());
 });
