@@ -22,7 +22,6 @@ const SpecTests = class SectionSpecTests {
             section = section || generator.newSection();
             return models.section.createSection(section)
                 .then(({ id }) =>{
-                    console.log(section)
                     hxSection.push(section, { id })
                 });
         };

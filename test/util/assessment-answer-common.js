@@ -88,11 +88,6 @@ const SpecTests = class AnswerSpecTests {
             expect(commentCount).to.equal((commentIndices && commentIndices.length) || 0);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
-
-            console.log(hxAssessment)
-                console.log(assessmentIndex)
-            console.log(hxAssessment.history.length)
-
             const assessmentId = hxAssessment.id(assessmentIndex);
             input.assessmentId = assessmentId;
             const language = languageOverride || generator.nextLanguage();
@@ -495,5 +490,5 @@ module.exports = {
     SpecTests,
     IntegrationTests,
     findMax,
-    findQuestionCount,
+    findQuestionCount
 };

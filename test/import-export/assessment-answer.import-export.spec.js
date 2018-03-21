@@ -48,7 +48,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     const questionSectionCount = assessmentAnswerCommon.findQuestionCount(answerSessionSections);
     const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
-
+    const sectionCount =  3;
 
 
     before(shared.setUpFn());
@@ -81,16 +81,6 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
-    it('print hxSurvey after creation of survey 0', () => {
-        console.log("hxSurvey")
-        console.log(hxSurvey.servers)
-        console.log("hxQuestion")
-        console.log(hxQuestion.servers)
-        return function blah(){
-
-        }
-
-    })
 
     let assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
@@ -115,74 +105,45 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
-    const verifyExportAssessmentAnswers = function ({ index, includeComments }) {
-        // TODO add section ids to tests
-        const options = { surveyId: 1, includeComments };
-        if (index || index === 0) {
-            options.questionId = index;
-        }
+    const verifyExportAssessmentAnswers = function (options = {}) {
         return function verify() {
             return models.assessmentAnswer.exportAssessmentAnswers(options)
                 .then((answers) => {
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
-                    expected.forEach((e, indx) => {
-                        expect(answers[indx]).to.deep.equal(Object.assign({}, e, { questionIndex: answers[indx].questionIndex }));
-                        expect(answers[indx].questionIndex).to.be.a('number');
+
+                    answers.forEach((a, indx) => {
+                        expect(a).to.deep.equal(Object.assign({}, expected[indx], { questionIndex: answers[indx].questionIndex }));
+                        expect(a.questionIndex).to.be.a('number');
                     });
                 });
+
         };
     };
 
 
-    _.range(0, questionCount + 1).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${index}`,
-            verifyExportAssessmentAnswers({ index, includeComments: false }));
+    _.range(0, questionCount + 1).forEach((questionId) => {
+        it(`exported assessment-answers, surveyId: 1, questionId: ${questionId}`,
+            verifyExportAssessmentAnswers({ questionId, includeComments: false, surveyId:1 }));
     });
 
-    _.range(0, questionCount + 1).forEach((index) => {
-        it(`exported assessment-answers with comments, surveyId: 1, questionId: ${index}`,
-            verifyExportAssessmentAnswers({ index, includeComments: true }));
+    _.range(0, questionCount + 1).forEach((questionId) => {
+            it(`exported assessment-answers with comments, surveyId: 1, questionId: ${questionId}`,
+            verifyExportAssessmentAnswers({ questionId, includeComments: true, surveyId:1 }));
     });
 
-    it('export assessment answers no questionId', verifyExportAssessmentAnswers({ includeComments: false }));
+    it('export assessment answers no questionId or sectionId', verifyExportAssessmentAnswers({ includeComments: false, surveyId:1 }));
 
-    it('export assessment answers no questionId with comments', verifyExportAssessmentAnswers({ includeComments: true }));
-    const verifyErrorMsgBothQuestionIdSectionId = function () {
-        return function verify() {
-            const options = { questionId: 1, surveyId: 1, sectionId: 1 };
-            return models.assessmentAnswer.exportAssessmentAnswers(options)
-            .then(res => shared.verifyErrorMessage(res, 'surveyBothQuestionsSectionsSpecified'));
-        };
-    };
+    it('export assessment answers no questionId or sectionId with comments', verifyExportAssessmentAnswers({ includeComments: true, surveyId:1 }));
 
-    const verifyErrorMsgNoSurveyId = function () {
-        return function verify() {
-            const options = { questionId: 1, sectionId: 1 };
-            return models.assessmentAnswer.exportAssessmentAnswers(options)
-            .then(res => shared.verifyErrorMessage(res, 'surveyMustBeSpecified'));
-        };
-    };
     _.range(questionCount, questionSectionCount).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
 
-//    it(`create survey 2 with sections`, surveyTests.createSurveyFn({noneRequired: true, noSection: false}));
     const surveyOpts2 = {noneRequired: true, noSection: false};
     it('create survey 2 with sections', surveyTests.createSurveyQxHxFn(_.range(questionCount, questionSectionCount), surveyOpts2));
 
-    it('print hxSurvey after creation of survey 2', () => {
-        console.log("hxSurvey")
-        console.log(hxSurvey.clients[1])
-        console.log(hxSurvey)
-        console.log("hxQuestion")
-        console.log(hxQuestion.servers)
-        return function blah(){
-
-        }
-
-    })
     _.range(nameCount).forEach((nameIndex) => {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex + 3}`;
@@ -197,17 +158,31 @@ describe('export assessment answers unit', function answerAssessmentImportExport
         const userIndex = user;
         const questionIndices = questions;
         const commentIndices = commentQuestions;
-        const assessmentIndex = (((name - 3) * stageCount) + stage) + 12 ;
-        assessmentIndexSet.add(assessmentIndex);
+        const assessmentIndex = (name * stageCount) + stage;
+
+        if (!assessmentIndexSet.has(assessmentIndex)) {
+            assessmentIndexSet.add(assessmentIndex);
+            if (stage > 0) {
+                const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`,
+                    tests.copyAssessmentAnswersFn(userIndex, 1, assessmentIndex, prevAssessmentIndex));
+            }
+        }
+
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
                 tests.createAssessmentAnswersFn(userIndex, 1, questionIndices, assessmentIndex, commentIndices));
     });
 
-    _.range(11, 18).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 1, sectionId: ${index}`,
-            verifyExportAssessmentAnswers({sectionId:index}));
+    _.range(sectionCount).forEach((index) => {
+        it(`exported assessment-answers, surveyId: 2, sectionId: ${index + 1}`,
+            verifyExportAssessmentAnswers({sectionId: index + 1, surveyId:2, includeComments:false}));
     });
 
-    it('verifyErrorMsgBothQuestionIdSectionId', verifyErrorMsgBothQuestionIdSectionId);
-    it('verifyErrorMsgNoSurveyId', verifyErrorMsgNoSurveyId);
+    _.range(sectionCount).forEach((index) => {
+        it(`exported assessment-answers CSV, surveyId: 2, sectionId: ${index + 1}`,
+            verifyExportAssessmentAnswers({sectionId: index + 1, surveyId:2, includeComments:true}));
+    });
+
+
+
 });

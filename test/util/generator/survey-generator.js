@@ -14,10 +14,11 @@ const sectionGenerators = {
         if (count < 8) {
             throw new Error('Not enough questions for sections.');
         }
+
         const sections = Array(3);
-        sections[0] = { name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
-        sections[1] = { name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
-        sections[2] = { name: 'section_2', description: 'section_2_description', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        sections[0] = { id: 1, name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { id: 2, name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { id: 3, name: 'section_2', description: 'section_2_description', questions: _.rangeRight(6, count).map(index => surveyQuestions[index]) };
         return sections;
     },
     oneLevelMissingName(surveyQuestions) {
@@ -97,7 +98,6 @@ module.exports = class SurveyGenerator {
     }
 
     newSurvey(options = {}) {
-        //console.log("hopefully this will createa survey with sections")
         const result = this.newBody();
         if (options.status) {
             result.status = options.status;
@@ -135,19 +135,9 @@ module.exports = class SurveyGenerator {
 
         if(options.noSection === false) {
 
-            let sectionCount = this._getSectionsCount(questionIds)
-            let sectionSize = Math.floor(questionIds.length / sectionCount) === 0 ? 1 : Math.floor(questionIds.length / sectionCount);
-            let sections = _.range(sectionCount).map(index => {
-                let questions = _.slice(questionIds,(index * sectionSize), (index * sectionSize) + sectionSize);
-                return { questions };
-            })
-            if(sectionSize * sectionCount < questionIds.length) {
-                let questions = _.slice(questionIds,(sectionSize * sectionCount), questionIds.length);
-                sections.push({questions});
-            }
+            let sections = sectionGenerators.oneLevel(questionIds);
+
             sections.forEach( (section, indx) => {
-                section.name  = `section_${indx}`
-                section.description = `description_${indx}`
                 section.questions = section.questions.map((id) => {
                     let required = Boolean(surveyIndex % 2);
                     if (options.noneRequired) {
@@ -155,10 +145,8 @@ module.exports = class SurveyGenerator {
                     }
                     return { id, required };
                 });
-
             })
             result.sections = sections;
-
         } else {
             result.questions = questionIds.map((id) => {
                 let required = Boolean(surveyIndex % 2);
@@ -170,16 +158,5 @@ module.exports = class SurveyGenerator {
         }
 
         return result;
-    }
-
-    _getSectionsCount(questionIds) {
-        let sectionCount = 3 - (this.surveyIndex % 3);
-        if(questionIds.length === 0) {
-            return 1;
-        }
-        while(sectionCount > questionIds.length) {
-            sectionCount = sectionCount - 1;
-        }
-        return sectionCount;
     }
 };

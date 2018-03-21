@@ -340,19 +340,38 @@ module.exports = class AnswerAssessmentDAO extends Base {
         // TODO: const userIds = options.userIds
 
         if (sectionId && questionId) {
-            SurveyError.reject('surveyBothQuestionsSectionsSpecified');
+            return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
         }
 
         if (!surveyId) {
-            SurveyError.reject('surveyMustBeSpecified');
+            return SurveyError.reject('surveyMustBeSpecified');
         }
 
         if(sectionId) {
-            questionsPromise = this.db.SurveySectionQuestion.findAll({
-                where: { surveySectionId: { $in: [sectionId] } },
-                attributes: ['questionId', 'line'],
+            questionsPromise =
+            this.db.SurveySection.findOne({
+                where: {sectionId, surveyId},
+                attributes: ['id'],
+                raw:true
+            }).then( section => {
+                if(section) {
+                    return this.db.SurveySectionQuestion.findAll({
+                        where: { surveySectionId: sectionId },
+                        attributes: ['questionId', 'line'],
+                        raw: true,
+                        order: 'line',
+                    })
+                } else {
+                    return new Promise(res => {
+                        res([]);
+                    })
+                }
+            })
+        } else if(questionId) {
+            questionsPromise = this.db.SurveyQuestion.findAll({
+                where: { surveyId , questionId},
                 raw: true,
-                order: 'line',
+                attributes: ['questionId', 'line'],
             })
         } else {
             questionsPromise = this.db.SurveyQuestion.findAll({
@@ -364,22 +383,31 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
 
         return questionsPromise.then(questions => this.db.SurveyText.findAll({
-            where: { survey_id: surveyId },
-            raw: true,
-            attributes: ['name', 'surveyId'],
-        }).then(surveys => this.db.AssessmentSurvey.findAll({
-            where: { survey_id: surveyId },
-            raw: true,
-            attributes: ['assessmentId', 'surveyId'],
-        }).then((surveyAssessments) => {
+                where: { survey_id: surveyId },
+                raw: true,
+                attributes: ['name', 'surveyId'],
 
+        }).then(surveys => this.db.AssessmentSurvey.findAll({
+                where: { survey_id: surveyId },
+                raw: true,
+                attributes: ['assessmentId', 'surveyId'],
+        }).then((surveyAssessments) => {
+            if(!surveys.length) {
+                return SurveyError.reject("surveyNotFound");
+            }
+            console.log(questions)
+            if(!questions.length) {
+                console.log("****")
+                if(sectionId) {
+                    return SurveyError.reject('sectionNotFound');
+                } else {
+                    return SurveyError.reject('qxNotFound');
+                }
+            }
             let questionIds = [questionId];
 
             if (sectionId || (!questionId && questionId !== 0)) {
-
                 questionIds = questions.map(r => r.questionId);
-                console.log("questionIds immediately after assignment")
-                console.log(questionIds)
             }
             const questionLines = questions.map(r => [r.questionId, r.line]);
             const questionLinesMap = new Map(questionLines);
@@ -410,7 +438,6 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 }).then(assessmentStatuses => this.db.QuestionChoice.findAll({
                     where: { id: { $in: answers.map(a => a.questionChoiceId) } },
                 }).then((questionChoices) => {
-                    console.log(answers)
                     const assessmentStatusInput = assessmentStatuses.map(r => [r.assessmentId, r.status]);// eslint-disable-line max-len
                     const assessmentStatusMap = new Map(assessmentStatusInput);
 
@@ -490,24 +517,25 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                                const finalAnswers =
                                                    orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                                if (questionId || questionId === 0) {
-                                                   return _.sortBy(finalAnswers, a => a.group);
+                                                   return _.sortBy(finalAnswers, [a => a.group,  a => a.choiceText]);
                                                }
 
                                                return _.sortBy(finalAnswers, [
                                                    a => a.group,
                                                    a => questionLinesMap.get(a.questionId),
+                                                   a => a.choiceText
                                                ]);
                                            });
                                 }
                                 const finalAnswers =
                                         orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
                                 if (questionId || questionId === 0) {
-                                    return _.sortBy(finalAnswers, a => a.group);
+                                    return _.sortBy(finalAnswers, [a => a.group,  a => a.choiceText]);
                                 }
-
                                 return _.sortBy(finalAnswers, [
                                     a => a.group,
                                     a => questionLinesMap.get(a.questionId),
+                                    a => a.choiceText
                                 ]);
                             });
                     } else if (includeComments) {
@@ -516,22 +544,30 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                    const finalAnswers =
                                        orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                    if (questionId || questionId === 0) {
-                                       return _.sortBy(finalAnswers, a => a.group);
+
+                                       return _.sortBy(finalAnswers, [a => a.group,  a => a.choiceText]);
                                    }
 
                                    return _.sortBy(finalAnswers, [
                                        a => a.group,
                                        a => questionLinesMap.get(a.questionId),
+                                       a => a.choiceText
                                    ]);
                                });
-                    }
-                    const finalAnswers =
-                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
+                    } else {
+                        const finalAnswers =
+                                orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
 
-                    return _.sortBy(finalAnswers, [
-                        a => a.group,
-                        a => questionLinesMap.get(a.questionId),
-                    ]);
+                            if (questionId || questionId === 0) {
+                                return _.sortBy(finalAnswers, [a => a.group,  a => a.choiceText]);
+                            }
+                        return _.sortBy(finalAnswers, [
+                            a => a.group,
+                            a => questionLinesMap.get(a.questionId),
+                            a => a.choiceText
+                        ]);
+                    }
+
                 })))));
         })));
     }
