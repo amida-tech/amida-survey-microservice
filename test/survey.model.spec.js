@@ -585,11 +585,12 @@ describe('survey unit', function surveyUnit() {
         const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
         delete replacementSurvey.sections;
+        replacementSurvey.questions = [];
         return models.survey.replaceSurvey(survey.id, replacementSurvey);
     });
 
     const createAndGetEmptySurvey = function (name) {
-        return models.survey.createSurvey({ name }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
+        return models.survey.createSurvey({ name, questions: [] }).then(id => models.survey.getSurvey(id).then((emptySurvey) => {
             const survey = { id, name, questions: [], authorId: 1, status: 'published' };
             expect(emptySurvey).to.deep.equal(survey);
             hxSurvey.push(emptySurvey, { id });
