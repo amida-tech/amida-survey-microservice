@@ -69,7 +69,7 @@
 	"multipleAnswersNotAllowedForThisQuestion": "Multiple Answers Not Allowed for This Question",
 	"moreAnswersProvidedThanAllowed": "More answers provided than allowed by this question",
 	"choiceAnswerNotProvidedForChoiceQuestion": "Choice answer not provided for choice question",
-	"choicesAnswerNotProvidedForChoiceQuestion": "Choices answer not provided for choice question",
+	"choicesAnswerNotProvidedForChoicesQuestion": "Choices answer not provided for choices question",
 	"numberValueAnswerNotProvidedForPoundsQuestion": "Number value answer not provided for pounds question",
 	"textValueNotProvidedForTextQuestion": "Text value not provided for text question",
 	"feetInchesValueNotProvidedForfeetInchesQuestion": "Feet inches value not provided for feet inches question",
