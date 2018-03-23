@@ -17,6 +17,7 @@ module.exports = class AssessmentDAO extends Base {
         if (group) {
             record.group = group;
         }
+
         return this.transaction(transaction => Assessment.create(record, { transaction })
             .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
                 .then(() => ({ id }))));
@@ -54,6 +55,9 @@ module.exports = class AssessmentDAO extends Base {
         const findOptions = { raw: true, attributes };
         if (options.group) {
             findOptions.where = { group: options.group };
+        }
+        if (options.assessmentIds) {
+            findOptions.where.id = { $in: options.assessmentIds };
         }
         return Assessment.findAll(findOptions)
             .then(assessments => assessments.map(assessment => _.omitBy(assessment, _.isNil)));

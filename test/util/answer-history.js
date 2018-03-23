@@ -36,16 +36,16 @@ module.exports = class AnswerHistory {
         this.questionsWithComments = {};
     }
 
-    static key(userIndex, surveyIndex) {
-        return `${userIndex}-${surveyIndex}`;
+    static key(ownerId, surveyIndex) {
+        return `${ownerId}-${surveyIndex}`;
     }
 
-    static commentKey(userIndex, surveyIndex, questionId) {
-        return `${userIndex}-${surveyIndex}-${questionId}`;
+    static commentKey(ownerId, surveyIndex, questionId) {
+        return `${ownerId}-${surveyIndex}-${questionId}`;
     }
 
-    updateRecords(userIndex, surveyIndex, answers) {
-        const records = this.getAll(userIndex, surveyIndex);
+    updateRecords(ownerId, surveyIndex, answers) {
+        const records = this.getAll(ownerId, surveyIndex);
         const timeIndex = records.length;
         records.forEach((record) => {
             const remaining = record.remaining;
@@ -63,18 +63,18 @@ module.exports = class AnswerHistory {
         });
     }
 
-    updateComments(userIndex, surveyIndex, answers, language, userId) {
+    updateComments(ownerId, surveyIndex, answers, language, userId) {
         this.instant = this.instant + 1;
         const instant = this.instant;
         answers.forEach(({ questionId, comment: newComment }) => {
             if (newComment) {
-                const commentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+                const commentKey = AnswerHistory.commentKey(ownerId, surveyIndex, questionId);
                 const comment = Object.assign({}, newComment, {
                     language: language || 'en',
                 }, { userId });
 
                 this.comments[commentKey] = { comment, instant };
-                const key = AnswerHistory.key(userIndex, surveyIndex);
+                const key = AnswerHistory.key(ownerId, surveyIndex);
                 let questionsWithComments = this.questionsWithComments[key];
                 if (!questionsWithComments) {
                     questionsWithComments = new Set();
@@ -85,9 +85,9 @@ module.exports = class AnswerHistory {
         });
     }
 
-    push(userIndex, surveyIndex, answers, language, userId) {
-        this.updateRecords(userIndex, surveyIndex, answers);
-        const key = AnswerHistory.key(userIndex, surveyIndex);
+    push(ownerId, surveyIndex, answers, language, userId) {
+        this.updateRecords(ownerId, surveyIndex, answers);
+        const key = AnswerHistory.key(ownerId, surveyIndex);
         let indexHistory = this.historyIndexMap.get(key);
         if (indexHistory === undefined) {
             indexHistory = [];
@@ -95,37 +95,47 @@ module.exports = class AnswerHistory {
         }
         const index = this.store.length;
         const record = toAnswerRecord(answers, language);
-        const value = Object.assign({ userIndex, surveyIndex }, record);
+        const currentdate = new Date();
+        const currMonth = (currentdate.getMonth() + 1).length > 1 ?
+                        currentdate.getMonth() :
+                        `0${currentdate.getMonth() + 1}`;
+        const currYear = currentdate.getFullYear();
+        const currDay = currentdate.getDate();
+        const date = `${currYear}-${
+                    currMonth}-${
+                    currDay}`;
+
+        const value = Object.assign({ ownerId, surveyIndex, userId, date }, record);
         this.store.push(value);
         this.serverStore.push(null);
         indexHistory.push(index);
-        this.updateComments(userIndex, surveyIndex, answers, language, userId);
+        this.updateComments(ownerId, surveyIndex, answers, language, userId);
     }
 
-    getLastIndex(userIndex, surveyIndex) {
-        const key = AnswerHistory.key(userIndex, surveyIndex);
+    getLastIndex(ownerId, surveyIndex) {
+        const key = AnswerHistory.key(ownerId, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
         return keyIndices[keyIndices.length - 1];
     }
 
-    pushServer(userIndex, surveyIndex, answers) {
-        const index = this.getLastIndex(userIndex, surveyIndex);
+    pushServer(ownerId, surveyIndex, answers) {
+        const index = this.getLastIndex(ownerId, surveyIndex);
         this.serverStore[index] = answers;
     }
 
-    getLast(userIndex, surveyIndex) {
-        const all = this.getAll(userIndex, surveyIndex);
+    getLast(ownerId, surveyIndex) {
+        const all = this.getAll(ownerId, surveyIndex);
         const length = all.length;
         return all[length - 1];
     }
 
-    getLastServer(userIndex, surveyIndex) {
-        const index = this.getLastIndex(userIndex, surveyIndex);
+    getLastServer(ownerId, surveyIndex) {
+        const index = this.getLastIndex(ownerId, surveyIndex);
         return this.serverStore[index];
     }
 
-    getAll(userIndex, surveyIndex) {
-        const key = AnswerHistory.key(userIndex, surveyIndex);
+    getAll(ownerId, surveyIndex) {
+        const key = AnswerHistory.key(ownerId, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
         if (!keyIndices) {
             return [];
@@ -133,8 +143,8 @@ module.exports = class AnswerHistory {
         return _.at(this.store, keyIndices);
     }
 
-    getAllServer(userIndex, surveyIndex) {
-        const key = AnswerHistory.key(userIndex, surveyIndex);
+    getAllServer(ownerId, surveyIndex) {
+        const key = AnswerHistory.key(ownerId, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
         if (!keyIndices) {
             return [];
@@ -142,9 +152,9 @@ module.exports = class AnswerHistory {
         return _.at(this.serverStore, keyIndices);
     }
 
-    listFlatForUser(userIndex) {
+    listFlatForUser(ownerId) {
         return this.store.reduce((r, record) => {
-            if (record.userIndex === userIndex) {
+            if (record.ownerId === ownerId) {
                 const { surveyIndex, answers, remaining } = record;
                 const remainingAnswers = answers.filter(({ questionId }) => Object.prototype.hasOwnProperty.call(remaining, questionId));
                 if (remainingAnswers.length) {
@@ -155,7 +165,7 @@ module.exports = class AnswerHistory {
         }, []);
     }
 
-    getGroupComments(group, userIndex, surveyIndex) {
+    getGroupComments(group, ownerId, surveyIndex) {
         const result = group.reduce((r, groupIndex) => {
             const key = AnswerHistory.key(groupIndex, surveyIndex);
             const questionsWithComments = this.questionsWithComments[key];
@@ -166,7 +176,7 @@ module.exports = class AnswerHistory {
                 const commentKey = `${key}-${questionId}`;
                 const comment = this.comments[commentKey];
                 if (comment) {
-                    const currentKey = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+                    const currentKey = AnswerHistory.commentKey(ownerId, surveyIndex, questionId);
                     let questionComments = r[currentKey];
                     if (!questionComments) {
                         questionComments = [];
@@ -184,7 +194,7 @@ module.exports = class AnswerHistory {
         }, {});
     }
 
-    getGroupQuestionsWithComments(group, userIndex, surveyIndex) {
+    getGroupQuestionsWithComments(group, ownerId, surveyIndex) {
         return group.reduce((r, groupIndex) => {
             const key = AnswerHistory.key(groupIndex, surveyIndex);
             const questionsWithComments = this.questionsWithComments[key];
@@ -198,8 +208,8 @@ module.exports = class AnswerHistory {
         }, new Set());
     }
 
-    expectedAnswers(userIndex, surveyIndex, options = {}) {
-        const records = this.getAll(userIndex, surveyIndex);
+    expectedAnswers(ownerId, surveyIndex, options = {}) {
+        const records = this.getAll(ownerId, surveyIndex);
         let preresult = records.reduce((r, { remaining, answers }) => {
             if (!remaining) {
                 r.push(...answers);
@@ -215,11 +225,11 @@ module.exports = class AnswerHistory {
         }, []);
         const group = options.group;
         if (group) {
-            const groupComments = this.getGroupComments(group, userIndex, surveyIndex);
+            const groupComments = this.getGroupComments(group, ownerId, surveyIndex);
             const insertedComment = new Set();
             preresult = preresult.map((answer) => {
                 const questionId = answer.questionId;
-                const key = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+                const key = AnswerHistory.commentKey(ownerId, surveyIndex, questionId);
                 const commentHistory = groupComments[key];
                 if (commentHistory && commentHistory.length) {
                     insertedComment.add(questionId);
@@ -227,8 +237,8 @@ module.exports = class AnswerHistory {
                 }
                 return answer;
             });
-            const key = AnswerHistory.key(userIndex, surveyIndex);
-            const questionsWithComments = this.getGroupQuestionsWithComments(group, userIndex, surveyIndex);
+            const key = AnswerHistory.key(ownerId, surveyIndex);
+            const questionsWithComments = this.getGroupQuestionsWithComments(group, ownerId, surveyIndex);
             questionsWithComments.forEach((questionId) => {
                 if (!insertedComment.has(questionId)) {
                     const commentKey = `${key}-${questionId}`;
@@ -247,7 +257,7 @@ module.exports = class AnswerHistory {
         const insertedComment = new Set();
         const result = preresult.map((answer) => {
             const questionId = answer.questionId;
-            const key = AnswerHistory.commentKey(userIndex, surveyIndex, questionId);
+            const key = AnswerHistory.commentKey(ownerId, surveyIndex, questionId);
             const { comment } = this.comments[key] || {};
             if (comment) {
                 insertedComment.add(questionId);
@@ -255,7 +265,7 @@ module.exports = class AnswerHistory {
             }
             return answer;
         });
-        const key = AnswerHistory.key(userIndex, surveyIndex);
+        const key = AnswerHistory.key(ownerId, surveyIndex);
         const questionsWithComments = this.questionsWithComments[key];
         if (questionsWithComments) {
             questionsWithComments.forEach((questionId) => {
@@ -270,8 +280,8 @@ module.exports = class AnswerHistory {
         return result;
     }
 
-    expectedRemovedAnswers(userIndex, surveyIndex) {
-        const records = this.getAll(userIndex, surveyIndex);
+    expectedRemovedAnswers(ownerId, surveyIndex) {
+        const records = this.getAll(ownerId, surveyIndex);
         const result = records.reduce((r, { removed, answers }) => {
             answers.forEach((answer) => {
                 const questionId = answer.questionId;
@@ -288,9 +298,9 @@ module.exports = class AnswerHistory {
         return result;
     }
 
-    copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex) {
+    copyAssessmentAnswers(ownerId, surveyIndex, prevAssessmentIndex, userId) {
         const answers = this.expectedAnswers(prevAssessmentIndex, surveyIndex);
         const commentlessAnswers = answers.map(answer => _.omit(answer, 'comment'));
-        this.push(userIndex, surveyIndex, commentlessAnswers);
+        this.push(ownerId, surveyIndex, commentlessAnswers, null, userId);
     }
 };

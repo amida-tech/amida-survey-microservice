@@ -28,7 +28,7 @@ describe('assessment answer unit', function answerAssessmentUnit() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxAssessment = new History();
+    const hxAssessment = new History(['id', 'name', 'stage', 'group']);
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
@@ -82,10 +82,12 @@ describe('assessment answer unit', function answerAssessmentUnit() {
             assessmentIndexSet.add(assessmentIndex);
             if (stage > 0) {
                 const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+
                 it(`user ${userIndex} copies assessesment ${name} ${stage}`,
                     tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
             }
         }
+
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
             tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
