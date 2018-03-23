@@ -386,9 +386,6 @@ module.exports = class AnswerDAO extends Base {
         scope = scope || 'survey'; // eslint-disable-line no-param-reassign
         const where = {};
 
-        // if (sectionIds.length && questionIds.length) {
-        //     SurveyError.reject('surveyBothQuestionsSectionsSpecified');
-        // }
         if (ids) {
             where.id = { $in: ids };
         }
