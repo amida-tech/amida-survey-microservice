@@ -32,3 +32,7 @@ tmp/*
 #logging
 combined.log
 yarn-error.log
+
+#csv
+*.csv
+
