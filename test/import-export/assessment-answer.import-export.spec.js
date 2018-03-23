@@ -110,7 +110,8 @@ describe('export assessment answers unit', function answerAssessmentImportExport
                 .then((answers) => {
                     const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
                     expected.forEach((e, indx) => {
-                        expect(answers[indx]).to.deep.equal(e);
+                        expect(answers[indx]).to.deep.equal(Object.assign({}, e, { questionIndex: answers[indx].questionIndex }));
+                        expect(answers[indx].questionIndex).to.be.a('number');
                     });
                 });
         };
