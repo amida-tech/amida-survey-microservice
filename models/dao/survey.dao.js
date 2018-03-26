@@ -319,9 +319,9 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, userId, transaction) {
-        if(survey.sections && !survey.sections.length) {
+        if (survey.sections && !survey.sections.length) {
             return SurveyError.reject('needAtLeastOneEmptySection');
-        } else if(!survey.questions && !survey.sections) {
+        } else if (!survey.questions && !survey.sections) {
             survey.questions = [];
         }
 
