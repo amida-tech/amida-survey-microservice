@@ -3117,6 +3117,10 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
                 }
             },
             "maxProperties": 2
@@ -3215,6 +3219,10 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
                 }
             },
             "minProperties": 1,
@@ -3297,6 +3305,10 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type":"string",
+                    "pattern": "^\\d{5}$"
                 }
             },
             "minProperties": 1,

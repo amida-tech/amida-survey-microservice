@@ -69,7 +69,7 @@ describe('answer unit', () => {
             }],
         };
         return models.answer.createAnswers(input)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('answerAnswerNotUnderstood', 'invalidValue'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('choicesAnswerNotProvidedForChoicesQuestion'));
     });
 
     it('error: multiple answer properties', () => {
@@ -85,7 +85,7 @@ describe('answer unit', () => {
             }],
         };
         return models.answer.createAnswers(input)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('answerMultipleTypeAnswers', 'invalidValue0, invalidValue1'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('choicesAnswerNotProvidedForChoicesQuestion'));
     });
 
     const listAnswersFn = function (userIndex, surveyIndex) {
