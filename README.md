@@ -50,7 +50,7 @@ Use `export NODE_ENV=development` (or `production` or `test`) to set node enviro
 
 Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
-A minimal sample `.env` file is below.  Change according to your database
+A minimal sample `.env` file is below.  Change according to your database. `.env.example` in the root directory can be used (`cp .env.example .env`)
 ```
 SURVEY_SERVICE_DB_NAME=surveyService
 SURVEY_SERVICE_DB_USER=postgres
