@@ -23,8 +23,6 @@ const section = require('./section.model');
 const sectionText = require('./section-text.model');
 const surveySection = require('./survey-section.model');
 const surveySectionQuestion = require('./survey-section-question.model');
-const smtpText = require('./smtp-text.model');
-const smtp = require('./smtp.model');
 const userSurvey = require('./user-survey.model');
 const assessment = require('./assessment.model');
 const assessmentSurvey = require('./assessment-survey.model');
@@ -33,12 +31,10 @@ const userAssessmentAnswer = require('./user-assessment-answer.model');
 const questionIdentifier = require('./question-identifier.model');
 const answerIdentifier = require('./answer-identifier.model');
 const surveyIdentifier = require('./survey-identifier.model');
-const stagingBhrGap = require('./staging-bhr-gap.model');
 const userAudit = require('./user-audit.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const file = require('./file.model');
-const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
 const answerCommentReason = require('./answer-comment-reason.model');
 const answerComment = require('./answer-comment.model');
@@ -94,8 +90,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const SectionText = sectionText(sequelize, Sequelize, schema);
     const SurveySection = surveySection(sequelize, Sequelize, schema);
     const SurveySectionQuestion = surveySectionQuestion(sequelize, Sequelize, schema);
-    const SmtpText = smtpText(sequelize, Sequelize, schema);
-    const Smtp = smtp(sequelize, Sequelize, schema);
     const UserSurvey = userSurvey(sequelize, Sequelize, schema);
     const Assessment = assessment(sequelize, Sequelize, schema);
     const AssessmentSurvey = assessmentSurvey(sequelize, Sequelize, schema);
@@ -104,12 +98,10 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const QuestionIdentifier = questionIdentifier(sequelize, Sequelize, schema);
     const AnswerIdentifier = answerIdentifier(sequelize, Sequelize, schema);
     const SurveyIdentifier = surveyIdentifier(sequelize, Sequelize, schema);
-    const StagingBhrGap = stagingBhrGap(sequelize, Sequelize, schema);
     const UserAudit = userAudit(sequelize, Sequelize, schema);
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const File = file(sequelize, Sequelize, schema);
-    const SmtpType = smtpType(sequelize, Sequelize, schema);
     const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
     const AnswerCommentReason = answerCommentReason(sequelize, Sequelize, schema);
     const AnswerComment = answerComment(sequelize, Sequelize, schema);
@@ -189,8 +181,6 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Survey,
         SurveyText,
         Language,
-        SmtpText,
-        Smtp,
         UserSurvey,
         Assessment,
         AssessmentSurvey,
@@ -200,13 +190,11 @@ const defineTables = function (sequelize, Sequelize, schema) {
         AnswerIdentifier,
         SurveyIdentifier,
         ChoiceSet,
-        StagingBhrGap,
         UserAudit,
         Filter,
         FilterAnswer,
         File,
         AssessmentAnswer,
-        SmtpType,
         AnswerCommentReason,
         AnswerComment,
         schema,

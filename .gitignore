@@ -31,3 +31,6 @@ tmp/*
 
 #logging
 combined.log
+
+#csv
+*.csv

@@ -87,7 +87,6 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const expected = Object.assign({}, currExpected);
         const questionAnswer = expected.answers.find(answer => answer.questionId === options.questionId);
         const answer = questionAnswer.answer;
-
         if (answer) {
             const question = hxQuestion.serverById(questionAnswer.questionId);
             const assessment = hxAssessment.idIndex[expected.ownerId + 1];
@@ -119,7 +118,6 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
             } else if (answer.choice) {
                 const choiceMapInput = question.choices.map(r => [r.id, r.text]);
                 const choiceTextMap = new Map(choiceMapInput);
-
                 expected.choiceText = choiceTextMap.get(answer.choice) || '';
                 expected.value = answer.textValue || '';
             } else if (answer.textValue) {
@@ -134,6 +132,8 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
                 expected.value = String(answer.dateValue);
             } else if (answer.choices) {
                 return this.formatChoicesAnswerJSON(expected, answer, options);
+            } else if (answer.zipcodeValue) {
+                expected.value = answer.zipcodeValue;
             } else if (!answer.choices && !answer.choices) {
                 expected.choiceText = '';
             }

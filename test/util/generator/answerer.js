@@ -24,7 +24,7 @@ module.exports = class Answerer {
     zip() {
         const answerIndex = this.answerIndex;
         const zip = ['20850', '53727', '76333', '74747'][answerIndex % 4];
-        return { textValue: zip };
+        return { zipcodeValue: zip };
     }
 
     bloodPressure() {
