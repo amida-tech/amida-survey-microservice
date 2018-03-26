@@ -198,8 +198,6 @@ This is a English first design where all logical records are assumed to be in En
 
 - `section_text`: This table stores translatable logical section fields `text` and `description` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `ection_id` column links each record to `question` table.
 
-- `staging_bhr_gap`: This table is used during importing of data.
-
 - `survey`: Each record in this table represents a survey.  Surveys can be deleted. Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first survey in the group.  Questions in surveys are represented using another table `survey_question`.  Only actual data column is `meta` which is designed to store client settings.
 
 - `survey_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for surveys (columns `survey_id`).
