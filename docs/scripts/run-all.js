@@ -18,8 +18,6 @@ const surveys02 = require('./surveys-02');
 const surveys03 = require('./surveys-03');
 const surveys04 = require('./surveys-04');
 const surveys05 = require('./surveys-05');
-const smtp01 = require('./smtp-01');
-const smtp02 = require('./smtp-02');
 const languages01 = require('./languages-01');
 const languages02 = require('./languages-02');
 const languages03 = require('./languages-03');
@@ -61,8 +59,6 @@ models.sequelize.sync({ force: true })
     .then(userSurvey04)
     .then(userSurvey05)
     .then(authentication01)
-    .then(smtp01)
-    .then(smtp02)
     .then(languages01)
     .then(languages02)
     .then(languages03)

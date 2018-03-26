@@ -126,12 +126,6 @@ const translator = {
             });
         });
     },
-    translateSmtp(smtp, language) {
-        return {
-            subject: this.translate(smtp.subject, language),
-            content: this.translate(smtp.content, language),
-        };
-    },
 };
 
 module.exports = translator;
