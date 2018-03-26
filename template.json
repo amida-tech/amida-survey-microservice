@@ -84,10 +84,6 @@
     "destination": "/tmp/app/"
   },{
     "type": "file",
-    "source": "./create-smtp.js",
-    "destination": "/tmp/app/"
-  },{
-    "type": "file",
     "source": "./gruntfile.js",
     "destination": "/tmp/app/"
   },{
