@@ -21,8 +21,6 @@
 	"answerToBeSkippedAnswered": "Conditionally to be skipped questions are answered.",
 	"answerQxNotInSurvey": "Invalid question ids for answers.",
 	"qxReplaceWhenActiveSurveys": "Question in active surveys cannot be removed or replaced.",
-	"smtpNotSpecified": "Smtp specifications are not specified.",
-	"smtpTextNotSpecified": "Email content and/or subject not specified for reset token.",
 	"invalidOrExpiredPWToken": "Password reset token is invalid or has expired.",
 	"invalidEmail": "Email is invalid.",
 	"authenticationError": "Authentication error.",

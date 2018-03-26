@@ -50,7 +50,7 @@ Use `export NODE_ENV=development` (or `production` or `test`) to set node enviro
 
 Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
-A minimal sample `.env` file is below.  Change according to your database
+A minimal sample `.env` file is below.  Change according to your database. `.env.example` in the root directory can be used (`cp .env.example .env`)
 ```
 SURVEY_SERVICE_DB_NAME=surveyService
 SURVEY_SERVICE_DB_USER=postgres
@@ -87,7 +87,7 @@ A list of full environment variable settings is below.  They can be either manua
 - SURVEY_SERVICE_DB_SSL: Use secure connections with SSL.
 - SURVEY_SERVICE_SUPER_USER_USERNAME: Super user username (super).
 - SURVEY_SERVICE_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
-- SURVEY_SERVICE_SUPER_USER_EMAIL: Super user email (rr_demo@amida.com).
+- SURVEY_SERVICE_SUPER_USER_EMAIL: Super user email (survey_demo@amida.com).
 - SURVEY_SERVICE_LOGGING_LEVEL: Logging level (info).
 - SURVEY_SERVICE_CRYPT_HASHROUNDS: Number of rounds for hashing user passwords (10).
 - SURVEY_SERVICE_CRYPT_RESET_TOKEN_LENGTH: Length for reset password token (20).
@@ -198,12 +198,6 @@ This is a English first design where all logical records are assumed to be in En
 
 - `section_text`: This table stores translatable logical section fields `text` and `description` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `ection_id` column links each record to `question` table.
 
-- `smtp`: This table stores email service specifics that can be used for various services (column `type`) that require outgoing email such as password reset functionality. The subject and content of password reset emails are stored in `smtp_text`.
-
-- `smtp_text`: This table stores translatable columns `content` and `subject` for outgoing email for various services (column `type`).
-
-- `smtp_type`: This table defines types of services that require outgoing emails.
-
 - `staging_bhr_gap`: This table is used during importing of data.
 
 - `survey`: Each record in this table represents a survey.  Surveys can be deleted. Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first survey in the group.  Questions in surveys are represented using another table `survey_question`.  Only actual data column is `meta` which is designed to store client settings.
@@ -221,9 +215,9 @@ This is a English first design where all logical records are assumed to be in En
 - `survey_text`: This table stores translatable columns `name` and `description`. `language` is also a column and each record has a value for `name` in that language. `survey_id` column links each record to `survey` table.
 
 
-- `rr_section`: Each record in this tables represents a section in a survey. Content of sections are represented as local indices of questions in column `indices`.  The name of the section is stored in `section_text` table.
+- `survey_section`: Each record in this tables represents a section in a survey. Content of sections are represented as local indices of questions in column `indices`.  The name of the section is stored in `section_text` table.
 
-- `section_text`: This table stores translatable column `name` which stores section name. `language` is also a column and each record has a value for `name` in that language.  `section_id` column links each record to `rr_sectionnc` table.
+- `section_text`: This table stores translatable column `name` which stores section name. `language` is also a column and each record has a value for `name` in that language.  `section_id` column links each record to `survey_sectionnc` table.
 
 - `survey_section`: This table links surveys (column `survey_id`) to sections (column `section_id`).  Order of sections preserved using column `line`.
 
