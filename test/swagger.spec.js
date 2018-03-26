@@ -17,7 +17,7 @@ const spec = st.specs.v2;
 
 describe('swagger validations', () => {
     const objectTypes = [
-        'newSurvey', 'newQuestion', 'language', 'newUser',
+        'newSurvey', 'newQuestion', 'language'
     ];
 
     const testValidFn = function (objectType, data) {
