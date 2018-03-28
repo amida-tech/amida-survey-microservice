@@ -101,31 +101,6 @@ const translator = {
         const descriptions = surveys.filter(survey => survey.description).map(survey => survey.description);
         this.isTranslated([...texts, ...descriptions], language);
     },
-    translateConsentType(consentType, language) {
-        const result = _.pick(consentType, ['id', 'title']);
-        result.title = this.translate(result.title, language);
-        return result;
-    },
-    translateConsentDocument(consentDocument, language) {
-        const result = _.pick(consentDocument, ['id', 'content', 'updateComment']);
-        result.content = this.translate(result.content, language);
-        if (result.updateComment) {
-            result.updateComment = this.translate(result.updateComment, language);
-        }
-        return result;
-    },
-    isConsentDocumentTranslated(consentDocument, language) {
-        const languageText = `(${language})`;
-        consentDocument.sections.forEach((section) => {
-            ['title', 'content', 'updateComment'].forEach((property) => {
-                const text = section[property];
-                if (text) {
-                    const location = text.indexOf(languageText);
-                    expect(location).to.be.above(0, `is not translated to ${language}`);
-                }
-            });
-        });
-    },
 };
 
 module.exports = translator;

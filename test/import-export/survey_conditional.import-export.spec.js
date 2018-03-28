@@ -59,7 +59,6 @@ describe('survey import-export conditional unit', function surveyImportExportUni
     let questionCsvContent;
     let sectionCsvContent;
     let surveyCsvContent;
-    let rulesCsvConsent;
 
     it('export questions to csv', function exportQuestionsToCSV() {
         return models.question.exportQuestions()
@@ -74,11 +73,6 @@ describe('survey import-export conditional unit', function surveyImportExportUni
     it('export surveys to csv', function exportSurveysToCSV() {
         return models.survey.exportSurveys()
             .then((result) => { surveyCsvContent = result; });
-    });
-
-    it('export rules to csv', function exportRulesToCSV() {
-        return models.answerRule.exportAnswerRules()
-            .then((result) => { rulesCsvConsent = result; });
     });
 
     it('reset database', shared.setUpFn());
@@ -107,20 +101,12 @@ describe('survey import-export conditional unit', function surveyImportExportUni
             .then((result) => { idMap = result; });
     });
 
-    let ruleIdMap;
-
-    it('import rules csv into db', function importRulesFromCSV() {
-        const stream = intoStream(rulesCsvConsent);
-        return models.answerRule.importAnswerRules(stream, { questionIdMap, sectionIdMap, surveyIdMap: idMap })
-            .then((result) => { ruleIdMap = result; });
-    });
-
     it('list imported surveys and verify', function listImportedAndVerify() {
         return models.survey.listSurveys({ scope: 'export' })
             .then((list) => {
                 let expected = hxSurvey.listServersByScope({ scope: 'export' });
                 expected = _.cloneDeep(expected);
-                surveyCommon.updateIds(expected, idMap, questionIdMap, sectionIdMap, ruleIdMap);
+                surveyCommon.updateIds(expected, idMap, questionIdMap, sectionIdMap);
                 expect(list.length).to.equal(expected.length);
                 list.forEach((actual, index) => {
                     expect(actual).to.deep.equal(expected[index]);

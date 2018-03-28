@@ -13,8 +13,8 @@ const appgen = require('../../app-generator');
 const models = require('../../models');
 const SurveyError = require('../../lib/survey-error');
 const Generator = require('./generator');
-const translator = require('./translator');
-const comparator = require('./comparator');
+// const translator = require('./translator');
+// const comparator = require('./comparator');
 
 const expect = chai.expect;
 const unknownError = new SurveyError('unknown');
