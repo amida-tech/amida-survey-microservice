@@ -559,9 +559,9 @@ Server responds with all the survey details and in particular its questions
 ```js
 {
     "id": 1,
-    meta: {
-        displayAsWizard: true,
-        saveProgress: false
+    "meta": {
+        "displayAsWizard": true,
+        "saveProgress": false
     },
     "name": "Example",
     "questions": [
@@ -735,6 +735,7 @@ Server responds with answers in the the response body and the format is identica
 ```
 
 It is possible to show a survey with its answers using resource `/answered-surveys/{id}`
+
 
 ```js
 agent
@@ -1133,6 +1134,39 @@ Server responds with the answered survey and the status in the body
 }
 ```
 
+Comments can also be included with answers:
+
+```js
+const answers = [{
+    questionId: 1,
+    answer: { textValue: 'Try another medicine' }
+}, {
+    questionId: 4,
+    answer: {
+        choices: [{
+            id: 5,
+            boolValue: true
+        }, {
+            id: 8,
+            textValue: 'Basketball'
+        }]
+    },
+
+}];
+
+const comment = {
+	reason: "agree",
+	text: "This answer is true"
+}
+
+agent
+    .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
+    .send({ answers, comment })
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
 
@@ -1490,6 +1524,240 @@ responds with the Turkish translation in the body
 ```
 
 Note that all questions that are not yet translated is shown in English.
+
+##### Assessment
+Assessments can be seen as an instance of one or several surveys. This can be used to track answers to survey(s) over time, or to even copy one user's answers into another assessment to be edited by further users. An assessment is assigned survey(s) that determines its questions set, as well as a group, and a stage, and can be created with a POST of the following format:
+
+
+```js
+const assessment = {
+  "name": "Example Assessment",
+  "stage": 0,
+  "surveys": [
+    {
+      "id": 0
+    }
+  ],
+  "group": "Bermuda"
+}
+
+agent
+    .post('http://localhost:9005/api/v1.0/assessments')
+    .send(assessment)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+
+```
+
+A list of available assessments can be retrieved by a GET to /assessments. For example:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessments').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4));
+    });
+```
+could return a JSON object like this:
+
+```js
+
+	[{
+        "id": 1,
+        "name": "name_0",
+        "stage": 0,
+        "group": "0"
+    },
+    {
+        "id": 2,
+        "name": "name_0",
+        "stage": 1,
+        "group": "0"
+    },
+    {
+        "id": 3,
+        "name": "name_0",
+        "stage": 2,
+        "group": "0"
+    },
+    {
+        "id": 4,
+        "name": "name_0",
+        "stage": 3,
+        "group": "0"
+    },
+    {
+        "id": 5,
+        "name": "name_1",
+        "stage": 0,
+        "group": "1"
+    },
+    {
+        "id": 6,
+        "name": "name_1",
+        "stage": 1,
+        "group": "1"
+    },
+    {
+        "id": 7,
+        "name": "name_1",
+        "stage": 2,
+        "group": "1"
+    }]
+```
+One can also retrieve an assessment by ID, via assessments/{id}:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessments/1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4));
+    });
+```
+server responds with a single assessment:
+
+```js
+{
+    "id": 1,
+    "name": "name_0",
+    "stage": 0,
+    "group": "0",
+    "surveys": [
+        {
+            "id": 1
+        }
+    ]
+}
+```
+Note that assessments can be assigned **and** re-assigned with a post to /user-assessments as follows:
+
+
+```js
+const userAssessment = {
+  "userId": 0,
+  "assessmentId": 0
+}
+
+agent.post('http://localhost:9005/api/v1.0/assessments').send(userAssessment).then(res => {
+        console.log(res.status);  // 204
+    });
+
+```
+
+##### Assessment-Answers
+Assessment-answers is a unit comprised of an assessment and a user's answers along with a status of progress that is either 'new', 'in-progress', or 'complete'. Assessment answers can be created via a post to the assessment-answers/{id} endpoint with the id of the assessment to be answered, in a similar manner to posting answers to user-survey/answers/{id} or to /survey.
+
+```js
+const answers = [{
+    questionId: 1,
+    answer: { textValue: 'Try another medicine' }
+}, {
+    questionId: 4,
+    answer: {
+        choices: [{
+            id: 5,
+            boolValue: true
+        }, {
+            id: 8,
+            textValue: 'Basketball'
+        }]
+    },
+
+}];
+
+agent.post('http://localhost:9005/api/v1.0/assessment-answers/1')
+.send(answers)
+.then(res => {
+        console.log(res.status);  // 204
+    });
+
+```
+
+They can be retrieved via a get request to the same endpoint, and the server response is similar to the user-survey/{id}, however it does not provide the survey questions rather a status and a list of answers for each survey.
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
+Server responds with the assessment-answers and the status in the body
+
+```js
+{
+    "status": "completed",
+    "answers": [
+        {
+            "questionId": 9,
+            "language": "en",
+            "answer": {
+                "floatValue": 0.1
+            }
+        },
+        {
+            "questionId": 10,
+            "language": "en",
+            "meta": {
+                "prop_1": "value_1"
+            },
+            "answer": {
+                "dateValue": "1971-02-11"
+            }
+        },
+        {
+            "questionId": 11,
+            "language": "en",
+            "answer": {
+                "yearValue": "1982"
+            }
+        },
+        {
+            "questionId": 12,
+            "language": "en",
+            "answer": {
+                "monthValue": "04"
+            }
+        }
+	]
+}
+```
+To receive only the answers, call /assessment-answers/1/answers.
+
+It is possible to export assessment-answers in csv format by survey id and/or section id as well as question id via /assessment-answers/csv. For example:
+
+with questionId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1&question-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+With sectionId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1&section-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
+With only surveyId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+It is also possible to export assessment-answers in a flat, JSON format which corresponds to the CSV file by calling /assessment-answers/export. This endpoint allows for an optional query parameter to include question comments. This endpoint can be accessed like so:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/export?survey-id=1&includeComments=true').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
 
 
 ##### Language Specification

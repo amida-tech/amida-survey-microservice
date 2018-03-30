@@ -62,12 +62,7 @@ SURVEY_SERVICE_DB_POOL_MAX=5
 SURVEY_SERVICE_DB_POOL_MIN=0
 SURVEY_SERVICE_DB_POOL_IDLE=10000
 SURVEY_SERVICE_LOGGING_LEVEL=emerg
-SURVEY_SERVICE_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
-SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000
-SURVEY_SERVICE_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
-SURVEY_SERVICE_ZIP_API_KEY=xxx
-SURVEY_SERVICE_ZIP_DISTANCE=50
-SURVEY_SERVICE_ZIP_UNITS=mile
+SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000\
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.

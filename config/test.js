@@ -15,11 +15,4 @@ module.exports = {
     },
     tmpDirectory: path.join(__dirname, '../test/generated'),
     cohortBucket: 'surveyService',
-    constantContact: {
-        baseApiUrl: 'http://turnip.test',
-        token: 'turnip',
-        apiKey: 'turnip api',
-        secret: 'secret turnip',
-        listId: 42,
-    },
 };
