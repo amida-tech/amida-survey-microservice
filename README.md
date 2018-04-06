@@ -62,12 +62,7 @@ SURVEY_SERVICE_DB_POOL_MAX=5
 SURVEY_SERVICE_DB_POOL_MIN=0
 SURVEY_SERVICE_DB_POOL_IDLE=10000
 SURVEY_SERVICE_LOGGING_LEVEL=emerg
-SURVEY_SERVICE_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
-SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000
-SURVEY_SERVICE_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
-SURVEY_SERVICE_ZIP_API_KEY=xxx
-SURVEY_SERVICE_ZIP_DISTANCE=50
-SURVEY_SERVICE_ZIP_UNITS=mile
+SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000\
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
@@ -197,8 +192,6 @@ This is a English first design where all logical records are assumed to be in En
 - `section`: This stores sections that can be used in surveys to group questions.
 
 - `section_text`: This table stores translatable logical section fields `text` and `description` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `ection_id` column links each record to `question` table.
-
-- `staging_bhr_gap`: This table is used during importing of data.
 
 - `survey`: Each record in this table represents a survey.  Surveys can be deleted. Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first survey in the group.  Questions in surveys are represented using another table `survey_question`.  Only actual data column is `meta` which is designed to store client settings.
 

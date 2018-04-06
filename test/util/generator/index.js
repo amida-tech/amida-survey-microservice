@@ -19,10 +19,6 @@ class Generator {
         this.surveyGenerator = generators.surveyGenerator || new SurveyGenerator(this.questionGenerator);
 
         this.userIndex = -1;
-        this.consentTypeIndex = -1;
-        this.consentDocumentIndex = -1;
-        this.consentTypeAdded = {};
-        this.consentIndex = -1;
         this.languageIndex = -1;
         this.assessmentIndex = -1;
         this.choiceSetIndex = 0;
@@ -100,46 +96,6 @@ class Generator {
         return this.answerQuestions(questions);
     }
 
-    newConsentType() {
-        this.consentTypeIndex += 1;
-        const index = this.consentTypeIndex;
-        return {
-            name: `name_${index}`,
-            title: `title_${index}`,
-            type: `type_${index}`,
-        };
-    }
-
-    newConsentDocument(override) {
-        if (!override.typeId) {
-            throw new Error('typeId is required');
-        }
-        this.consentDocumentIndex += 1;
-        const index = this.consentDocumentIndex;
-        const result = {
-            content: `Sample consent section content ${index}`,
-        };
-        const count = this.consentTypeAdded[override.typeId] || 0;
-        if (count) {
-            result.updateComment = `Update comment ${count}`;
-        }
-        this.consentTypeAdded[override.typeId] = count + 1;
-        Object.assign(result, override);
-        return result;
-    }
-
-    newConsent(override) {
-        if (!override.sections) {
-            throw new Error('sections is required.');
-        }
-        this.consentIndex += 1;
-        const index = this.consentIndex;
-        const result = {
-            name: `name_${index}`,
-        };
-        Object.assign(result, override);
-        return result;
-    }
 
     newAssessment(surveyIds) {
         this.assessmentIndex += 1;

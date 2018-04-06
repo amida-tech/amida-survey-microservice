@@ -84,11 +84,6 @@ const main = {
     },
     clientBaseUrl: process.env.SURVEY_SERVICE_CLIENT_BASE_URL,
     tmpDirectory: process.env.SURVEY_SERVICE_TMP_DIRECTORY,
-    zipCodeApi: {
-        baseUrl: process.env.SURVEY_SERVICE_ZIP_BASE_URL,
-        apiKey: process.env.SURVEY_SERVICE_ZIP_API_KEY,
-        distance: process.env.SURVEY_SERVICE_ZIP_DISTANCE,
-    },
 };
 
 const configBase = _.merge(all, main);

@@ -3,9 +3,7 @@
 /* eslint func-names: 0, no-console: 0, no-param-reassign: 0, max-len: 0 */
 
 const models = require('../../models');
-
-const authentication01 = require('./authentication-01');
-const authentication03 = require('./authentication-03');
+    
 const adminQuestion01 = require('./admin-question-01');
 const adminQuestion02 = require('./admin-question-02');
 const adminQuestion03 = require('./admin-question-03');
@@ -37,13 +35,11 @@ const locals = {};
 
 models.sequelize.sync({ force: true })
     .then(() => locals)
-    .then(authentication01)
     .then(adminQuestion01)
     .then(adminQuestion02)
     .then(adminQuestion03)
     .then(adminQuestion04)
     .then(adminSurvey01)
-    .then(authentication01)
     .then(questions01)
     .then(questions02)
     .then(surveys01)
@@ -51,14 +47,12 @@ models.sequelize.sync({ force: true })
     .then(surveys03)
     .then(surveys04)
     .then(surveys05)
-    .then(authentication03)
     .then(userSurvey01)
     .then(userSurvey02)
     .then(userSurvey03)
     .then(userSurvey01)
     .then(userSurvey04)
     .then(userSurvey05)
-    .then(authentication01)
     .then(languages01)
     .then(languages02)
     .then(languages03)
