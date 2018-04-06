@@ -39,7 +39,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
     const answer = new AnswerDAO(db, {
-        surveyQuestion, answerRule, generator: daosGenerator,
+        surveyQuestion, surveySection, answerRule, generator: daosGenerator,
     });
     const survey = new SurveyDAO(db, {
         answer,

@@ -335,42 +335,89 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const surveyId = options.surveyId;
         const questionId = options.questionId;
         const includeComments = options.includeComments;
-        // TODO: const sectionId = options.sectionId;
+        const sectionId = options.sectionId;
+        let questionsPromise;
         // TODO: const userIds = options.userIds
+
+        if (sectionId && questionId) {
+            return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
+        }
+
         if (!surveyId) {
-            SurveyError.reject('surveyMustBeSpecified');
+            return SurveyError.reject('surveyMustBeSpecified');
+        }
+
+        if (sectionId) {
+            questionsPromise =
+            this.db.SurveySection.findOne({
+                where: { sectionId, surveyId },
+                attributes: ['id'],
+                raw: true,
+            }).then((section) => {
+                if (section) {
+                    return this.db.SurveySectionQuestion.findAll({
+                        where: { surveySectionId: sectionId },
+                        attributes: ['questionId', 'line'],
+                        raw: true,
+                        order: 'line',
+                    });
+                }
+                return new Promise((res) => {
+                    res([]);
+                });
+            });
+        } else if (questionId) {
+            questionsPromise = this.db.SurveyQuestion.findAll({
+                where: { surveyId, questionId },
+                raw: true,
+                attributes: ['questionId', 'line'],
+            });
+        } else {
+            questionsPromise = this.db.SurveyQuestion.findAll({
+                where: { surveyId },
+                raw: true,
+                attributes: ['questionId', 'line'],
+            });
         }
 
 
-        return this.db.SurveyQuestion.findAll({
-            where: { surveyId },
-            raw: true,
-            attributes: ['questionId', 'line'],
-        }).then(surveyQuestions => this.db.SurveyText.findAll({
+        return questionsPromise.then(questions => this.db.SurveyText.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['name', 'surveyId'],
+
         }).then(surveys => this.db.AssessmentSurvey.findAll({
             where: { survey_id: surveyId },
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
-            let questionIds = [questionId];
-            if (!questionId && questionId !== 0) {
-                questionIds = surveyQuestions.map(r => r.questionId);
+            if (!surveys.length) {
+                return SurveyError.reject('surveyNotFound');
             }
-            const questionLines = surveyQuestions.map(r => [r.questionId, r.line]);
+            if (!questions.length) {
+                if (sectionId) {
+                    return SurveyError.reject('sectionNotFound');
+                }
+                return SurveyError.reject('qxNotFound');
+            }
+            let questionIds = [questionId];
+
+            if (sectionId !== undefined || questionId === undefined) {
+                questionIds = questions.map(r => r.questionId);
+            }
+            const questionLines = questions.map(r => [r.questionId, r.line]);
             const questionLinesMap = new Map(questionLines);
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
 
             const newOptions = {
-                surveyId,
                 questionIds,
+                surveyId,
                 assessmentIds,
                 scope: 'export',
                 meta: true,
                 createdAt: true,
             };
+
             return this.answer.listAnswers(newOptions)
                 .then(answers => this.db.Assessment.findAll({
                     where: { id: { $in: assessmentIds } },
@@ -406,9 +453,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                         `0${createdAtDate.getMonth() + 1}`;
                         const year = createdAtDate.getFullYear();
                         const day = createdAtDate.getDate();
-                        const date = `${year}-${
-                                    month}-${
-                                    day}`;
+                        const date = `${year}-${month}-${day}`;
 
                         const weight = a.questionChoiceId !== undefined ?
                         questionChoices.find(questionChoice =>
@@ -468,24 +513,25 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                                const finalAnswers =
                                                    orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                                if (questionId || questionId === 0) {
-                                                   return _.sortBy(finalAnswers, a => a.group);
+                                                   return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                                }
 
                                                return _.sortBy(finalAnswers, [
                                                    a => a.group,
                                                    a => questionLinesMap.get(a.questionId),
+                                                   a => a.choiceText,
                                                ]);
                                            });
                                 }
                                 const finalAnswers =
                                         orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
                                 if (questionId || questionId === 0) {
-                                    return _.sortBy(finalAnswers, a => a.group);
+                                    return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                 }
-
                                 return _.sortBy(finalAnswers, [
                                     a => a.group,
                                     a => questionLinesMap.get(a.questionId),
+                                    a => a.choiceText,
                                 ]);
                             });
                     } else if (includeComments) {
@@ -494,21 +540,26 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                    const finalAnswers =
                                        orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                    if (questionId || questionId === 0) {
-                                       return _.sortBy(finalAnswers, a => a.group);
+                                       return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                    }
 
                                    return _.sortBy(finalAnswers, [
                                        a => a.group,
                                        a => questionLinesMap.get(a.questionId),
+                                       a => a.choiceText,
                                    ]);
                                });
                     }
                     const finalAnswers =
-                            orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
+                                orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
 
+                    if (questionId || questionId === 0) {
+                        return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
+                    }
                     return _.sortBy(finalAnswers, [
                         a => a.group,
                         a => questionLinesMap.get(a.questionId),
+                        a => a.choiceText,
                     ]);
                 })))));
         })));

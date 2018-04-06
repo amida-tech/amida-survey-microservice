@@ -211,14 +211,27 @@ const SpecTests = class SurveySpecTests {
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const survey = generator.newSurveyQuestionIds(questionIds, options);
+
             return models.survey.createSurvey(survey)
                 .then((id) => {
                     const fullSurvey = _.cloneDeep(survey);
-                    fullSurvey.questions = questionIndices.map((qxIndex, index) => {
-                        const question = Object.assign({}, survey.questions[index]);
-                        Object.assign(question, hxQuestion.server(qxIndex));
-                        return question;
-                    });
+                    // TODO: un-hardcode sectionIds and use function map section Ids
+                    if (options.noSection === false) {
+                        survey.sections.forEach((section, indx) => {
+                            const questions = section.questions;
+                            fullSurvey.sections[indx].questions = questions.map((surveyQuestion) => {
+                                const fullSurveyQuestion = Object.assign({}, surveyQuestion);
+                                Object.assign(fullSurveyQuestion, hxQuestion.server(surveyQuestion.id - 1));
+                                return fullSurveyQuestion;
+                            });
+                        });
+                    } else {
+                        fullSurvey.questions = questionIndices.map((qxIndex, index) => {
+                            const question = Object.assign({}, survey.questions[index]);
+                            Object.assign(question, hxQuestion.server(qxIndex));
+                            return question;
+                        });
+                    }
                     hxSurvey.push(fullSurvey, { id });
                 });
         };
@@ -320,11 +333,22 @@ const IntegrationTests = class SurveyIntegrationTests {
             return surveySuperTest.post('/surveys', survey, 201)
                 .then((res) => {
                     const fullSurvey = _.cloneDeep(survey);
-                    fullSurvey.questions = questionIndices.map((qxIndex, index) => {
-                        const question = Object.assign({}, survey.questions[index]);
-                        Object.assign(question, hxQuestion.server(qxIndex));
-                        return question;
-                    });
+                    if (options.noSection === false) {
+                        survey.sections.forEach((section, indx) => {
+                            const questions = section.questions;
+                            fullSurvey.sections[indx].questions = questions.map((surveyQuestion) => {
+                                const fullSurveyQuestion = Object.assign({}, surveyQuestion);
+                                Object.assign(fullSurveyQuestion, hxQuestion.server(surveyQuestion.id - 1));
+                                return fullSurveyQuestion;
+                            });
+                        });
+                    } else {
+                        fullSurvey.questions = questionIndices.map((qxIndex, index) => {
+                            const question = Object.assign({}, survey.questions[index]);
+                            Object.assign(question, hxQuestion.server(qxIndex));
+                            return question;
+                        });
+                    }
                     hxSurvey.push(fullSurvey, res.body);
                 });
         };

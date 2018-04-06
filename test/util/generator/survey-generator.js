@@ -14,10 +14,11 @@ const sectionGenerators = {
         if (count < 8) {
             throw new Error('Not enough questions for sections.');
         }
+
         const sections = Array(3);
-        sections[0] = { name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
-        sections[1] = { name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
-        sections[2] = { name: 'section_2', description: 'section_2_description', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        sections[0] = { id: 1, name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { id: 2, name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { id: 3, name: 'section_2', description: 'section_2_description', questions: _.rangeRight(6, count).map(index => surveyQuestions[index]) };
         return sections;
     },
     oneLevelMissingName(surveyQuestions) {
@@ -132,13 +133,29 @@ module.exports = class SurveyGenerator {
         const name = `name_${surveyIndex}`;
         const result = { name };
 
-        result.questions = questionIds.map((id) => {
-            let required = Boolean(surveyIndex % 2);
-            if (options.noneRequired) {
-                required = false;
-            }
-            return { id, required };
-        });
+        if (options.noSection === false) {
+            const sections = sectionGenerators.oneLevel(questionIds);
+
+            sections.forEach((section) => {
+                section.questions = section.questions.map((id) => {
+                    let required = Boolean(surveyIndex % 2);
+                    if (options.noneRequired) {
+                        required = false;
+                    }
+                    return { id, required };
+                });
+            });
+            result.sections = sections;
+        } else {
+            result.questions = questionIds.map((id) => {
+                let required = Boolean(surveyIndex % 2);
+                if (options.noneRequired) {
+                    required = false;
+                }
+                return { id, required };
+            });
+        }
+
         return result;
     }
 };

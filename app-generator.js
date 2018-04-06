@@ -7,6 +7,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+const actuator = require('express-actuator');
 const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
 const jwt = require('jsonwebtoken');
@@ -19,6 +20,7 @@ const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
 
+const basePath = swaggerJson.basePath;
 const invalidAuth = {
     message: 'Invalid authorization',
     code: 'invalid_auth',
@@ -236,6 +238,8 @@ exports.newExpress = function newExpress(options = {}) {
     app.enable('trust proxy');
     app.use(passport.initialize());
 
+    // set up express actuator
+    app.use(actuator(`${basePath}/actuator`));
 
     return app;
 };

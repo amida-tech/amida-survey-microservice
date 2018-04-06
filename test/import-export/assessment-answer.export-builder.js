@@ -14,39 +14,18 @@ const filterDuplicateAssessmentAnswers = function filterDuplicates(duplicates) {
     return expected;
 };
 
-const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected, includeComments) {
+const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected, options) {
+    const includeComments = options.includeComments;
     return expected.map((e) => {
-        if (includeComments) {
-            return Object.assign({}, {
-                surveyId: e.surveyId,
-                questionId: e.questionId,
-                questionType: e.questionType,
-                assessmentId: e.assessmentId,
-                userId: e.userId,
-                meta: e.meta,
-                value: e.value,
-                group: e.group,
-                stage: e.stage,
-                surveyName: e.surveyName,
-                weight: e.weight,
-                date: e.date,
-                questionText: e.questionText,
-                questionInstruction: e.questionInstruction,
-                questionIndex: e.questionIndex,
-                choiceText: e.choiceText,
-                choiceType: e.choiceType || '',
-                code: e.code,
-                comment: e.comment || {},
-                commentHistory: e.commentHistory || [],
-            });
-        }
-        return Object.assign({}, {
+        const choices = !!e.choiceText;
+        const includeMeta = !choices || (choices && e.choiceIndex === 0);
+        const obj = Object.assign({}, {
             surveyId: e.surveyId,
             questionId: e.questionId,
             questionType: e.questionType,
             assessmentId: e.assessmentId,
             userId: e.userId,
-            meta: e.meta,
+            meta: includeMeta ? e.meta : {},
             value: e.value,
             group: e.group,
             stage: e.stage,
@@ -59,16 +38,14 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected,
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
             code: e.code,
-        });
-    });
-};
 
-const getAssessmentGroupMap = function getAssessmentGroupMap(hxAssessment) {
-    const assessmentGroup = new Map();
-    hxAssessment.listServers().forEach((assessment) => {
-        assessmentGroup[assessment.id] = assessment.group;
+        });
+        if (includeComments) {
+            return Object.assign({}, obj, { comment: e.comment || {},
+                commentHistory: e.commentHistory || [] });
+        }
+        return obj;
     });
-    return assessmentGroup;
 };
 
 const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
@@ -78,6 +55,39 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         this.hxQuestion = options.hxQuestion;
         this.hxAnswer = options.tests.hxAnswer;
         this.hxAssessment = options.hxAssessment;
+    }
+
+    getAssessmentGroupMap() {
+        const hxAssessment = this.hxAssessment;
+        const assessmentGroup = new Map();
+        hxAssessment.listServers().forEach((assessment) => {
+            assessmentGroup[assessment.id] = assessment.group;
+        });
+        return assessmentGroup;
+    }
+
+    getQuestionLineMap(options) {
+        const hxSurvey = this.hxSurvey;
+        const questionLineMap = new Map();
+        if (options.sectionId) {
+            hxSurvey.clients[options.surveyId - 1].sections.forEach((section) => {
+                section.questions.forEach((e, indx) => {
+                    questionLineMap[e.id] = indx;
+                });
+            });
+        } else if (hxSurvey.clients[options.surveyId - 1].questions) {
+            hxSurvey.clients[options.surveyId - 1].questions.forEach((e, indx) => {
+                questionLineMap[e.id] = indx;
+            });
+        } else {
+            hxSurvey.clients[options.surveyId - 1].sections.forEach((sect, sectIndx) => {
+                sect.questions.forEach((e, qIndx) => {
+                    questionLineMap[e.id] = (sectIndx * 3) + qIndx;
+                });
+            });
+        }
+
+        return questionLineMap;
     }
 
     formatAnswerJSON(currExpected, options) {
@@ -120,6 +130,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
                 const choiceTextMap = new Map(choiceMapInput);
                 expected.choiceText = choiceTextMap.get(answer.choice) || '';
                 expected.value = answer.textValue || '';
+                expected.choiceIndex = 0;
             } else if (answer.textValue) {
                 expected.value = answer.textValue;
             } else if (answer.integerValue) {
@@ -130,6 +141,19 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
                 expected.value = String(answer.numberValue);
             } else if (answer.dateValue) {
                 expected.value = String(answer.dateValue);
+            } else if (answer.bloodPressureValue) {
+                expected.value = `${answer.bloodPressureValue.systolic
+                                  }-${
+                                  answer.bloodPressureValue.diastolic}`;
+            } else if (answer.dayValue) {
+                expected.value = answer.dayValue;
+            } else if (answer.monthValue) {
+                expected.value = answer.monthValue;
+            } else if (answer.feetInchesValue) {
+                expected.value =
+                `${answer.feetInchesValue.feet
+                                  }-${
+                                 answer.feetInchesValue.inches}`;
             } else if (answer.choices) {
                 return this.formatChoicesAnswerJSON(expected, answer, options);
             } else if (answer.zipcodeValue) {
@@ -150,12 +174,12 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         const choiceMapInput = question.choices.map(r => [r.id, r.text]);
         const choiceTextMap = new Map(choiceMapInput);
 
-        answer.choices.forEach((choice) => {
+        answer.choices.forEach((choice, indx) => {
             const currExpected = Object.assign({}, expected);
             currExpected.choiceText = choiceTextMap.get(choice.id) || null;
             currExpected.choiceType =
                 hxQuestion.serverById(expected.questionId).choices.find(questionChoice => questionChoice.id === choice.id).type;
-
+            currExpected.choiceIndex = indx;
             choicesExpected.push(currExpected);
             if (choice.textValue) {
                 currExpected.value = choice.textValue;
@@ -170,7 +194,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
 
     filterForLatestStage(expected) {
         const hxAssessment = this.hxAssessment;
-        const assessmentGroup = getAssessmentGroupMap(hxAssessment);
+        const assessmentGroup = this.getAssessmentGroupMap();
         const latestAssessment = new Map();
         const finalExpected = [];
 
@@ -195,35 +219,29 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     }
 
     sortExpected(expected, options) {
-        const questionLineMap = new Map();
-
-        this.hxSurvey.clients[options.surveyId - 1].questions.forEach((e, indx) => {
-            questionLineMap[e.id] = indx;
-        });
+        const questionLineMap = this.getQuestionLineMap(options);
         if (options.questionId || options.questionId === 0) {
-            return _.sortBy(expected, a => a.assessmentId);
+            return _.sortBy(expected, a => [a.group, b => b.choiceText]);
         }
-        return _.sortBy(expected, [a => a.group, a => questionLineMap[a.questionId]]);
+        return _.sortBy(expected, [a => a.group, b => questionLineMap[b.questionId], c => c.choiceText]);
     }
 
     getExpectedByQuestionId(options) {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
         const expectedWithDuplicates =
-        _.filter(hxAnswer.store, answers => _.some(answers.answers, answer => answer.questionId === options.questionId) &&
-                   hxSurvey.id(answers.surveyIndex) === options.surveyId);
+        _.filter(hxAnswer.store, answers => _.some(answers.answers, answer => answer.questionId === options.questionId) && hxSurvey.id(answers.surveyIndex) === options.surveyId);
 
         let expected = filterDuplicateAssessmentAnswers(expectedWithDuplicates);
         expected = expected.map(currExpected => this.formatAnswerJSON(currExpected, options));
         expected = _.flatten(expected);
         expected = this.filterForLatestStage(expected);
-        expected = orderExpectedAnswerObjects(expected, options.includeComments);
+        expected = orderExpectedAnswerObjects(expected, options);
         return expected;
     }
     appendCommentByAssessmentAnswer(answer) {
         const hxAnswer = this.hxAnswer;
-        const hxAssessment = this.hxAssessment;
-        const assessmentGroup = getAssessmentGroupMap(hxAssessment);
+        const assessmentGroup = this.getAssessmentGroupMap();
         const answerWithComments = Object.assign({}, answer);
         const answerKey = `${answer.assessmentId - 1}-${answer.surveyId - 1}-${answer.questionId}`;
         const comment = hxAnswer.comments[answerKey] ? hxAnswer.comments[answerKey].comment : {};
@@ -249,12 +267,35 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     getExpectedExportedAsessmentAnswers(options) {
         const hxSurvey = this.hxSurvey;
         let expected;
-        if (!options.questionId && options.questionId !== 0) {
+        if (options.sectionId) {
             expected = [];
-            hxSurvey.clients[options.surveyId - 1].questions.forEach((q) => {
-                const currOptions = Object.assign({ questionId: q.id }, options);
-                expected.push(this.getExpectedByQuestionId(currOptions));
-            });
+            const section = _.find(hxSurvey.clients[options.surveyId - 1].sections, sect => sect.id === options.sectionId);
+
+            if (section) {
+                section.questions.forEach((q) => {
+                    const currOptions = Object.assign({ questionId: q.id }, options);
+                    expected.push(this.getExpectedByQuestionId(currOptions));
+                });
+                expected = _.flatten(expected);
+            } else {
+                expected = [];
+            }
+        } else if (!options.questionId && options.questionId !== 0) {
+            expected = [];
+            if (hxSurvey.clients[options.surveyId - 1].questions) {
+                hxSurvey.clients[options.surveyId - 1].questions.forEach((q) => {
+                    const currOptions = Object.assign({ questionId: q.id }, options);
+                    expected.push(this.getExpectedByQuestionId(currOptions));
+                });
+            } else {
+                hxSurvey.clients[options.surveyId - 1].sections.forEach((sect) => {
+                    sect.questions.forEach((q) => {
+                        const currOptions = Object.assign({ questionId: q.id }, options);
+                        expected.push(this.getExpectedByQuestionId(currOptions));
+                    });
+                });
+            }
+
             expected = _.flatten(expected);
         } else {
             expected = this.getExpectedByQuestionId(options);
@@ -262,10 +303,9 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         if (options.includeComments) {
             expected = expected.map(e => this.appendCommentByAssessmentAnswer(e));
         }
+
         return this.sortExpected(expected, options);
     }
-
-
 };
 
 module.exports = {

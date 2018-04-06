@@ -510,6 +510,7 @@ module.exports = class AnswerDAO extends Base {
         const QuestionChoice = this.db.QuestionChoice;
         scope = scope || 'survey'; // eslint-disable-line no-param-reassign
         const where = {};
+
         if (ids) {
             where.id = { $in: ids };
         }
