@@ -21,6 +21,8 @@ const assessmentCommon = require('../util/assessment-common');
 const ExportBuilder = require('./assessment-answer.export-builder');
 const answerSession = require('../fixtures/answer-session/assessment-2');
 const answerSessionSections = require('../fixtures/answer-session/assessment-1');
+const CSVConverterExport = require('../../export/csv-converter');
+const intoStream = require('into-stream');
 
 const expect = chai.expect;
 
@@ -105,6 +107,10 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
+    const escapeRegExp = function (string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
     const verifyExportAssessmentAnswers = function (options = {}) {
         return function verify() {
             return models.assessmentAnswer.exportAssessmentAnswers(options)
@@ -121,7 +127,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
 
     _.range(0, questionCount + 1).forEach((questionId) => {
-        it(`exported assessment-answers, surveyId: 1, questionId: ${questionId}`,
+        it(`exported assessment-answers, no comments, surveyId: 1, questionId: ${questionId}`,
             verifyExportAssessmentAnswers({ questionId, includeComments: false, surveyId: 1 }));
     });
 
@@ -173,12 +179,83 @@ describe('export assessment answers unit', function answerAssessmentImportExport
     });
 
     _.range(sectionCount).forEach((index) => {
-        it(`exported assessment-answers, surveyId: 2, sectionId: ${index + 1}`,
+        it(`exported assessment-answers no comments, surveyId: 2, sectionId: ${index + 1}`,
             verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: false }));
     });
 
     _.range(sectionCount).forEach((index) => {
-        it(`exported assessment-answers CSV, surveyId: 2, sectionId: ${index + 1}`,
+        it(`exported assessment-answers comments, surveyId: 2, sectionId: ${index + 1}`,
             verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: true }));
     });
+
+    let questionCsvContent;
+    let surveyCsvContent;
+    let assessmentAnswerSurvey1CsvContent;
+    let assessmentAnswerSurvey2CsvContent;
+
+    it('export questions to csv', () => models.question.exportQuestions()
+            .then((result) => { questionCsvContent = result; }));
+
+    it('export surveys to csv', () => models.survey.exportSurveys()
+            .then((result) => { surveyCsvContent = result; }));
+
+    it('export survey 1 assessment answers to CSV no question/sectionId ', () => {
+        return models.assessmentAnswer.exportAssessmentAnswersCSV({surveyId: 1})
+            .then((result) => {
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswers({surveyId: 1});
+                const csvConverter = new CSVConverterExport();
+                expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                // match against any integer value for questionIndex because we don't have access to them
+                // in the expected values
+                const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                expect(result).to.match(new RegExp(expectedRegExpString));
+                assessmentAnswerSurvey1CsvContent = result;
+            });
+    });
+
+    it('export survey 2 assessment answers to CSV no question/sectionId ', () => {
+        return models.assessmentAnswer.exportAssessmentAnswersCSV({surveyId: 2})
+            .then((result) => {
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswers({surveyId: 2});
+                const csvConverter = new CSVConverterExport();
+                expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                // match against any integer value for questionIndex because we don't have access to them
+                // in the expected values
+                const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                expect(result).to.match(new RegExp(expectedRegExpString));
+                assessmentAnswerSurvey2CsvContent = result;
+
+            });
+    });
+
+    it('reset database', shared.setUpFn());
+
+    let originalUserIds;
+    it('reset user history', function resetUserHistory() {
+        originalUserIds = _.range(userCount).map(index => hxUser.id(index));
+        hxUser.reset();
+    });
+
+    let questionIdMap;
+
+    it('import question csv into db', () => {
+        const stream = intoStream(questionCsvContent);
+        return models.question.importQuestions(stream)
+            .then((result) => { questionIdMap = result; });
+    });
+
+    let surveyIdMap;
+
+    it('import survey csv into db', () => {
+        const stream = intoStream(surveyCsvContent);
+        return models.survey.importSurveys(stream, { questionIdMap })
+            .then((result) => { surveyIdMap = result; });
+    });
+
+    it('import assessment answers survey 1 into db and verify', () => {
+        //const stream = intoStream(assessmentAnswerSurvey1CsvContent)
+        //return models.assessmentAnswer.importAssessmentAnswers()
+    })
+
+
 });

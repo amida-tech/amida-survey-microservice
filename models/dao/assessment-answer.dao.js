@@ -54,31 +54,8 @@ const mergeAnswerComments = function (answers, comments, scope) {
 
 const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportObjects(answers, includeComments) { // eslint-disable-line max-len
     return answers.map((e) => {
-        if (includeComments) {
-            return Object.assign({}, {
-                surveyId: e.surveyId,
-                questionId: e.questionId,
-                questionType: e.questionType,
-                assessmentId: e.assessmentId,
-                userId: e.userId,
-                meta: e.meta,
-                value: e.value,
-                group: e.group,
-                stage: e.stage,
-                surveyName: e.surveyName,
-                weight: e.weight,
-                date: e.date,
-                questionText: e.questionText,
-                questionInstruction: e.questionInstruction,
-                questionIndex: e.questionIndex,
-                choiceText: e.choiceText,
-                choiceType: e.choiceType || '',
-                code: e.code,
-                comment: e.comment || {},
-                commentHistory: e.commentHistory || [],
-            });
-        }
-        return Object.assign({}, {
+
+        let obj = Object.assign({}, {
             surveyId: e.surveyId,
             questionId: e.questionId,
             questionType: e.questionType,
@@ -96,8 +73,13 @@ const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportO
             questionIndex: e.questionIndex,
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
-            code: e.code,
+            code: e.code
         });
+        if (includeComments) {
+            obj.comment = e.comment || {},
+            obj.commentHistory = e.commentHistory || []
+        }
+        return obj;
     });
 };
 
@@ -338,6 +320,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const sectionId = options.sectionId;
         let questionsPromise;
         // TODO: const userIds = options.userIds
+        //TODO: const groups = options.groups
 
         if (sectionId && questionId) {
             return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
@@ -575,4 +558,5 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     return '';
                 });
     }
+
 };

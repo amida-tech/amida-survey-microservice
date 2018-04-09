@@ -48,29 +48,19 @@ exports.importAnswers = function importAnswers(req, res) {
     const csvFile = _.get(req, 'swagger.params.answercsv.value');
     const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
     const surveyIdMapAsString = _.get(req, 'swagger.params.surveyidmap.value');
+    const userIdMapAsString = _.get(req, 'swagger.params.useridmap.value');
     const questionIdMap = JSON.parse(questionIdMapAsString);
     const surveyIdMap = JSON.parse(surveyIdMapAsString);
     const stream = intoStream(csvFile.buffer);
-    const maps = { userId, surveyIdMap, questionIdMap };
+    const userIdMap = userIdMapAsString ? JSON.parse(userIdMapAsString) : undefined;
+    const maps = {surveyIdMap, questionIdMap}
+    userIdMap ? maps.userIdMap = userIdMap : maps.userId = userId;
+
     req.models.answer.importAnswers(stream, maps)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.importMultiUserAnswers = function importMultiUserAnswers(req, res) {
-    const csvFile = _.get(req, 'swagger.params.answercsv.value');
-    const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
-    const surveyIdMapAsString = _.get(req, 'swagger.params.surveyidmap.value');
-    const userIdMapAsString = _.get(req, 'swagger.params.useridmap.value');
-    const questionIdMap = JSON.parse(questionIdMapAsString);
-    const surveyIdMap = JSON.parse(surveyIdMapAsString);
-    const userIdMap = JSON.parse(userIdMapAsString);
-    const stream = intoStream(csvFile.buffer);
-    const maps = { userIdMap, surveyIdMap, questionIdMap };
-    req.models.answer.importAnswers(stream, maps)
-        .then(() => res.status(204).end())
-        .catch(shared.handleError(res));
-};
 
 exports.listAnswersExport = function listAnswersExport(req, res) {
     const userId = req.user.id;

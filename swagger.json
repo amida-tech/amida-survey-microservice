@@ -428,7 +428,7 @@
             },
             "post": {
                 "summary": "Imports answer csv file",
-                "operationId": "importMultiUserAnswers",
+                "operationId": "importAnswers",
                 "consumes": ["multipart/form-data"],
                 "parameters": [{
                     "name": "answercsv",
@@ -452,7 +452,7 @@
                     "name": "useridmap",
                     "in": "formData",
                     "description": "User Id Map",
-                    "required": true,
+                    "required": false,
                     "type": "string"
                 }],
                 "responses": {
@@ -1631,6 +1631,44 @@
                     }
                 }
 
+            },
+            "post": {
+                "summary": "Imports assessment answer csv file",
+                "operationId": "importAssessmentAnswers",
+                "consumes": ["multipart/form-data"],
+                "parameters": [{
+                    "name": "assessmentAnswercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "useridmap",
+                    "in": "formData",
+                    "description": "User Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/assessment-answers/export" : {
