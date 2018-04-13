@@ -8,6 +8,7 @@ const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 
 const CSVConverterExport = require('../../export/csv-converter');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
@@ -331,7 +332,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         });
     }
 
-    exportAssessmentAnswers(options) {
+    exportAssessmentAnswerAnswers(options) {
         const surveyId = options.surveyId;
         const questionId = options.questionId;
         const includeComments = options.includeComments;
@@ -565,7 +566,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         })));
     }
 
-    exportAssessmentAnswersCSV(options) {
+    exportAssessmentAnswerAnswersCSV(options = {}) {
         const csvConverter = new CSVConverterExport();
         return this.exportAssessmentAnswers(options)
                 .then((answers) => {
@@ -574,5 +575,29 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     }
                     return '';
                 });
+    }
+
+
+    exportAssessmentAnswersCSV(options = {}) {
+        const csvConverter = new CSVConverterExport();
+        return this.getAssessmentAnswersList(options)
+                .then((assessments) => {
+                    if (assessments.length) {
+                        let csv = csvConverter.dataToCSV(assessments);
+                        return csv;
+                    }
+                    return '';
+                });
+    }
+
+    importAssessmentAnswers(stream, maps) {
+        const { assessmentIdMap } = maps;
+        const converter = new ImportCSVConverter({ checkType: false });
+        return converter.streamToRecords(stream)
+            .then(records => records.map(record => {
+                r.assessmentId = assessmentIdMap[r.id];
+                return r;
+            }))
+            .then(records => this.db.AssessmentAnswers.bulkCreate(records));
     }
 };

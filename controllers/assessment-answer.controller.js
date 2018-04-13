@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const intoStream = require('into-stream');
 
 const shared = require('./shared.js');
 
@@ -56,29 +57,57 @@ exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.exportAssessmentAnswers = function exportAssessmentAnswers(req, res) {
+exports.exportAssessmentAnswerAnswers = function exportAssessmentAnswerAnswers(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const questionId = _.get(req, 'swagger.params.question-id.value');
     const includeComments = _.get(req, 'swagger.params.include-comments.value');
     const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
     const options = { surveyId, sectionId, questionId, includeComments };
-    req.models.assessmentAnswer.exportAssessmentAnswers(options)
+    req.models.assessmentAnswer.exportAssessmentAnswerAnswers(options)
         .then(result => res.status(200).send(result))
         .catch(shared.handleError(res));
 };
 
-exports.assessmentAnswersCSV = function assessmentAnswersCSV(req, res) {
+exports.assessmentAnswerAnswersCSV = function assessmentAnswerAnswersCSV(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const questionId = _.get(req, 'swagger.params.question-id.value');
     const sectionId = _.get(req, 'swagger.params.section-id.value');
 // TODO:    const userIds = _.get(req, 'swagger.params.user-id.value');
     const options = { surveyId, sectionId, questionId };
 
-    req.models.assessmentAnswer.exportAssessmentAnswersCSV(options)
+    req.models.assessmentAnswer.exportAssessmentAnswerAnswersCSV(options)
         .then((result) => {
             res.type('text/csv');
             res.status(200).send(result);
         })
         .catch(shared.handleError(res));
 };
+
+exports.exportAssessmentAnswerAnswers = function exportAssessmentAnswerAnswers(req,res) {
+    req.models.assessmentAnswer.exportAssessmentAnswerAnswers()
+        .then(result => res.status(200).send(result))
+        .catch(shared.handleError(res));
+}
+
+exports.importAssessmentAnswerAnswers = function importAssessmentAnswerAnswers(req, res) {
+    const csvFile = _.get(req, 'swagger.param.statuscsv.value');
+    const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentIdMap.value');
+    const assessmentIdMap = JSON.parse(assessmentIdMapAsString);
+    const stream = intoStream(csvFile.buffer);
+    req.models.assessmentAnswer.importAssessmentAnswers(stream, {assessmentIdMap})
+        .then(result => res.status(201).json(result))
+        .catch(shared.handleError(res));
+}
+
+exports.exportAssessmentAnswerscsv = function exportAssessmentAnswers(req,res) {
+    const group = _.get(req, 'swagger.params.group.value');
+    const assessmentAnswersStatus = _.get(req, 'swagger.params.assessment-answers-status.value');
+    const options = { group, assessmentAnswersStatus };
+    req.models.assessmentAnswer.exportAssessmentAnswersCSV(options)
+        .then((result) => {
+            res.type('text/csv');
+            res.status(200).send(result);
+        })
+        .catch(shared.handleError(res));
+}
