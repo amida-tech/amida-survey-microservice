@@ -95,7 +95,7 @@ exports.importAssessmentAnswerAnswers = function importAssessmentAnswerAnswers(r
     const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentIdMap.value');
     const assessmentIdMap = JSON.parse(assessmentIdMapAsString);
     const stream = intoStream(csvFile.buffer);
-    req.models.assessmentAnswer.importAssessmentAnswers(stream, {assessmentIdMap})
+    req.models.answer.importAnswers(stream, {assessmentIdMap})
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 }
