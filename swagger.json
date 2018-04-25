@@ -132,6 +132,13 @@
                     "description": "Question Id Map",
                     "required": true,
                     "type": "string"
+                },
+                {
+                    "name": "sectionidmap",
+                    "in": "formData",
+                    "description": "Section Id Map",
+                    "required": false,
+                    "type": "string"
                 }],
                 "responses": {
                     "201": {
@@ -947,6 +954,48 @@
                 }
             }
         },
+        "/sections/csv": {
+            "x-swagger-router-controller": "section.controller",
+            "get": {
+                "summary": "Exports sections as csv file",
+                "operationId": "exportSectionscsv",
+                "produces": ["text/csv", "application/json"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports section csv file",
+                "operationId": "importSections",
+                "consumes": ["multipart/form-data"],
+                "parameters": [{
+                    "name": "sectioncsv",
+                    "in": "formData",
+                    "description": "Section CSV file",
+                    "required": true,
+                    "type": "file"
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/languages": {
             "x-swagger-router-controller": "language.controller",
             "post": {
@@ -1328,16 +1377,13 @@
                     "description": "Assessments CSV file",
                     "required": true,
                     "type": "file"
-                }, {
-                    "name": "assessmentidmap",
-                    "in": "formData",
-                    "description": "Assessment Id Map",
-                    "required": true,
-                    "type": "string"
                 }],
                 "responses": {
-                    "204": {
-                        "description": "Successful response"
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1584,6 +1630,35 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "post": {
+                "summary": "Imports assessment answer csv file",
+                "operationId": "importAssessmentAnswers",
+                "consumes": ["multipart/form-data"],
+                "parameters": [{
+                    "name": "assessmentAnswercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "assessmentidmap",
+                    "in": "formData",
+                    "description": "Assessment Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/assessment-answers/{id}": {
@@ -1689,29 +1764,29 @@
         },
         "/assessment-answers/answers/csv" : {
             "x-swagger-router-controller": "assessment-answer.controller",
-            "parameters":[{
-                "description": "survey Id that of the assessments' answers that will be returned",
-                "name": "survey-id",
-                "in": "query",
-                "required": true,
-                "type":"integer"
-            }, {
-                "description": "questionId filter on the assessments' anwers that will be returned",
-                "name": "question-id",
-                "in": "query",
-                "required": false,
-                "type":"integer"
-            },{
-                "description": "sectionId filter on the assessments' answers that will be returned",
-                "name": "section-id",
-                "in": "query",
-                "required": false,
-                "type":"integer"
-            }],
             "get": {
                 "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in json format",
                 "operationId":"assessmentAnswerAnswersCSV",
                 "produces": ["text/csv", "application/json"],
+                "parameters":[{
+                    "description": "survey Id that of the assessments' answers that will be returned",
+                    "name": "survey-id",
+                    "in": "query",
+                    "required": true,
+                    "type":"integer"
+                }, {
+                    "description": "questionId filter on the assessments' anwers that will be returned",
+                    "name": "question-id",
+                    "in": "query",
+                    "required": false,
+                    "type":"integer"
+                },{
+                    "description": "sectionId filter on the assessments' answers that will be returned",
+                    "name": "section-id",
+                    "in": "query",
+                    "required": false,
+                    "type":"integer"
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1727,10 +1802,10 @@
             },
             "post": {
                 "summary": "Imports assessment answer csv file",
-                "operationId": "importAssessmentAnswers",
+                "operationId": "importAssessmentAnswerAnswers",
                 "consumes": ["multipart/form-data"],
                 "parameters": [{
-                    "name": "assessmentAnswercsv",
+                    "name": "assessmentAnswerAnswerscsv",
                     "in": "formData",
                     "description": "Answer CSV file",
                     "required": true,
@@ -1744,13 +1819,19 @@
                 }, {
                     "name": "surveyidmap",
                     "in": "formData",
-                    "description": "Question Id Map",
+                    "description": "Survey Id Map",
                     "required": true,
                     "type": "string"
                 }, {
                     "name": "useridmap",
                     "in": "formData",
                     "description": "User Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "assessmentidmap",
+                    "in": "formData",
+                    "description": "Assessment Id Map",
                     "required": true,
                     "type": "string"
                 }],

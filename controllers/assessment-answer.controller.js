@@ -83,24 +83,33 @@ exports.assessmentAnswerAnswersCSV = function assessmentAnswerAnswersCSV(req, re
         })
         .catch(shared.handleError(res));
 };
-
-exports.exportAssessmentAnswerAnswers = function exportAssessmentAnswerAnswers(req,res) {
-    req.models.assessmentAnswer.exportAssessmentAnswerAnswers()
-        .then(result => res.status(200).send(result))
-        .catch(shared.handleError(res));
-}
-
 exports.importAssessmentAnswerAnswers = function importAssessmentAnswerAnswers(req, res) {
-    const csvFile = _.get(req, 'swagger.param.statuscsv.value');
-    const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentIdMap.value');
+    const csvFile = _.get(req, 'swagger.params.assessmentAnswerAnswerscsv.value');
+    const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentidmap.value');
+    const surveyIdMapAsString = _.get(req, 'swagger.params.surveyidmap.value');
+    const userIdMapAsString = _.get(req, 'swagger.params.useridmap.value');
+    const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
+    const userIdMap = JSON.parse(userIdMapAsString);
+    const surveyIdMap = JSON.parse(surveyIdMapAsString);
+    const questionIdMap = JSON.parse(questionIdMapAsString);
+    const assessmentIdMap = JSON.parse(assessmentIdMapAsString);
+    req.models.assessmentAnswer
+    .importAssessmentAnswerAnswers(csvFile.buffer, { assessmentIdMap, surveyIdMap, userIdMap, questionIdMap })  // eslint-disable-line max-len
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
+exports.importAssessmentAnswers = function importAssessmentAnswers(req, res) {
+    const csvFile = _.get(req, 'swagger.params.assessmentAnswercsv.value');
+    const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentidmap.value');
     const assessmentIdMap = JSON.parse(assessmentIdMapAsString);
     const stream = intoStream(csvFile.buffer);
-    req.models.answer.importAnswers(stream, {assessmentIdMap})
-        .then(result => res.status(201).json(result))
+    req.models.assessmentAnswer.importAssessmentAnswers(stream, { assessmentIdMap })
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
-}
+};
 
-exports.exportAssessmentAnswerscsv = function exportAssessmentAnswers(req,res) {
+exports.exportAssessmentAnswerscsv = function exportAssessmentAnswers(req, res) {
     const group = _.get(req, 'swagger.params.group.value');
     const assessmentAnswersStatus = _.get(req, 'swagger.params.assessment-answers-status.value');
     const options = { group, assessmentAnswersStatus };
@@ -110,4 +119,4 @@ exports.exportAssessmentAnswerscsv = function exportAssessmentAnswers(req,res) {
             res.status(200).send(result);
         })
         .catch(shared.handleError(res));
-}
+};

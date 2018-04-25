@@ -600,7 +600,6 @@ module.exports = class AnswerDAO extends Base {
                         if (attributes.includes('createdAt')) {
                             r.createdAt = p.createdAt;
                         }
-
                         if (p.questionChoiceId) {
                             r.questionChoiceId = p.questionChoiceId;
                         }
@@ -692,17 +691,29 @@ module.exports = class AnswerDAO extends Base {
                     r.value = r.value.toString();
                 }
                 if (r.choiceType === 'month' || r.questionType === 'month') {
-                    if (r.value.length === 1) {
+                    if (r.value !== undefined && r.value.length === 1) {
                         r.value = `0${r.value}`;
                     }
                 }
-                if(r.assessmentId) {
+                if (r.meta === '{}') {
+                    r.meta = null;
+                } else {
+                    try {
+                        const rjson = JSON.parse(r.meta);
+                        r.meta = rjson;
+                    } catch (error) {} // eslint-disable-line no-empty
+                }
+
+                if (r.assessmentId) {
                     r.assessmentId = assessmentIdMap[r.assessmentId];
                 }
+
                 delete r.questionType;
                 delete r.choiceType;
+
                 r.userId = userId || userIdMap[r.userId];
                 r.language = 'en';
+
                 return r;
             }))
             .then(records => this.db.Answer.bulkCreate(records));

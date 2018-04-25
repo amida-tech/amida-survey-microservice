@@ -44,30 +44,27 @@ const authorization = function (req, res, next) {
     const cookieToken = _.get(req, 'cookies.auth-jwt-token');
     let authToken = _.get(req, 'headers.authorization');
 
-    // if (authToken) {
-    //     authToken = authToken.substring(7);
-    // }
-    // const token = cookieToken || authToken;
-    //
-    // if (!token && !isDocs && !isHealthCheck) {
-    //     res.statusCode = 401;
-    //     res.send(noAuth);
-    // } else if (token) {
-    //     jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
-    //         if (!err) {
-    //             req.user = payload;
-    //             return next();
-    //         }
-    //         res.statusCode = 401;
-    //         res.send(invalidAuth);
-    //         return null;
-    //     });
-    // } else if (isDocs || isHealthCheck) {
-    //     next();
-    // }
+    if (authToken) {
+        authToken = authToken.substring(7);
+    }
+    const token = cookieToken || authToken;
 
-    req.user = {id:1}
-    next();
+    if (!token && !isDocs && !isHealthCheck) {
+        res.statusCode = 401;
+        res.send(noAuth);
+    } else if (token) {
+        jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+            if (!err) {
+                req.user = payload;
+                return next();
+            }
+            res.statusCode = 401;
+            res.send(invalidAuth);
+            return null;
+        });
+    } else if (isDocs || isHealthCheck) {
+        next();
+    }
 };
 
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars

@@ -53,7 +53,8 @@ exports.importAnswers = function importAnswers(req, res) {
     const surveyIdMap = JSON.parse(surveyIdMapAsString);
     const stream = intoStream(csvFile.buffer);
     const userIdMap = userIdMapAsString ? JSON.parse(userIdMapAsString) : undefined;
-    const maps = {surveyIdMap, questionIdMap}
+    const maps = { surveyIdMap, questionIdMap };
+     // eslint-disable-next-line no-unused-expressions
     userIdMap ? maps.userIdMap = userIdMap : maps.userId = userId;
 
     req.models.answer.importAnswers(stream, maps)

@@ -6,6 +6,7 @@ const Base = require('./base');
 const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+const intoStream = require('into-stream');
 
 const CSVConverterExport = require('../../export/csv-converter');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -55,8 +56,7 @@ const mergeAnswerComments = function (answers, comments, scope) {
 
 const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportObjects(answers, includeComments) { // eslint-disable-line max-len
     return answers.map((e) => {
-
-        let obj = Object.assign({}, {
+        const obj = Object.assign({}, {
             surveyId: e.surveyId,
             questionId: e.questionId,
             questionType: e.questionType,
@@ -72,13 +72,14 @@ const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportO
             questionText: e.questionText,
             questionInstruction: e.questionInstruction,
             questionIndex: e.questionIndex,
+            questionChoiceId: e.questionChoiceId,
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
-            code: e.code
+            code: e.code,
         });
         if (includeComments) {
-            obj.comment = e.comment || {},
-            obj.commentHistory = e.commentHistory || []
+            obj.comment = e.comment || {};
+            obj.commentHistory = e.commentHistory || [];
         }
         return obj;
     });
@@ -321,7 +322,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const sectionId = options.sectionId;
         let questionsPromise;
         // TODO: const userIds = options.userIds
-        //TODO: const groups = options.groups
+        // TODO: const groups = options.groups
 
         if (sectionId && questionId) {
             return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
@@ -452,6 +453,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                             questionText: qTextsMap.get(a.questionId).text || '',
                             questionInstruction: qTextsMap.get(a.questionId).instruction || '',
                             questionIndex: questionLinesMap.get(a.questionId),
+                            questionChoiceId: a.questionChoiceId || '',
                             choiceText: '',
                             choiceType: a.choiceType || '',
                             code: '',
@@ -487,7 +489,6 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                         choiceText: choiceTextMap.get(a.questionChoiceId) || '',
                                         code: a.code || '',
                                     });
-                                    delete newAnswer.questionChoiceId;
                                     return newAnswer;
                                 });
 
@@ -551,13 +552,35 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
     exportAssessmentAnswerAnswersCSV(options = {}) {
         const csvConverter = new CSVConverterExport();
-        return this.exportAssessmentAnswers(options)
+        return this.exportAssessmentAnswerAnswers(options)
                 .then((answers) => {
                     if (answers.length) {
-                        return csvConverter.dataToCSV(answers);
+                        const csv = csvConverter.dataToCSV(answers);
+                        return csv;
                     }
                     return '';
                 });
+    }
+
+    importAssessmentAnswerAnswers(csvFile, maps) {
+        const { assessmentIdMap, surveyIdMap } = maps;
+        const converter = new ImportCSVConverter({ checkType: false });
+        const stream1 = intoStream(csvFile);
+        const stream2 = intoStream(csvFile);
+        return converter.streamToRecords(stream1)
+            .then((records) => {
+                const assessmentSurveys = records.reduce((acc, curr) => {
+                    if (!_.some(acc, x => x.assessmentId === assessmentIdMap[curr.assessmentId])) {
+                        acc.push(Object.assign({}, {
+                            assessmentId: assessmentIdMap[curr.assessmentId],
+                            surveyId: surveyIdMap[curr.surveyId] }));
+                        return acc;
+                    }
+                    return acc;
+                }, []);
+                return this.db.AssessmentSurvey.bulkCreate(assessmentSurveys)
+                    .then(() => this.answer.importAnswers(stream2, maps));
+            });
     }
 
 
@@ -566,7 +589,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
         return this.getAssessmentAnswersList(options)
                 .then((assessments) => {
                     if (assessments.length) {
-                        let csv = csvConverter.dataToCSV(assessments);
+                        const csv = csvConverter.dataToCSV(assessments);
                         return csv;
                     }
                     return '';
@@ -577,10 +600,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
         const { assessmentIdMap } = maps;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
-            .then(records => records.map(record => {
-                r.assessmentId = assessmentIdMap[r.id];
+            .then(records => records.map((record) => {
+                const r = record;
+                r.assessmentId = assessmentIdMap[record.id];
                 return r;
             }))
-            .then(records => this.db.AssessmentAnswers.bulkCreate(records));
+            .then(records => this.db.AssessmentAnswer.bulkCreate(records));
     }
 };

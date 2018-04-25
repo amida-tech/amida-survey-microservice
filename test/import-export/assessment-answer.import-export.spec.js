@@ -103,7 +103,7 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
         it(`user ${userIndex} creates assessesment ${name} ${stage}`,
             tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex, commentIndices, 'en'));
-        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`,
+        it(`user ${userIndex} gets answers assessesment ${name} ${stage}`,
             tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 
@@ -111,11 +111,11 @@ describe('export assessment answers unit', function answerAssessmentImportExport
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
-    const verifyExportAssessmentAnswers = function (options = {}) {
+    const verifyExportAssessmentAnswerAnswers = function (options = {}) {
         return function verify() {
-            return models.assessmentAnswer.exportAssessmentAnswers(options)
+            return models.assessmentAnswer.exportAssessmentAnswerAnswers(options)
                 .then((answers) => {
-                    const expected = exportBuilder.getExpectedExportedAsessmentAnswers(options);
+                    const expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers(options);
 
                     answers.forEach((a, indx) => {
                         expect(a).to.deep.equal(Object.assign({}, expected[indx], { questionIndex: answers[indx].questionIndex }));
@@ -128,17 +128,17 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
     _.range(0, questionCount + 1).forEach((questionId) => {
         it(`exported assessment-answers, no comments, surveyId: 1, questionId: ${questionId}`,
-            verifyExportAssessmentAnswers({ questionId, includeComments: false, surveyId: 1 }));
+            verifyExportAssessmentAnswerAnswers({ questionId, includeComments: false, surveyId: 1 }));
     });
 
     _.range(0, questionCount + 1).forEach((questionId) => {
         it(`exported assessment-answers with comments, surveyId: 1, questionId: ${questionId}`,
-            verifyExportAssessmentAnswers({ questionId, includeComments: true, surveyId: 1 }));
+            verifyExportAssessmentAnswerAnswers({ questionId, includeComments: true, surveyId: 1 }));
     });
 
-    it('export assessment answers no questionId or sectionId', verifyExportAssessmentAnswers({ includeComments: false, surveyId: 1 }));
+    it('export assessment answers no questionId or sectionId', verifyExportAssessmentAnswerAnswers({ includeComments: false, surveyId: 1 }));
 
-    it('export assessment answers no questionId or sectionId with comments', verifyExportAssessmentAnswers({ includeComments: true, surveyId: 1 }));
+    it('export assessment answers no questionId or sectionId with comments', verifyExportAssessmentAnswerAnswers({ includeComments: true, surveyId: 1 }));
 
     _.range(questionCount, questionSectionCount).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());
@@ -180,82 +180,142 @@ describe('export assessment answers unit', function answerAssessmentImportExport
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers no comments, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: false }));
+            verifyExportAssessmentAnswerAnswers({ sectionId: index + 1, surveyId: 2, includeComments: false }));
     });
 
     _.range(sectionCount).forEach((index) => {
         it(`exported assessment-answers comments, surveyId: 2, sectionId: ${index + 1}`,
-            verifyExportAssessmentAnswers({ sectionId: index + 1, surveyId: 2, includeComments: true }));
+            verifyExportAssessmentAnswerAnswers({ sectionId: index + 1, surveyId: 2, includeComments: true }));
     });
 
     let questionCsvContent;
+    let sectionCsvContent;
     let surveyCsvContent;
-    let assessmentAnswerSurvey1CsvContent;
-    let assessmentAnswerSurvey2CsvContent;
+    let assessmentsCsvContent;
+    let assessmentAnswerCsvContent;
+    let assessmentAnswerAnswersSurvey1CsvContent;
+    let assessmentAnswerAnswersSurvey2CsvContent;
 
     it('export questions to csv', () => models.question.exportQuestions()
             .then((result) => { questionCsvContent = result; }));
 
+    it('export sections to csv', () => models.section.exportSectionscsv()
+            .then((result) => { sectionCsvContent = result; }));
+
     it('export surveys to csv', () => models.survey.exportSurveys()
             .then((result) => { surveyCsvContent = result; }));
 
-    it('export survey 1 assessment answers to CSV no question/sectionId ', () => {
-        return models.assessmentAnswer.exportAssessmentAnswersCSV({surveyId: 1})
+    it('export assessments csv', () => models.assessment.exportAssessmentscsv()
+            .then((result) => { assessmentsCsvContent = result; }));
+
+    it('export assessment answers csv', () => models.assessmentAnswer.exportAssessmentAnswersCSV()
+            .then((result) => { assessmentAnswerCsvContent = result; }));
+
+    it('export survey 1 assessment answer answers to CSV no question/sectionId ', () => models.assessmentAnswer.exportAssessmentAnswerAnswersCSV({ surveyId: 1 })
             .then((result) => {
-                let expected = exportBuilder.getExpectedExportedAsessmentAnswers({surveyId: 1});
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: 1 });
                 const csvConverter = new CSVConverterExport();
                 expected = expected.length ? csvConverter.dataToCSV(expected) : '';
                 // match against any integer value for questionIndex because we don't have access to them
                 // in the expected values
                 const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
                 expect(result).to.match(new RegExp(expectedRegExpString));
-                assessmentAnswerSurvey1CsvContent = result;
-            });
-    });
+                assessmentAnswerAnswersSurvey1CsvContent = result;
+            }));
 
-    it('export survey 2 assessment answers to CSV no question/sectionId ', () => {
-        return models.assessmentAnswer.exportAssessmentAnswersCSV({surveyId: 2})
+    it('export survey 2 assessment answer answers to CSV no question/sectionId ', () => models.assessmentAnswer.exportAssessmentAnswerAnswersCSV({ surveyId: 2 })
             .then((result) => {
-                let expected = exportBuilder.getExpectedExportedAsessmentAnswers({surveyId: 2});
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: 2 });
                 const csvConverter = new CSVConverterExport();
                 expected = expected.length ? csvConverter.dataToCSV(expected) : '';
                 // match against any integer value for questionIndex because we don't have access to them
                 // in the expected values
                 const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
                 expect(result).to.match(new RegExp(expectedRegExpString));
-                assessmentAnswerSurvey2CsvContent = result;
+                assessmentAnswerAnswersSurvey2CsvContent = result;
+            }));
 
-            });
-    });
 
     it('reset database', shared.setUpFn());
 
-    let originalUserIds;
+
     it('reset user history', function resetUserHistory() {
-        originalUserIds = _.range(userCount).map(index => hxUser.id(index));
         hxUser.reset();
     });
 
     let questionIdMap;
-
     it('import question csv into db', () => {
         const stream = intoStream(questionCsvContent);
         return models.question.importQuestions(stream)
             .then((result) => { questionIdMap = result; });
     });
 
+    let sectionIdMap;
+    it('import section csv into db', () => {
+        const stream = intoStream(sectionCsvContent);
+        return models.section.importSections(stream)
+            .then((result) => { sectionIdMap = result; });
+    });
+
     let surveyIdMap;
 
     it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
-        return models.survey.importSurveys(stream, { questionIdMap })
+        return models.survey.importSurveys(stream, { questionIdMap, sectionIdMap })
             .then((result) => { surveyIdMap = result; });
     });
 
-    it('import assessment answers survey 1 into db and verify', () => {
-        //const stream = intoStream(assessmentAnswerSurvey1CsvContent)
-        //return models.assessmentAnswer.importAssessmentAnswers()
-    })
+    let assessmentIdMap;
+
+    it('import assessment csv into db', () => {
+        const stream = intoStream(assessmentsCsvContent);
+        return models.assessment.importAssessments(stream, {})
+            .then((result) => { assessmentIdMap = result; });
+    });
+
+    it('import assessment answers csv into db', () => {
+        const stream = intoStream(assessmentAnswerCsvContent);
+        return models.assessmentAnswer.importAssessmentAnswers(stream, { assessmentIdMap })
+            .then(() => {});
+    });
 
 
+    const userIdMap = {};
+
+    _.range(0, 13).forEach((x) => {
+        userIdMap[String(x)] = x;
+    });
+
+
+    it('import assessment answer answers survey 1 into db and verify', () => models.assessmentAnswer.importAssessmentAnswerAnswers(assessmentAnswerAnswersSurvey1CsvContent, { userIdMap, questionIdMap, surveyIdMap, assessmentIdMap })
+            .then(() => {}));
+
+    it('import assessment answer answers survey 2 into db and verify', () => models.assessmentAnswer.importAssessmentAnswerAnswers(assessmentAnswerAnswersSurvey2CsvContent, { userIdMap, questionIdMap, surveyIdMap, assessmentIdMap })
+            .then(() => {}));
+
+    it('export assessment answers no questionId or sectionId, survey1', verifyExportAssessmentAnswerAnswers({ includeComments: false, surveyId: 1 }));
+
+    it('export assessment answers no questionId or sectionId, survey2', verifyExportAssessmentAnswerAnswers({ includeComments: false, surveyId: 2 }));
+
+    it('export survey 1 assessment answer answers to CSV no question/sectionId ', () => models.assessmentAnswer.exportAssessmentAnswerAnswersCSV({ surveyId: 1 })
+            .then((result) => {
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: 1 });
+                const csvConverter = new CSVConverterExport();
+                expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                // match against any integer value for questionIndex because we don't have access to them
+                // in the expected values
+                const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                expect(result).to.match(new RegExp(expectedRegExpString));
+            }));
+
+    it('export survey 2 assessment answer answers to CSV no question/sectionId ', () => models.assessmentAnswer.exportAssessmentAnswerAnswersCSV({ surveyId: 2 })
+            .then((result) => {
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: 2 });
+                const csvConverter = new CSVConverterExport();
+                expected = expected.length ? csvConverter.dataToCSV(expected) : '';
+                // match against any integer value for questionIndex because we don't have access to them
+                // in the expected values
+                const expectedRegExpString = escapeRegExp(expected).replace(/"QUESTION_INDEX_CONSTANT"/g, '\\d+');
+                expect(result).to.match(new RegExp(expectedRegExpString));
+            }));
 });

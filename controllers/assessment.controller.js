@@ -47,12 +47,10 @@ exports.exportAssessmentscsv = function exportAssessmentscsv(req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.importAssessments = function importAssessments(req,res) {
+exports.importAssessments = function importAssessments(req, res) {
     const csvFile = _.get(req, 'swagger.params.assessmentscsv.value');
-    const assessmentIdMapAsString = _.get(req, 'swagger.params.assessmentidmap.value');
-    const assessmentIdMap = JSON.parse(assessmentIdMapAsString);
     const stream = intoStream(csvFile.buffer);
-    req.models.assessment.importAssessments(stream, { assessmentIdMap })
-        .then(() => res.status(204).end())
+    req.models.assessment.importAssessments(stream, { })
+        .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

@@ -35,6 +35,7 @@ const orderExpectedAnswerObjects = function orderExpectedAnswerObjects(expected,
             questionText: e.questionText,
             questionInstruction: e.questionInstruction,
             questionIndex: e.questionIndex,
+            questionChoiceId: e.questionChoiceId || '',
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
             code: e.code,
@@ -100,7 +101,6 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
         if (answer) {
             const question = hxQuestion.serverById(questionAnswer.questionId);
             const assessment = hxAssessment.idIndex[expected.ownerId + 1];
-
             expected.surveyId = hxSurvey.id(expected.surveyIndex);
             expected.questionId = questionAnswer.questionId;
             expected.questionType = question.type;
@@ -130,6 +130,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
                 const choiceTextMap = new Map(choiceMapInput);
                 expected.choiceText = choiceTextMap.get(answer.choice) || '';
                 expected.value = answer.textValue || '';
+                expected.questionChoiceId = answer.choice;
                 expected.choiceIndex = 0;
             } else if (answer.textValue) {
                 expected.value = answer.textValue;
@@ -180,6 +181,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
             currExpected.choiceType =
                 hxQuestion.serverById(expected.questionId).choices.find(questionChoice => questionChoice.id === choice.id).type;
             currExpected.choiceIndex = indx;
+            currExpected.questionChoiceId = choice.id;
             choicesExpected.push(currExpected);
             if (choice.textValue) {
                 currExpected.value = choice.textValue;
@@ -264,7 +266,7 @@ const AssessmentAnswerExportBuilder = class AssessmentAnswerExportBuilder {
     }
 
 
-    getExpectedExportedAsessmentAnswers(options) {
+    getExpectedExportedAsessmentAnswerAnswers(options) {
         const hxSurvey = this.hxSurvey;
         let expected;
         if (options.sectionId) {

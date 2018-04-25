@@ -68,26 +68,26 @@ module.exports = class AssessmentDAO extends Base {
     exportAssessmentscsv(options = {}) {
         const csvConverter = new CSVConverterExport();
         return this.listAssessments(options)
-            .then(assessments => {
-                if(assessments.length) {
+            .then((assessments) => {
+                if (assessments.length) {
                     return csvConverter.dataToCSV(assessments);
                 }
                 return '';
             });
     }
 
-    importAssessments(stream, maps, options = {}) {
-        const { assessmentIdMap } = maps;
+    importAssessments(stream) {
         const converter = new ImportCSVConverter({ checkType: false });
-
-        console.log(assessmentIdMap);
+        const assessmentIdMap = {};
         return converter.streamToRecords(stream)
-            .then(records => records.map(r => {
-
-                r.assessmentId = assessmentIdMap[r.id];
-                return r;
-            }))
-            .then(records => this.db.Assessment.bulkCreate(records));
+            .then((records) => {
+                records.forEach((r) => {
+                    assessmentIdMap[r.id] = Number(r.id);
+                });
+                return records;
+            })
+            .then(records => this.db.Assessment.bulkCreate(records))
+            .then(() => assessmentIdMap);
     }
 
 };

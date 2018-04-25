@@ -67,7 +67,7 @@ describe('survey import-export unit', function surveyImportExportUnit() {
     });
 
     it('export sections to csv', function exportSectionsToCSV() {
-        return models.section.exportSections()
+        return models.section.exportSectionscsv()
             .then((result) => { sectionCsvContent = result; });
     });
 
