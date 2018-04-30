@@ -301,7 +301,7 @@ describe('export assessment answers integration', function answerAssessmentImpor
     it('export assessment answers to csv', (done) => {
         surveySuperTest.get('/assessment-answers/csv', true, 200)
             .expect((res) => {
-                const filepath = path.join(generatedDirectory, 'assessmentanswer.csv');
+                const filepath = path.join(generatedDirectory, 'assessmentAnswer.csv');
                 fs.writeFileSync(filepath, res.text);
             })
             .end(done);
