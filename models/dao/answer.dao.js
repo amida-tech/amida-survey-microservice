@@ -558,7 +558,7 @@ module.exports = class AnswerDAO extends Base {
         if (userIds || assessmentId) {
             attributes.push('userId');
         }
-        if (assessmentIds && surveyId) {
+        if (assessmentIds) {
             attributes.push('userId', 'assessmentId', 'questionId');
         }
         if (createdAt) {

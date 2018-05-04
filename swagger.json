@@ -1772,7 +1772,7 @@
                     "description": "survey Id that of the assessments' answers that will be returned",
                     "name": "survey-id",
                     "in": "query",
-                    "required": true,
+                    "required": false,
                     "type":"integer"
                 }, {
                     "description": "questionId filter on the assessments' anwers that will be returned",
@@ -1851,7 +1851,7 @@
                 "description": "survey Id that of the assessments' answers that will be returned",
                 "name": "survey-id",
                 "in": "query",
-                "required": true,
+                "required": false,
                 "type":"integer"
             }, {
                 "description": "questionId filter on the assessments' answers that will be returned",

@@ -238,6 +238,20 @@ describe('export assessment answers integration', function answerAssessmentImpor
             verifyExportAssessmentAnswers({ 'section-id': index + 1, 'survey-id': 2 }, 'CSV'));
     });
 
+    it('export assessment answer answers JSON no surveyId', () => surveySuperTest.get('/assessment-answers/answers/export', true, 200, {})
+            .then((res) => {
+                const answers = res.body;
+                let expected = [];
+                _.range(1, 3).forEach((id) => {
+                    expected.push(exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: id }));
+                });
+                expected = _.flatten(expected);
+                answers.forEach((a, indx) => {
+                    expect(a).to.deep.equal(Object.assign({}, expected[indx], { questionIndex: answers[indx].questionIndex }));
+                    expect(a.questionIndex).to.be.a('number');
+                });
+            }));
+
     it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({ 'survey-id': 1 }, 'JSON'));
     it('export assessment answers no questionId or sectionId JSON', verifyExportAssessmentAnswers({ 'survey-id': 2 }, 'JSON'));
     it('export assessment answers no questionId or sectionId JSON comments', verifyExportAssessmentAnswers({ 'survey-id': 1, 'include-comments': true }, 'JSON'));

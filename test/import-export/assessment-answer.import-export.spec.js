@@ -188,6 +188,20 @@ describe('export assessment answers unit', function answerAssessmentImportExport
             verifyExportAssessmentAnswerAnswers({ sectionId: index + 1, surveyId: 2, includeComments: true }));
     });
 
+    it('export assessment answer answers no surveyId', () => models.assessmentAnswer.exportAssessmentAnswerAnswers({})
+            .then((answers) => {
+                let expected = [];
+                _.range(1, 3).forEach((id) => {
+                    expected.push(exportBuilder.getExpectedExportedAsessmentAnswerAnswers({ surveyId: id }));
+                });
+                expected = _.flatten(expected);
+                answers.forEach((a, indx) => {
+                    expect(a).to.deep.equal(Object.assign({}, expected[indx], { questionIndex: answers[indx].questionIndex }));
+                    expect(a.questionIndex).to.be.a('number');
+                });
+            }));
+
+
     let questionCsvContent;
     let sectionCsvContent;
     let surveyCsvContent;

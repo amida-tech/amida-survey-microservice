@@ -327,15 +327,15 @@ module.exports = class AnswerAssessmentDAO extends Base {
         if (sectionId && questionId) {
             return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
         }
-
-        if (!surveyId) {
-            return SurveyError.reject('surveyMustBeSpecified');
+        const where = {};
+        if (surveyId) {
+            where.surveyId = surveyId;
         }
-
         if (sectionId) {
+            where.sectionId = sectionId;
             questionsPromise =
             this.db.SurveySection.findOne({
-                where: { sectionId, surveyId },
+                where: surveyId ? { surveyId, sectionId } : { questionId },
                 attributes: ['id'],
                 raw: true,
             }).then((section) => {
@@ -352,14 +352,15 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 });
             });
         } else if (questionId) {
+            where.questionId = questionId;
             questionsPromise = this.db.SurveyQuestion.findAll({
-                where: { surveyId, questionId },
+                where: surveyId ? { surveyId, questionId } : { questionId },
                 raw: true,
                 attributes: ['questionId', 'line'],
             });
         } else {
             questionsPromise = this.db.SurveyQuestion.findAll({
-                where: { surveyId },
+                where: surveyId ? { surveyId } : {},
                 raw: true,
                 attributes: ['questionId', 'line'],
             });
@@ -367,12 +368,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
 
 
         return questionsPromise.then(questions => this.db.SurveyText.findAll({
-            where: { survey_id: surveyId },
+            where: surveyId ? { surveyId } : {},
             raw: true,
             attributes: ['name', 'surveyId'],
-
         }).then(surveys => this.db.AssessmentSurvey.findAll({
-            where: { survey_id: surveyId },
+            where: surveyId ? { surveyId } : {},
             raw: true,
             attributes: ['assessmentId', 'surveyId'],
         }).then((surveyAssessments) => {
@@ -393,7 +393,6 @@ module.exports = class AnswerAssessmentDAO extends Base {
             const questionLines = questions.map(r => [r.questionId, r.line]);
             const questionLinesMap = new Map(questionLines);
             const assessmentIds = surveyAssessments.map(r => r.assessmentId);
-
             const newOptions = {
                 questionIds,
                 surveyId,
@@ -425,10 +424,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
                     const qTextsMapInput = questionTexts.map(r => [r.id, { text: r.text, instruction: r.instruction }]);// eslint-disable-line max-len
                     const qTextsMap = new Map(qTextsMapInput);
                     const surveyNames = surveys.map(r => [r.surveyId, r.name]);
+
                     const surveyNameMap = new Map(surveyNames);
+
                     const assessmentMapInput = assessments.map(r => [r.id, { group: r.group, stage: r.stage }]);// eslint-disable-line max-len
                     const assessmentMap = new Map(assessmentMapInput);
-
                     const latestCompleteAssessments = new Map();
                     const newAnswers = answers.map((a) => {
                         const createdAtDate = new Date(a.createdAt);
@@ -444,10 +444,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         questionChoices.find(questionChoice =>
                           questionChoice.id === a.questionChoiceId).weight :
                         null;
+
                         const newAnswer = Object.assign(a, {
                             group: `${assessmentMap.get(a.assessmentId).group}`,
                             stage: `${assessmentMap.get(a.assessmentId).stage}`,
-                            surveyName: surveyNameMap.get(surveyId),
+                            surveyName: surveyNameMap.get(a.surveyId),
                             weight,
                             date,
                             questionText: qTextsMap.get(a.questionId).text || '',
@@ -498,10 +499,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                                const finalAnswers =
                                                    orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                                if (questionId || questionId === 0) {
-                                                   return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
+                                                   return _.sortBy(finalAnswers, [a => a.surveyId, a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                                }
 
                                                return _.sortBy(finalAnswers, [
+                                                   a => a.surveyId,
                                                    a => a.group,
                                                    a => questionLinesMap.get(a.questionId),
                                                    a => a.choiceText,
@@ -511,9 +513,10 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                 const finalAnswers =
                                         orderAssessmentAnswerExportObjects(latestCompletedAnswers, includeComments);// eslint-disable-line max-len
                                 if (questionId || questionId === 0) {
-                                    return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
+                                    return _.sortBy(finalAnswers, [a => a.surveyId, a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                 }
                                 return _.sortBy(finalAnswers, [
+                                    a => a.surveyId,
                                     a => a.group,
                                     a => questionLinesMap.get(a.questionId),
                                     a => a.choiceText,
@@ -525,10 +528,11 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                    const finalAnswers =
                                        orderAssessmentAnswerExportObjects(answersWithComments, includeComments);// eslint-disable-line max-len
                                    if (questionId || questionId === 0) {
-                                       return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
+                                       return _.sortBy(finalAnswers, [a => a.surveyId, a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                                    }
 
                                    return _.sortBy(finalAnswers, [
+                                       a => a.surveyId,
                                        a => a.group,
                                        a => questionLinesMap.get(a.questionId),
                                        a => a.choiceText,
@@ -542,6 +546,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                         return _.sortBy(finalAnswers, [a => a.group, a => a.choiceText]);// eslint-disable-line max-len
                     }
                     return _.sortBy(finalAnswers, [
+                        a => a.surveyId,
                         a => a.group,
                         a => questionLinesMap.get(a.questionId),
                         a => a.choiceText,
