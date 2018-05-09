@@ -316,7 +316,7 @@ const IntegrationTests = class SurveyIntegrationTests {
             const survey = generator.newSurvey(options);
             surveySuperTest.post('/surveys', survey, 201)
                 .expect((res) => {
-                    hxSurvey.push(survey, res.body);
+                    hxSurvey.push(Object.assign(survey, {authorId: surveySuperTest.userId}), res.body);
                 })
                 .end(done);
         };
@@ -349,7 +349,7 @@ const IntegrationTests = class SurveyIntegrationTests {
                             return question;
                         });
                     }
-                    hxSurvey.push(fullSurvey, res.body);
+                    hxSurvey.push(Object.assign(fullSurvey, {authorId: surveySuperTest.userId}), res.body);
                 });
         };
     }
@@ -367,7 +367,6 @@ const IntegrationTests = class SurveyIntegrationTests {
                     hxSurvey.reloadServer(res.body);
                     let expected = hxSurvey.client(index);
                     expected = _.cloneDeep(expected);
-                    expected.authorId = surveySuperTest.userId;
                     comparator.survey(expected, res.body);
                 })
                 .end(done);
