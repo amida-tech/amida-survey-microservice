@@ -51,21 +51,21 @@ const main = {
         origin: process.env.SURVEY_SERVICE_CORS_ORIGIN,
     },
     jwt: {
-        secret: process.env.SURVEY_SERVICE_CLIENT_SECRET,
+        secret: process.env.JWT_SECRET,
     },
     port: process.env.SURVEY_SERVICE_PORT || 9005,
     db: {
-        name: process.env.SURVEY_SERVICE_DB_NAME,
-        user: process.env.SURVEY_SERVICE_DB_USER,
-        pass: process.env.SURVEY_SERVICE_DB_PASS,
-        host: process.env.SURVEY_SERVICE_DB_HOST,
-        port: process.env.SURVEY_SERVICE_DB_PORT,
+        name: process.env.SURVEY_SERVICE_PG_DB,
+        user: process.env.SURVEY_SERVICE_PG_USER,
+        pass: process.env.SURVEY_SERVICE_PG_PASSWORD,
+        host: process.env.SURVEY_SERVICE_PG_HOST,
+        port: process.env.SURVEY_SERVICE_PG_PORT,
         dialect: process.env.SURVEY_SERVICE_DB_DIALECT,
-        poolMax: process.env.SURVEY_SERVICE_DB_POOL_MAX,
-        poolMin: process.env.SURVEY_SERVICE_DB_POOL_MIN,
-        poolIdle: process.env.SURVEY_SERVICE_DB_POOL_IDLE,
-        schema: process.env.SURVEY_SERVICE_DB_SCHEMA,
-        ssl: process.env.SURVEY_SERVICE_DB_SSL,
+        poolMax: process.env.SURVEY_SERVICE_PG_POOL_MAX,
+        poolMin: process.env.SURVEY_SERVICE_PG_POOL_MIN,
+        poolIdle: process.env.SURVEY_SERVICE_PG_POOL_IDLE,
+        schema: process.env.SURVEY_SERVICE_PG_SCHEMA,
+        ssl: process.env.SURVEY_SERVICE_PG_SSL,
     },
     superUser: {
         username: process.env.SURVEY_SERVICE_SUPER_USER_USERNAME,
@@ -82,8 +82,8 @@ const main = {
         resetExpires: process.env.SURVEY_SERVICE_CRYPT_RESET_EXPIRES,
         resetExpiresUnit: process.env.SURVEY_SERVICE_CRYPT_RESET_EXPIRES_UNIT,
     },
-    clientBaseUrl: process.env.SURVEY_SERVICE_CLIENT_BASE_URL,
     tmpDirectory: process.env.SURVEY_SERVICE_TMP_DIRECTORY,
+    clientBaseUrl: process.env.AUTH_MICROSERVICE_URI,
 };
 
 const configBase = _.merge(all, main);
