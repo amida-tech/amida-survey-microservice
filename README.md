@@ -68,7 +68,7 @@ SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000\
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
 
 - JWT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
-- AUTH_MICROSERVICE_URI: Base client url for password reset (no default).
+- AUTH_MICROSERVICE_URL: Base client url for password reset (no default).
 - SURVEY_SERVICE_PORT: Port for the API server (9005).
 - SURVEY_SERVICE_PG_DB: Database name (surveyService for development and production, surveyServicetest for test).
 - SURVEY_SERVICE_PG_USER: Database user (no default).

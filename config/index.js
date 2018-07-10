@@ -83,7 +83,7 @@ const main = {
         resetExpiresUnit: process.env.SURVEY_SERVICE_CRYPT_RESET_EXPIRES_UNIT,
     },
     tmpDirectory: process.env.SURVEY_SERVICE_TMP_DIRECTORY,
-    clientBaseUrl: process.env.AUTH_MICROSERVICE_URI,
+    clientBaseUrl: process.env.AUTH_MICROSERVICE_URL,
 };
 
 const configBase = _.merge(all, main);
