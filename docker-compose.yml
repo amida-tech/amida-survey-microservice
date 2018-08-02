@@ -24,7 +24,7 @@ services:
 
     # Overwrite any env var defined in .env file (if required)
     environment:
-      - SURVEY_SERVICE_PG_HOST=postgres
+      - SURVEY_SERVICE_DB_HOST=postgres
 
     # Link to containers in another service.
     # Links also express dependency between services in the same way as depends_on,
