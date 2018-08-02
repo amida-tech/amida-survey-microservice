@@ -318,6 +318,7 @@ describe('survey integration', function surveyIntegration() {
             replacement.parentId = hxSurvey.id(index);
             surveySuperTest.post('/surveys', replacement, 201)
                 .expect((res) => {
+                    Object.assign(replacement, {authorId:surveySuperTest.userId});
                     hxSurvey.replace(index, replacement, res.body);
                 })
                 .end(done);
