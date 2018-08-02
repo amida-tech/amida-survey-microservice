@@ -52,34 +52,35 @@ Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/la
 
 A minimal sample `.env` file is below.  Change according to your database. `.env.example` in the root directory can be used (`cp .env.example .env`)
 ```
-SURVEY_SERVICE_DB_NAME=surveyService
-SURVEY_SERVICE_DB_USER=postgres
-SURVEY_SERVICE_DB_PASS=postgres
-SURVEY_SERVICE_DB_HOST=localhost
-SURVEY_SERVICE_DB_PORT=5432
+SURVEY_SERVICE_PG_DB=surveyService
+SURVEY_SERVICE_PG_USER=postgres
+SURVEY_SERVICE_PG_PASSWORD=postgres
+SURVEY_SERVICE_PG_HOST=localhost
+SURVEY_SERVICE_PG_PORT=5432
 SURVEY_SERVICE_DB_DIALECT=postgres
-SURVEY_SERVICE_DB_POOL_MAX=5
-SURVEY_SERVICE_DB_POOL_MIN=0
-SURVEY_SERVICE_DB_POOL_IDLE=10000
+SURVEY_SERVICE_PG_POOL_MAX=5
+SURVEY_SERVICE_PG_POOL_MIN=0
+SURVEY_SERVICE_PG_POOL_IDLE=10000
 SURVEY_SERVICE_LOGGING_LEVEL=emerg
 SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000\
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
 
-- SURVEY_SERVICE_CLIENT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
+- JWT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
+- AUTH_MICROSERVICE_URL: Base client url for password reset (no default).
 - SURVEY_SERVICE_PORT: Port for the API server (9005).
-- SURVEY_SERVICE_DB_NAME: Database name (surveyService for development and production, surveyServicetest for test).
-- SURVEY_SERVICE_DB_USER: Database user (no default).
-- SURVEY_SERVICE_DB_PASS: Database password (no default).
-- SURVEY_SERVICE_DB_HOST: Database host ip (localhost).
-- SURVEY_SERVICE_DB_PORT: Database host port (5432).
-- SURVEY_SERVICE_DB_SCHEMA: Database schema in postgres sense.  This can be either a single schema name or '~' delimited string of multi tenant schema names.
+- SURVEY_SERVICE_PG_DB: Database name (surveyService for development and production, surveyServicetest for test).
+- SURVEY_SERVICE_PG_USER: Database user (no default).
+- SURVEY_SERVICE_PG_PASSWORD: Database password (no default).
+- SURVEY_SERVICE_PG_HOST: Database host ip (localhost).
+- SURVEY_SERVICE_PG_PORT: Database host port (5432).
+- SURVEY_SERVICE_PG_SCHEMA: Database schema in postgres sense.  This can be either a single schema name or '~' delimited string of multi tenant schema names.
 - SURVEY_SERVICE_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
-- SURVEY_SERVICE_DB_POOL_MAX: Maximum number of connections in pool.
-- SURVEY_SERVICE_DB_POOL_MIN: Minimum number of connections in pool.
-- SURVEY_SERVICE_DB_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
-- SURVEY_SERVICE_DB_SSL: Use secure connections with SSL.
+- SURVEY_SERVICE_PG_POOL_MAX: Maximum number of connections in pool.
+- SURVEY_SERVICE_PG_POOL_MIN: Minimum number of connections in pool.
+- SURVEY_SERVICE_PG_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
+- SURVEY_SERVICE_PG_SSL: Use secure connections with SSL.
 - SURVEY_SERVICE_SUPER_USER_USERNAME: Super user username (super).
 - SURVEY_SERVICE_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
 - SURVEY_SERVICE_SUPER_USER_EMAIL: Super user email (survey_demo@amida.com).
@@ -88,7 +89,6 @@ A list of full environment variable settings is below.  They can be either manua
 - SURVEY_SERVICE_CRYPT_RESET_TOKEN_LENGTH: Length for reset password token (20).
 - SURVEY_SERVICE_CRYPT_RESET_PASSWORD_LENGTH: Length for temporary random password during reset (10).
 - SURVEY_SERVICE_CRYPT_RESET_EXPIRES: Reset password expires value in seconds (3600).
-- SURVEY_SERVICE_CLIENT_BASE_URL: Base client url for password reset (no default).
 - SURVEY_SERVICE_CORS_ORIGIN: Client URIs that the API CORS setup will accept. Delimited by spaces for multiple URIs e.g. "http://localhost:4000 https://www.example.com"
 - SURVEY_SERVICE_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
 - SURVEY_SERVICE_ZIP_API_KEY: API key for Zipwise.
@@ -257,7 +257,7 @@ Migration uses the `.env` file in the root directory.  Each run creates/updates 
 
 ### Deployment to AWS with Packer and Terraform
 You will need to install [pakcer](https://www.packer.io/) and [terraform](https://www.terraform.io/) installed on your local machine.
-Be sure to have your postgres host running and replace the `pg_host` value in the command below with the postgres host address. The command in `1.` below will allow you to build the AMI with default settings. You may also need to include additional environment variables in `./deploy/roles/api/templates/env.service.j2` before build.
+Be sure to have your postgres host running and replace the `survey_service_pg_host` value in the command below with the postgres host address. The command in `1.` below will allow you to build the AMI with default settings. You may also need to include additional environment variables in `./deploy/roles/api/templates/env.service.j2` before build.
 1. First validate the AMI with a command similar to ```packer validate \
     -var 'aws_access_key=my-aws-access-key' \
     -var 'aws_secret_key=my-aws-secret-key' \
