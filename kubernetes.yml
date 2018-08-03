@@ -35,8 +35,6 @@ spec:
           value: '10000'
         - name: SURVEY_SERVICE_LOGGING_LEVEL
           value: emerg
-        - name: SURVEY_SERVICE_ZIP_API_KEY
-          value: pwoy0hqicy3e49qd
         - name: JWT_SECRET
           value: 0a6b944d-d2fb-46fc-a85e-0295c986cd9f
         - name: DEBUGXX
