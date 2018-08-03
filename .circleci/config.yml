@@ -10,18 +10,18 @@ jobs:
       - image: circleci/node:8.9
         environment:
         - NODE_ENV: development
-        - SURVEY_SERVICE_DB_NAME: surveyService
-        - SURVEY_SERVICE_DB_USER: postgres
-        - SURVEY_SERVICE_DB_PASS: postgres
-        - SURVEY_SERVICE_DB_HOST: localhost
-        - SURVEY_SERVICE_DB_PORT: 5432
+        - SURVEY_SERVICE_PG_DB: surveyService
+        - SURVEY_SERVICE_PG_USER: postgres
+        - SURVEY_SERVICE_PG_PASSWORD: postgres
+        - SURVEY_SERVICE_PG_HOST: localhost
+        - SURVEY_SERVICE_PG_PORT: 5432
         - SURVEY_SERVICE_DB_DIALECT: postgres
-        - SURVEY_SERVICE_DB_POOL_MAX: 5
-        - SURVEY_SERVICE_DB_POOL_MIN: 0
-        - SURVEY_SERVICE_DB_POOL_IDLE: 10000
+        - SURVEY_SERVICE_PG_POOL_MAX: 5
+        - SURVEY_SERVICE_PG_POOL_MIN: 0
+        - SURVEY_SERVICE_PG_POOL_IDLE: 10000
         - SURVEY_SERVICE_LOGGING_LEVEL: emerg
-        - SURVEY_SERVICE_CLIENT_BASE_URL: http://localhost:4000/reset-tokens/
         - SURVEY_SERVICE_CORS_ORIGIN: http://localhost:4000
+        - AUTH_MICROSERVICE_URL: http://localhost:4000/reset-tokens/
       - image: circleci/postgres:9.6.2-alpine
         environment:
         - POSTGRES_USER: postgres
@@ -84,6 +84,3 @@ workflows:
               only:
                 - develop
                 - master
-
-
-
