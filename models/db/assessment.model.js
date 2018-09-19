@@ -1,35 +1,41 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('assessment', {
+module.exports = function assessment(sequelize, Sequelize, schema) {
+    const tableName = 'assessment';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: true
-        },
-        sequenceType: {
-            type: DataTypes.ENUM('ondemand', 'biyearly'),
-            field: 'sequence_type',
-            allowNull: false
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
-        updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at',
-        },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
+        stage: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+        },
+        group: {
+            type: Sequelize.TEXT,
+            field: 'group',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        indexes: [{
+            fields: ['group'],
+            where: { deleted_at: { $eq: null } },
+        }],
+        paranoid: true,
     });
 };

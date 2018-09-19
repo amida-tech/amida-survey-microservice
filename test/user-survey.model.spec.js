@@ -1,5 +1,9 @@
-/* global describe,before,it*/
+/* global describe,before,it */
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -19,11 +23,11 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('user survey unit', function () {
+describe('user survey unit', () => {
     before(shared.setUpFn());
 
     const userCount = 3;
-    let surveyCount = 3;
+    const surveyCount = 3;
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
@@ -31,33 +35,33 @@ describe('user survey unit', function () {
     const mapStatus = new Map();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
-    const _key = function (userIndex, surveyIndex) {
+    const getKey = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
-    const verifyNoUserSurveys = function (userIndex) {
-        return function () {
+    const verifyNoUserSurveysFn = function (userIndex) {
+        return function verifyNoUserSurveys() {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId)
                 .then(result => expect(result.length).to.equal(0));
         };
     };
 
-    for (let i = 0; i < userCount; ++i) {
-        it(`verify no surveys for user ${i}`, verifyNoUserSurveys(i));
-    }
+    _.range(userCount).forEach((i) => {
+        it(`verify no surveys for user ${i}`, verifyNoUserSurveysFn(i));
+    });
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
 
     const verifyStatusFn = function (userIndex, surveyIndex, expectedStatus) {
-        return function () {
+        return function verifyStatus() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurveyStatus(userId, surveyId)
@@ -70,34 +74,47 @@ describe('user survey unit', function () {
     it('verify user 1 survey 0 status', verifyStatusFn(0, 0, 'new'));
     it('verify user 1 survey 1 status', verifyStatusFn(0, 0, 'new'));
 
-    const verifyUserSurveyListFn = function (userIndex, statusList) {
-        return function () {
+    const verifyUserSurveyListFn = function (userIndex, statusList, options = {}) {
+        return function verifyUserSurveyList() {
             const userId = hxUser.id(userIndex);
-            return models.userSurvey.listUserSurveys(userId)
-                .then(userSurveys => {
-                    const expected = _.cloneDeep(hxSurvey.listServers());
+            return models.userSurvey.listUserSurveys(userId, options)
+                .then((userSurveys) => {
+                    let expected = _.cloneDeep(hxSurvey.listServers());
+
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
                         if (userSurvey.description === undefined) {
                             delete userSurvey.description;
                         }
                     });
+
+                    if (options.userSurveyStatus) {
+                        expected = expected.filter(userSurvey => userSurvey.status === options.userSurveyStatus);
+                    }
+
                     expect(userSurveys).to.deep.equal(expected);
                 });
         };
     };
 
+
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['new', 'new', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(0, ['new', 'new', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(0, ['new', 'new', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(0, ['new', 'new', 'new'], { userSurveyStatus: 'in-progress' }));
     it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'new', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(1, ['new', 'new', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(1, ['new', 'new', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(1, ['new', 'new', 'new'], { userSurveyStatus: 'in-progress' }));
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
-        return function () {
+        return function verifyUserSurvey() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId)
-                .then(userSurvey => {
+                .then((userSurvey) => {
                     const survey = hxSurvey.server(surveyIndex);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -106,7 +123,7 @@ describe('user survey unit', function () {
     };
 
     const verifyUserSurveyAnswersFn = function (userIndex, surveyIndex, status, includeSurvey) {
-        return function () {
+        return function verifyUserSurveyAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const options = {};
@@ -114,14 +131,14 @@ describe('user survey unit', function () {
                 options.includeSurvey = true;
             }
             return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
-                .then(userSurveyAnswers => {
+                .then((userSurveyAnswers) => {
                     if (includeSurvey) {
                         const survey = hxSurvey.server(surveyIndex);
                         expect(userSurveyAnswers.survey).to.deep.equal(survey);
                     } else {
                         expect(userSurveyAnswers.survey).to.equal(undefined);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -130,15 +147,15 @@ describe('user survey unit', function () {
     };
 
     const answerSurveyFullFn = function (userIndex, surveyIndex, status) {
-        return function () {
+        return function answerSurveyFull() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 answers,
-                status
+                status,
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, status));
@@ -146,7 +163,7 @@ describe('user survey unit', function () {
     };
 
     const answerSurveyPartialFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyPartial() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -154,10 +171,10 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'in-progress'
+                status: 'in-progress',
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, 'in-progress'));
@@ -165,7 +182,7 @@ describe('user survey unit', function () {
     };
 
     const answerSurveyMissingPlusCompletedFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyMissingPlusCompleted() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -175,10 +192,10 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
@@ -190,7 +207,7 @@ describe('user survey unit', function () {
     };
 
     const answerSurveyPartialCompletedFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyPartialCompleted() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -198,14 +215,14 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
             const userId = hxUser.id(userIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
         };
-
     };
+
 
     it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'new'));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'new'));
@@ -229,6 +246,9 @@ describe('user survey unit', function () {
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
 
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'new', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(0, ['completed', 'new', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(0, ['completed', 'new', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(0, ['completed', 'new', 'new'], { userSurveyStatus: 'in-progress' }));
 
     it('user 1 answers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
@@ -237,6 +257,10 @@ describe('user survey unit', function () {
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
 
     it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'in-progress' }));
+
 
     it('user 1 reanswers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
@@ -245,6 +269,10 @@ describe('user survey unit', function () {
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
 
     it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'in-progress' }));
+
 
     it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'in-progress'));
@@ -253,6 +281,10 @@ describe('user survey unit', function () {
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
 
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'in-progress', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(0, ['completed', 'in-progress', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(0, ['completed', 'in-progress', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(0, ['completed', 'in-progress', 'new'], { userSurveyStatus: 'in-progress' }));
+
 
     it('user 1 answers survey 0 partial completed', answerSurveyPartialCompletedFn(1, 0));
     it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
@@ -261,6 +293,10 @@ describe('user survey unit', function () {
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
 
     it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list new', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 1 user survey list completed', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 1 user survey list in-progress', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new'], { userSurveyStatus: 'in-progress' }));
+
 
     it('user 0 reanswers survey 1 required plus completed', answerSurveyMissingPlusCompletedFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'completed'));
@@ -269,12 +305,16 @@ describe('user survey unit', function () {
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
 
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'completed', 'new']));
+    it('verify user 0 user survey list new', verifyUserSurveyListFn(0, ['completed', 'completed', 'new'], { userSurveyStatus: 'new' }));
+    it('verify user 0 user survey list completed', verifyUserSurveyListFn(0, ['completed', 'completed', 'new'], { userSurveyStatus: 'completed' }));
+    it('verify user 0 user survey list in-progress', verifyUserSurveyListFn(0, ['completed', 'completed', 'new'], { userSurveyStatus: 'in-progress' }));
+
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurveyList() {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId, { language })
-                .then(userSurveys => {
+                .then((userSurveys) => {
                     if (!notTranslated) {
                         translator.isSurveyListTranslated(userSurveys, language);
                     }
@@ -292,16 +332,16 @@ describe('user survey unit', function () {
     };
 
     const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurvey() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId, { language })
-                .then(userSurvey => {
+                .then((userSurvey) => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -310,18 +350,18 @@ describe('user survey unit', function () {
     };
 
     const verifyTranslatedUserSurveyAnswersFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurveyAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const options = { includeSurvey: true, language };
             return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
-                .then(userSurveyAnswers => {
+                .then((userSurveyAnswers) => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }
                     expect(userSurveyAnswers.survey).to.deep.equal(survey);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -338,7 +378,7 @@ describe('user survey unit', function () {
     it('verify user 2 survey 1 answers in spanish (no transaltion)', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es', true));
 
     const translateSurveyFn = function (index, language) {
-        return function () {
+        return function translateSurvey() {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.patchSurveyText(translation, language)
@@ -348,9 +388,9 @@ describe('user survey unit', function () {
         };
     };
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
-    }
+    });
 
     it('verify user 2 user survey list in spanish', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es'));
 
@@ -361,20 +401,20 @@ describe('user survey unit', function () {
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es'));
 
     const answerTranslatedSurveyFullFn = function (userIndex, surveyIndex, status, language) {
-        return function () {
+        return function answerTranslatedSurveyFull() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 answers,
                 status,
-                language
+                language,
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             mapAnswers.set(key, answers);
             mapStatus.set(key, status);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
-                .then(() => answers.forEach(answer => answer.language = language));
+                .then(() => answers.forEach((answer) => { answer.language = language; }));
         };
     };
 

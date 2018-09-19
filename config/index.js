@@ -6,94 +6,93 @@ dotenv.config();
 
 const _ = require('lodash');
 
+const developmentEnv = require('./development');
+const testEnv = require('./test');
+const productionEnv = require('./production');
+
 const all = {
     env: 'development',
     cors: {
-        origin: 'http://localhost:4000'
+        origin: 'http://localhost:4000',
     },
     db: {
-        name: 'recreg',
+        name: 'surveyService',
         host: 'localhost',
         port: '5432',
         dialect: 'postgres',
         poolMax: 5,
         poolMin: 0,
         poolIdle: 10000,
-        schema: 'public'
+        schema: 'public',
+        ssl: false,
     },
     superUser: {
         username: 'super',
         password: 'Am!d@2017PW',
-        email: 'rr_demo@amida.com'
+        email: 'survey_demo@amida.com',
     },
     logging: {
-        level: 'info'
+        level: 'info',
     },
     crypt: {
         hashrounds: 10,
         resetTokenLength: 20,
         resetPasswordLength: 10,
         resetExpires: 3600,
-        resetExpiresUnit: 'seconds'
+        resetExpiresUnit: 'seconds',
     },
-    tmpDirectory: '/tmp'
+    tmpDirectory: '/tmp',
+
 };
 
 const main = {
     env: process.env.NODE_ENV,
     cors: {
-        origin: process.env.RECREG_CORS_ORIGIN
+        origin: process.env.SURVEY_SERVICE_CORS_ORIGIN,
     },
     jwt: {
-        secret: process.env.RECREG_CLIENT_SECRET
+        secret: process.env.JWT_SECRET,
     },
-    port: process.env.RECREG_PORT || 9005,
+    port: process.env.SURVEY_SERVICE_PORT || 9005,
     db: {
-        name: process.env.RECREG_DB_NAME,
-        user: process.env.RECREG_DB_USER,
-        pass: process.env.RECREG_DB_PASS,
-        host: process.env.RECREG_DB_HOST,
-        port: process.env.RECREG_DB_PORT,
-        dialect: process.env.RECREG_DB_DIALECT,
-        poolMax: process.env.RECREG_DB_POOL_MAX,
-        poolMin: process.env.RECREG_DB_POOL_MIN,
-        poolIdle: process.env.RECREG_DB_POOL_IDLE,
-        schema: process.env.RECREG_DB_SCHEMA
+        name: process.env.SURVEY_SERVICE_PG_DB,
+        user: process.env.SURVEY_SERVICE_PG_USER,
+        pass: process.env.SURVEY_SERVICE_PG_PASSWORD,
+        host: process.env.SURVEY_SERVICE_PG_HOST,
+        port: process.env.SURVEY_SERVICE_PG_PORT,
+        dialect: process.env.SURVEY_SERVICE_DB_DIALECT,
+        poolMax: process.env.SURVEY_SERVICE_PG_POOL_MAX,
+        poolMin: process.env.SURVEY_SERVICE_PG_POOL_MIN,
+        poolIdle: process.env.SURVEY_SERVICE_PG_POOL_IDLE,
+        schema: process.env.SURVEY_SERVICE_PG_SCHEMA,
+        ssl: process.env.SURVEY_SERVICE_PG_SSL,
     },
     superUser: {
-        username: process.env.RECREG_SUPER_USER_USERNAME,
-        password: process.env.RECREG_SUPER_USER_PASSWORD,
-        email: process.env.RECREG_SUPER_USER_EMAIL
+        username: process.env.SURVEY_SERVICE_SUPER_USER_USERNAME,
+        password: process.env.SURVEY_SERVICE_SUPER_USER_PASSWORD,
+        email: process.env.SURVEY_SERVICE_SUPER_USER_EMAIL,
     },
     logging: {
-        level: process.env.RECREG_LOGGING_LEVEL
+        level: process.env.SURVEY_SERVICE_LOGGING_LEVEL,
     },
     crypt: {
-        hashrounds: process.env.RECREG_CRYPT_HASHROUNDS,
-        resetTokenLength: process.env.RECREG_CRYPT_RESET_TOKEN_LENGTH,
-        resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH,
-        resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
-        resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT
+        hashrounds: process.env.SURVEY_SERVICE_CRYPT_HASHROUNDS,
+        resetTokenLength: process.env.SURVEY_SERVICE_CRYPT_RESET_TOKEN_LENGTH,
+        resetPasswordLength: process.env.SURVEY_SERVICE_CRYPT_RESET_PASSWORD_LENGTH,
+        resetExpires: process.env.SURVEY_SERVICE_CRYPT_RESET_EXPIRES,
+        resetExpiresUnit: process.env.SURVEY_SERVICE_CRYPT_RESET_EXPIRES_UNIT,
     },
-    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
-    tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
-    constantContact: {
-        baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
-        token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
-        apiKey: process.env.RECREG_CONSTANT_CONTACT_KEY,
-        secret: process.env.RECREG_CONSTANT_CONTACT_SECRET,
-        listId: process.env.RECREG_CONSTANT_CONTACT_LIST_ID
-    },
-    zipCodeApi: {
-        baseUrl: process.env.RECREG_ZIP_BASE_URL,
-        apiKey: process.env.RECREG_ZIP_API_KEY,
-        distance: process.env.RECREG_ZIP_DISTANCE,
-        units: process.env.RECREG_ZIP_UNITS
-    }
+    tmpDirectory: process.env.SURVEY_SERVICE_TMP_DIRECTORY,
+    clientBaseUrl: process.env.AUTH_MICROSERVICE_URL,
 };
 
 const configBase = _.merge(all, main);
-const config = _.merge(configBase, require('./' + configBase.env + '.js'));
+const envBase = {
+    development: developmentEnv,
+    test: testEnv,
+    production: productionEnv,
+};
+const config = _.merge(configBase, envBase[configBase.env]);
 
 process.env.NODE_ENV = config.env;
 

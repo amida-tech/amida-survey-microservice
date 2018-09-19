@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0, class-methods-use-this: 0 */
+
 const _ = require('lodash');
 
 module.exports = class Answerer {
@@ -22,7 +24,7 @@ module.exports = class Answerer {
     zip() {
         const answerIndex = this.answerIndex;
         const zip = ['20850', '53727', '76333', '74747'][answerIndex % 4];
-        return { textValue: zip };
+        return { zipcodeValue: zip };
     }
 
     bloodPressure() {
@@ -30,8 +32,8 @@ module.exports = class Answerer {
         return {
             bloodPressureValue: {
                 systolic: 100 + (answerIndex % 40),
-                diastolic: 70 + (answerIndex % 20)
-            }
+                diastolic: 70 + (answerIndex % 20),
+            },
         };
     }
 
@@ -40,40 +42,45 @@ module.exports = class Answerer {
         return {
             feetInchesValue: {
                 feet: 5 + (answerIndex % 2),
-                inches: answerIndex % 12
-            }
+                inches: answerIndex % 12,
+            },
         };
     }
 
     date() {
         const answerIndex = this.answerIndex;
-        const month = answerIndex % 8 + 1;
-        const day = answerIndex % 13 + 10;
-        const year = answerIndex % 34 + 1970;
+        const month = (answerIndex % 8) + 1;
+        const day = (answerIndex % 13) + 10;
+        const year = (answerIndex % 34) + 1970;
         return { dateValue: `${year}-0${month}-${day}` };
     }
 
     year() {
         const answerIndex = this.answerIndex;
-        const year = answerIndex % 34 + 1980;
+        const year = (answerIndex % 34) + 1980;
         return { yearValue: `${year}` };
     }
 
     month() {
         const answerIndex = this.answerIndex;
-        const month = answerIndex % 8 + 1;
+        const month = (answerIndex % 8) + 1;
         return { monthValue: `0${month}` };
     }
 
     day() {
         const answerIndex = this.answerIndex;
-        const day = answerIndex % 13 + 10;
+        const day = (answerIndex % 13) + 10;
         return { dayValue: `${day}` };
     }
 
     integer() {
         const answerIndex = this.answerIndex;
         return { integerValue: answerIndex };
+    }
+
+    float() {
+        const answerIndex = this.answerIndex;
+        return { floatValue: answerIndex + 0.1 };
     }
 
     pounds() {
@@ -84,7 +91,7 @@ module.exports = class Answerer {
 
     bool() {
         const answerIndex = this.answerIndex;
-        return { boolValue: answerIndex % 2 === 0 };
+        return { boolValue: (answerIndex % 2) === 0 };
     }
 
     selectChoice(choices) {
@@ -92,9 +99,36 @@ module.exports = class Answerer {
         return choices[answerIndex % choices.length];
     }
 
+    bullet() {
+        const answerIndex = this.answerIndex;
+        return { textValue: `string_${answerIndex}` };
+    }
+
+    scale(question) {
+        const { min, max } = question.scaleLimits;
+        if (min !== undefined && max !== undefined) {
+            return { numberValue: (min + max) / 2 };
+        }
+        if (min !== undefined) {
+            return { numberValue: min + 0.5 };
+        }
+        if (max !== undefined) {
+            return { numberValue: max - 0.5 };
+        }
+        return { numberValue: 0 };
+    }
+
     choice(question) {
         const choice = this.selectChoice(question.choices);
         return { choice: choice.id };
+    }
+
+    openChoice(question) {
+        if (this.answerIndex % 2) {
+            const choice = this.selectChoice(question.choices);
+            return { choice: choice.id };
+        }
+        return { textValue: `text_${this.answerIndex}` };
     }
 
     choiceRef(question) {
@@ -103,11 +137,11 @@ module.exports = class Answerer {
     }
 
     choices(question) {
-        ++this.answerIndex;
+        this.answerIndex += 1;
         this.answerChoicesCountIndex = (this.answerChoicesCountIndex + 1) % 3;
         const choiceCount = Math.min(this.answerChoicesCountIndex + 1, question.choices.length);
         const choices = _.range(choiceCount).map(() => {
-            ++this.answerIndex;
+            this.answerIndex += 1;
             const choice = this.selectChoice(question.choices);
             const answer = { id: choice.id };
             if (choice.type !== 'bool') {
@@ -119,34 +153,56 @@ module.exports = class Answerer {
         return { choices: _.sortBy(choices, 'id') };
     }
 
+    metaUpAnswer(answer) {
+        const index = this.answerIndex;
+        if (index % 3 !== 1) {
+            return answer;
+        }
+        const meta = { [`prop_${index}`]: `value_${index}` };
+        return Object.assign({ meta }, answer);
+    }
+
     answerQuestion(question) {
         const type = _.camelCase(question.type);
         if (question.multiple) {
-            ++this.multiCount;
-            const answers = _.range(this.multiCount % 4 + 1).map((multipleIndex) => {
-                ++this.answerIndex;
+            this.multiCount += 1;
+            const answers = _.range((this.multiCount % 4) + 1).map((multipleIndex) => {
+                this.answerIndex += 1;
                 return Object.assign({ multipleIndex }, this[type](question));
             });
-            return { questionId: question.id, answers };
-        } else {
-            ++this.answerIndex;
-            const answer = this[type](question);
-            return { questionId: question.id, answer };
+            return this.metaUpAnswer({ questionId: question.id, answers });
         }
+        this.answerIndex += 1;
+        const answer = this[type](question);
+        return this.metaUpAnswer({ questionId: question.id, answer });
+    }
+
+    answerFilterQuestion(question) {
+        const type = _.camelCase(question.type);
+        this.answerIndex += 1;
+        if (type === 'choices') {
+            const choice = this.selectChoice(question.choices);
+            const answer = { choice: choice.id };
+            if (choice.type && choice.type !== 'bool') {
+                Object.assign(answer, this[choice.type](question));
+            }
+            return answer;
+        }
+        return this[type](question);
     }
 
     answerMultipleQuestion(question, multipleIndices) {
         const type = _.camelCase(question.type);
         const answers = multipleIndices.map((multipleIndex) => {
-            ++this.answerIndex;
+            this.answerIndex += 1;
             return Object.assign({ multipleIndex }, this[type](question));
         });
-        return { questionId: question.id, answers };
+        return this.metaUpAnswer({ questionId: question.id, answers });
     }
 
     answerChoicesQuestion(question, selectionChoice) {
         const count = question.choices.length;
-        const choices = selectionChoice.map(choiceIndex => {
+        const choices = selectionChoice.map((choiceIndex) => {
             if (choiceIndex < 0) {
                 choiceIndex += count;
             }
@@ -157,18 +213,18 @@ module.exports = class Answerer {
             }
             return answer;
         });
-        return { questionId: question.id, answer: { choices } };
+        return this.metaUpAnswer({ questionId: question.id, answer: { choices } });
     }
 
-    answerChoiceQuestion(question, choiceIndex) {
+    answerChoiceQuestion(question, choiceIndex) { // eslint-disable-line class-methods-use-this
         const choice = question.choices[choiceIndex].id;
         const answer = { choice };
-        return { questionId: question.id, answer };
+        return this.metaUpAnswer({ questionId: question.id, answer });
     }
 
     answerRawQuestion(question) {
         const type = _.camelCase(question.type);
-        ++this.answerIndex;
+        this.answerIndex += 1;
         if (type === 'choice') {
             const choices = question.oneOfChoices || question.choices.map(choice => choice.text);
             return { choiceText: this.selectChoice(choices) };

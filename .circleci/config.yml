@@ -1,0 +1,86 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  test:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:8.9
+        environment:
+        - NODE_ENV: development
+        - SURVEY_SERVICE_PG_DB: surveyService
+        - SURVEY_SERVICE_PG_USER: postgres
+        - SURVEY_SERVICE_PG_PASSWORD: postgres
+        - SURVEY_SERVICE_PG_HOST: localhost
+        - SURVEY_SERVICE_PG_PORT: 5432
+        - SURVEY_SERVICE_DB_DIALECT: postgres
+        - SURVEY_SERVICE_PG_POOL_MAX: 5
+        - SURVEY_SERVICE_PG_POOL_MIN: 0
+        - SURVEY_SERVICE_PG_POOL_IDLE: 10000
+        - SURVEY_SERVICE_LOGGING_LEVEL: emerg
+        - SURVEY_SERVICE_CORS_ORIGIN: http://localhost:4000
+        - AUTH_MICROSERVICE_URL: http://localhost:4000/reset-tokens/
+      - image: circleci/postgres:9.6.2-alpine
+        environment:
+        - POSTGRES_USER: postgres
+        - POSTGRES_DB: surveyService
+        - POSTGRES_PASSWORD: postgres
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run: yarn
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: install global tools
+          command: |
+            sudo npm install -g istanbul
+            sudo apt-get install postgresql-client
+      - run:
+          name: set up DB for testing
+          command: |
+            export PGPASSWORD=postgres
+            sudo psql -U postgres -h localhost -p 5432 -c "create database survey;"
+            sudo psql -U postgres -h localhost -p 5432 -c "create database \"surveyServicetest\";"
+      - run: yarn coverage
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+
+  publish:
+    machine: true
+    steps:
+      - checkout
+
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - run: docker build -t amidatech/survey-service:$CIRCLE_BRANCH .
+
+      - run: docker push amidatech/survey-service:$CIRCLE_BRANCH
+
+workflows:
+  version: 2
+  test-publish:
+    jobs:
+      - test
+      - publish:
+          context: docker
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - develop
+                - master

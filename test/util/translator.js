@@ -1,17 +1,19 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 const chai = require('chai');
 
 const expect = chai.expect;
 
 const translator = {
-    _translate(text, language) {
+    translate(text, language) {
         return `${text} (${language})`;
     },
     isTranslated(texts, language) {
         const languageText = `(${language})`;
-        texts.forEach(text => {
+        texts.forEach((text) => {
             if (text !== null) {
                 const location = text.indexOf(languageText);
                 expect(location).to.be.above(0, `is not translated to ${language}`);
@@ -19,48 +21,46 @@ const translator = {
         });
     },
     translateQuestion(question, language) {
-        const result = _.cloneDeep(question);
-        result.text = this._translate(result.text, language);
-        delete result.type;
-        delete result.meta;
-        if (result.choices) {
-            result.choices.forEach(choice => {
-                choice.text = this._translate(choice.text, language);
-                delete choice.type;
-            });
+        const text = this.translate(question.text, language);
+        const translation = { id: question.id, text };
+        if (question.instruction) {
+            translation.instruction = question.instruction;
         }
-        if (result.actions) {
-            result.actions.forEach(action => {
-                action.text = this._translate(action.text, language);
-                delete action.type;
-            });
+        const choices = question.choices;
+        if (choices) {
+            translation.choices = choices.map(ch => ({
+                id: ch.id,
+                text: this.translate(ch.text, language),
+            }));
         }
-        return result;
+        return translation;
     },
-    translateSurveySections(surveySections, language, result) {
-        if (!result) {
-            result = [];
-        }
-        surveySections.forEach(({ id, name, sections }) => {
+    translateSurveySections(surveySections, language, result = []) {
+        surveySections.forEach(({ id, name, description, sections }) => {
             const translated = {
                 id,
-                name: this._translate(name, language)
+                name: this.translate(name, language),
             };
+            if (description) {
+                const transDescription = this.translate(description, language);
+                translated.description = transDescription;
+            }
             result.push(translated);
             if (sections) {
-                this.translateSurveySections(sections);
+                this.translateSurveySections(sections, language);
             }
         });
         return result;
     },
     translateSurvey(survey, language) {
         const result = _.cloneDeep(survey);
-        result.name = this._translate(result.name, language);
+        result.name = this.translate(result.name, language);
         if (result.description) {
-            result.description = this._translate(result.description, language);
+            result.description = this.translate(result.description, language);
         }
         delete result.meta;
         delete result.status;
+        delete result.authorId;
         if (result.sections) {
             result.sections = this.translateSurveySections(result.sections, language);
         }
@@ -68,19 +68,14 @@ const translator = {
         return result;
     },
     translateChoiceSet(choiceSet, language) {
-        const result = _.cloneDeep(choiceSet);
-        result.choices.forEach(choice => {
-            choice.text = this._translate(choice.text, language);
-        });
+        const result = {};
+        result.choices = choiceSet.choices.map(({ id, text }) => ({ id, text: this.translate(text, language) }));
         return result;
     },
     isQuestionTranslated(question, language) {
         const texts = question.choices ? [] : [question.text];
         if (question.choices) {
             question.choices.forEach(choice => texts.push(choice.text));
-        }
-        if (question.actions) {
-            question.actions.forEach(action => texts.push(action.text));
         }
         this.isTranslated(texts, language);
     },
@@ -106,31 +101,6 @@ const translator = {
         const descriptions = surveys.filter(survey => survey.description).map(survey => survey.description);
         this.isTranslated([...texts, ...descriptions], language);
     },
-    translateConsentType(consentType, language) {
-        const result = _.pick(consentType, ['id', 'title']);
-        result.title = this._translate(result.title, language);
-        return result;
-    },
-    translateConsentDocument(consentDocument, language) {
-        const result = _.pick(consentDocument, ['id', 'content', 'updateComment']);
-        result.content = this._translate(result.content, language);
-        if (result.updateComment) {
-            result.updateComment = this._translate(result.updateComment, language);
-        }
-        return result;
-    },
-    isConsentDocumentTranslated(consentDocument, language) {
-        const languageText = `(${language})`;
-        consentDocument.sections.forEach(section => {
-            ['title', 'content', 'updateComment'].forEach(property => {
-                const text = section[property];
-                if (text) {
-                    const location = text.indexOf(languageText);
-                    expect(location).to.be.above(0, `is not translated to ${language}`);
-                }
-            });
-        });
-    }
 };
 
 module.exports = translator;

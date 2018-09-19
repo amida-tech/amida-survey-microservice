@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const QuestionGenerator = require('./question-generator');
@@ -12,16 +14,19 @@ const sectionGenerators = {
         if (count < 8) {
             throw new Error('Not enough questions for sections.');
         }
+
         const sections = Array(3);
-        sections[0] = { name: 'section_0', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
-        sections[1] = { name: 'section_1', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
-        sections[2] = { name: 'section_2', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        sections[0] = { id: 1, name: 'section_0', description: 'section_0_description', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { id: 2, name: 'section_1', description: 'section_1_description', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { id: 3, name: 'section_2', description: 'section_2_description', questions: _.rangeRight(6, count).map(index => surveyQuestions[index]) };
         return sections;
     },
     oneLevelMissingName(surveyQuestions) {
         const sections = sectionGenerators.oneLevel(surveyQuestions);
         delete sections[0].name;
+        delete sections[0].description;
         delete sections[sections.length - 1].name;
+        delete sections[sections.length - 1].description;
         return sections;
     },
     twoLevel(surveyQuestions) {
@@ -30,9 +35,9 @@ const sectionGenerators = {
         sections[lastIndex].name = 'parent_1';
         return [
             { name: 'parent_0', sections: sections.slice(0, lastIndex) },
-            sections[2]
+            sections[2],
         ];
-    }
+    },
 };
 
 module.exports = class SurveyGenerator {
@@ -55,14 +60,14 @@ module.exports = class SurveyGenerator {
     }
 
     incrementIndex() {
-        ++this.surveyIndex;
+        this.surveyIndex += 1;
     }
 
     sectionType() {
         return this.surveyIndex % 4;
     }
 
-    count() {
+    count() { // eslint-disable-line class-methods-use-this
         return null;
     }
 
@@ -75,7 +80,8 @@ module.exports = class SurveyGenerator {
     }
 
     newBody() {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         if (surveyIndex % 2 === 0) {
@@ -85,7 +91,7 @@ module.exports = class SurveyGenerator {
         if (metaIndex > 0) {
             result.meta = {
                 displayAsWizard: metaIndex === 1,
-                saveProgress: metaIndex === 2
+                saveProgress: metaIndex === 2,
             };
         }
         return result;
@@ -109,8 +115,8 @@ module.exports = class SurveyGenerator {
             const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
             surveyQuestions[questionGroupIndex].sections = [{ questions: [...sectionSurveyQuestions] }];
             if (this.surveyIndex % 2) {
-                const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
-                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...sectionSurveyQuestions] });
+                const r = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
+                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...r] });
             }
         }
         if (!sectionType) {
@@ -121,11 +127,35 @@ module.exports = class SurveyGenerator {
         return result;
     }
 
-    newSurveyQuestionIds(questionIds) {
-        const surveyIndex = ++this.surveyIndex;
+    newSurveyQuestionIds(questionIds, options = {}) {
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
-        result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));
+
+        if (options.noSection === false) {
+            const sections = sectionGenerators.oneLevel(questionIds);
+
+            sections.forEach((section) => {
+                section.questions = section.questions.map((id) => {
+                    let required = Boolean(surveyIndex % 2);
+                    if (options.noneRequired) {
+                        required = false;
+                    }
+                    return { id, required };
+                });
+            });
+            result.sections = sections;
+        } else {
+            result.questions = questionIds.map((id) => {
+                let required = Boolean(surveyIndex % 2);
+                if (options.noneRequired) {
+                    required = false;
+                }
+                return { id, required };
+            });
+        }
+
         return result;
     }
 };

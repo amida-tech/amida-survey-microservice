@@ -1,12 +1,5 @@
 # Dockerfile
-FROM quay.io/aptible/nodejs:v6.9.x
-
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install python2.7 -y && \
-    apt-get install make -y && \
-    apt-get install build-essential g++ -y
-
-ENV PYTHON /usr/bin/python2.7
+FROM node:8.9.0
 
 # Add package.json before rest of repo, for Docker caching purposes
 # See http://ilikestuffblog.com/2014/01/06/
@@ -20,10 +13,6 @@ RUN npm install --production
 # RUN bower install --allow-root
 
 ADD . /app
-RUN touch .env
 
-# Run any additional build commands here...
-# RUN grunt some:task
-
-ENV PORT 9005
 EXPOSE 9005
+CMD node seed.js && node --harmony index.js

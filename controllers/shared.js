@@ -3,15 +3,16 @@
 const Sequelize = require('sequelize');
 
 const jsutil = require('../lib/jsutil');
-const RRError = require('../lib/rr-error');
+const SurveyError = require('../lib/survey-error');
 
 const sequelizeErrorMap = {
     SequelizeUniqueConstraintError: {
-        'lower(email)': 'uniqueEmail'
-    }
+        'lower(email)': 'uniqueEmail',
+        generic: 'genericUnique',
+    },
 };
 
-const transformSequelizeError = function (err) {
+const transformSequelizeError = function transformSequelizeError(err) {
     const topSpecification = sequelizeErrorMap[err.name];
     if (topSpecification) {
         const fields = err.fields;
@@ -19,26 +20,42 @@ const transformSequelizeError = function (err) {
             const key = Object.keys(fields)[0];
             const code = topSpecification[key];
             if (code) {
-                return new RRError(code);
+                return new SurveyError(code);
+            }
+            const genericCode = topSpecification.generic;
+            if (genericCode) {
+                const value = fields[key];
+                return new SurveyError(genericCode, key, value);
             }
         }
     }
     return err;
 };
 
-exports.handleError = function (res) {
-    return function (err) {
-        if (err instanceof Sequelize.Error) {
-            err = transformSequelizeError(err);
-        }
-        const json = jsutil.errToJSON(err);
-        if (err instanceof RRError) {
+exports.errToJSON = function errToJSON(err, res) {
+    let localErr = err;
+    if (localErr instanceof Sequelize.Error) {
+        localErr = transformSequelizeError(err);
+    }
+    if (localErr instanceof SurveyError) {
+        const message = localErr.getMessage(res);
+        const json = jsutil.errToJSON(localErr);
+        json.message = message;
+        return json;
+    }
+    return jsutil.errToJSON(localErr);
+};
+
+exports.handleError = function handleErrorFn(res) {
+    return function handleError(err) {
+        const json = exports.errToJSON(err, res);
+        if (err instanceof SurveyError) {
             const statusCode = err.statusCode || 400;
             return res.status(statusCode).json(json);
         }
         if (err instanceof Sequelize.Error) {
             return res.status(400).json(json);
         }
-        res.status(500).json(json);
+        return res.status(500).json(json);
     };
 };

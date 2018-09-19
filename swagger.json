@@ -2,8 +2,8 @@
     "swagger": "2.0",
     "info": {
         "version": "1.0",
-        "title": "Recruitment Registry",
-        "description": "Survey Based Match of Participants to Clinical Trials",
+        "title": "Survey Service",
+        "description": "Microservice for designing and administering surveys.",
         "contact": {
             "name": "Amida Technology Solutions",
             "url": "http://www.amida.com",
@@ -24,178 +24,15 @@
         "application/json"
     ],
     "paths": {
-        "/auth/basic": {
-            "x-swagger-router-controller": "auth.controller",
+        "/health-check": {
+            "x-swagger-router-controller": "healthCheck.controller",
             "get": {
-                "summary": "Gets authorization token (JWT)",
-                "operationId": "authenticateBasic",
-                "parameters": [{
-                    "name": "Authorization",
-                    "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
-                    "in": "header",
-                    "required": true,
-                    "type": "string"
-                }],
-                "description": "Returns JWT token that can be used as API key.  Prefix with 'Bearer ' before pasting.",
+                "summary": "returns health check status",
+                "operationId": "healthCheck",
                 "responses": {
                     "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/users": {
-            "x-swagger-router-controller": "user.controller",
-            "get": {
-                "operationId": "listUsers",
-                "summary": "List users",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "role",
-                    "in": "query",
-                    "description": "Role for users",
-                    "required": false,
-                    "type": "string",
-                    "enum": ["participant", "clinician"]
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/users"
-                        }
-                     },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "post": {
-                "operationId": "createNewUser",
-                "summary": "Creates new user",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "user",
-                    "in": "body",
-                    "description": "User specification",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newUser"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/users/{id}": {
-            "x-swagger-router-controller": "user.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "operationId": "getUser",
-                "summary": "Gets user",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/user"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/users/me": {
-            "x-swagger-router-controller": "user.controller",
-            "get": {
-                "operationId": "showCurrentUser",
-                "summary": "Gets current user",
-                "security": [{
-                    "self": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/user"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "patch": {
-                "operationId": "updateCurrentUser",
-                "summary": "Updates current user fields",
-                "security": [{
-                    "self": []
-                }],
-                "parameters": [{
-                    "name": "user",
-                    "in": "body",
-                    "description": "User fields to be updated",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/userUpdate"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/users/password": {
-            "x-swagger-router-controller": "user.controller",
-            "post": {
-                "operationId": "resetPassword",
-                "summary": "Resets password",
-                "parameters": [{
-                    "name": "resetInfo",
-                    "in": "body",
-                    "description": "Reset token and new password",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/resetPasswordInfo"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
+                        "$ref": "#/responses/healthCheckSuccess"
+                     }
                 }
             }
         },
@@ -204,9 +41,6 @@
             "post": {
                 "summary": "Creates new survey",
                 "operationId": "createSurvey",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newSurvey",
                     "in": "body",
@@ -229,12 +63,6 @@
                 "summary": "Lists surveys",
                 "description": "Only returns id and name fields.",
                 "operationId": "listSurveys",
-                "security": [{
-                    "admin": []
-                },{
-
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "scope",
                     "in": "query",
@@ -276,9 +104,6 @@
                 "summary": "Exports surveys as csv file",
                 "operationId": "exportSurveys",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -295,9 +120,6 @@
                 "summary": "Imports survey csv file",
                 "operationId": "importSurveys",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "surveycsv",
                     "in": "formData",
@@ -335,12 +157,6 @@
             "get": {
                 "summary": "Gets survey",
                 "operationId": "getSurvey",
-                "security": [{
-                    "admin": []
-                },{
-
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -364,9 +180,6 @@
             "patch": {
                 "summary": "Updates survey",
                 "operationId": "patchSurvey",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "surveyPatch",
                     "in": "body",
@@ -387,9 +200,6 @@
             "delete": {
                 "summary": "Deletes survey",
                 "operationId": "deleteSurvey",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -405,9 +215,6 @@
             "patch": {
                 "summary": "Updates or translates survey text fields",
                 "operationId": "patchSurveyText",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -433,14 +240,40 @@
                 }
             }
         },
+        "/numberUsersBySurvey/{id}": {
+                "x-swagger-router-controller": "survey.controller",
+                "get": {
+                    "summary": "returns the number of users that have submitted an answer to the requested survey",
+                    "operationId": "getNumberOfUsersBySurvey",
+                    "parameters": [{
+                        "name": "id",
+                        "in":"path",
+                        "required": true,
+                        "type": "integer"
+                    }, {
+                        "name": "include-soft-delete",
+                        "in": "query",
+                        "required": false,
+                        "type": "boolean"
+                    }],
+                    "responses": {
+                        "200": {
+                            "description": "Successful response",
+                            "schema": {
+                                "type": "integer"
+                            }
+                        },
+                        "default": {
+                            "$ref": "#/responses/genericError"
+                        }
+                    }
+                }
+        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get survey with answers",
                 "operationId": "getAnsweredSurvey",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "id",
                     "in": "path",
@@ -473,9 +306,6 @@
                 "description": "This persists answers to survey questions.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
                 "summary": "Creates answers",
                 "operationId": "createAnswers",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "surveyAnswers",
                     "in": "body",
@@ -497,9 +327,6 @@
             "get": {
                 "summary": "Gets answers",
                 "operationId": "getAnswers",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "survey-id",
                     "in": "query",
@@ -526,9 +353,6 @@
                 "summary": "Exports answers as csv file",
                 "operationId": "exportAnswers",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "participant": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -545,9 +369,6 @@
                 "summary": "Imports answer csv file",
                 "operationId": "importAnswers",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "answercsv",
                     "in": "formData",
@@ -577,13 +398,108 @@
                 }
             }
         },
+        "/answers/multi-user-csv": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "Exports answers as csv file",
+                "operationId": "exportMultiUserAnswers",
+                "produces": ["text/csv", "application/json"],
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports answer csv file",
+                "operationId": "importMultiUserAnswers",
+                "consumes": ["multipart/form-data"],
+                "parameters": [{
+                    "name": "answercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "useridmap",
+                    "in": "formData",
+                    "description": "User Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/export": {
             "x-swagger-router-controller": "answer.controller",
             "get": {
                 "summary": "List answers export ready",
                 "operationId": "listAnswersExport",
-                "security": [{
-                    "participant": []
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/multi-user-export": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "List answers multi user export ready",
+                "operationId": "listAnswersMultiUserExport",
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
                 }],
                 "responses": {
                     "200": {
@@ -606,11 +522,6 @@
             "post": {
                 "summary": "Searches all answers and returns count of matching users",
                 "operationId": "searchAnswers",
-                "security": [{
-                    "admin": []
-                }, {
-                    "clinician": []
-                }],
                 "parameters": [{
                     "name": "query",
                     "in": "body",
@@ -632,171 +543,156 @@
                 }
             }
         },
-        "/profile-survey": {
-            "x-swagger-router-controller": "profile-survey.controller",
+        "/answers/identifier-queries": {
+            "x-swagger-router-controller": "answer.controller",
             "post": {
-                "summary": "Creates survey as profile survey",
-                "operationId": "createProfileSurvey",
-                "security": [{
-                    "admin": []
-                }],
+                "summary": "Searches all answers and returns count of matching users using identifiers",
+                "operationId": "countParticipantsIdentifiers",
                 "parameters": [{
-                    "name": "newSurvey",
+                    "name": "query",
                     "in": "body",
-                    "description": "Profile survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newSurvey"
+                        "$ref": "#/definitions/answerIdentifiersQuery"
                     }
-                }],
-                "responses": {
-                    "201" : {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets profile survey",
-                "operationId": "getProfileSurvey",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200" : {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/profileSurvey"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/profile-survey-id": {
-            "x-swagger-router-controller": "profile-survey.controller",
-            "post": {
-                "summary": "Assigns survey as profile survey",
-                "operationId": "createProfileSurveyId",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "surveyId",
-                    "in": "body",
-                    "description": "Profile survey",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newProfileSurveyId"
-                    }
-                }],
-                "responses": {
-                    "204" : {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets profile survey id",
-                "operationId": "getProfileSurveyId",
-                "responses": {
-                    "200" : {
-                        "description": "Successul response",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "delete": {
-                "summary": "Remove profile survey",
-                "operationId": "deleteProfileSurveyId",
-                "responses": {
-                    "204" : {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/profiles": {
-            "x-swagger-router-controller": "profile.controller",
-            "post": {
-                "summary": "Creates registry user profile",
-                "operationId": "createProfile",
-                "parameters": [{
-                    "name": "newUserProfile",
-                    "in": "body",
-                    "description": "Registration information of new user",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newUserProfile"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "patch": {
-                "summary": "Updates registry user profile",
-                "operationId": "updateProfile",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "updateUserProfile",
-                    "in": "body",
-                    "description": "Update information of user",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/updateUserProfile"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets user profile",
-                "operationId": "getProfile",
-                "security": [{
-                    "participant": []
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successful response",
+                        "description": "Successful response.",
                         "schema": {
-                            "$ref": "#/definitions/userProfile"
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchParticipants",
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/identifier-user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchParticipantsIdentifiers",
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/federated": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns federated answers",
+                "operationId": "federatedListAnswers",
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
                         }
                     },
                     "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/federated-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "federatedSearchAnswers",
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
                         "$ref": "#/responses/genericError"
                     }
                 }
@@ -831,9 +727,6 @@
             "post": {
                 "summary": "Creates new question",
                 "operationId": "createQuestion",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newQuestion",
                     "in": "body",
@@ -855,9 +748,6 @@
             "get": {
                 "summary": "Lists questions",
                 "operationId": "listQuestions",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "scope",
                     "in": "query",
@@ -872,6 +762,25 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "survey-id",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "common-only",
+                    "in": "query",
+                    "description": "Common flag",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Federated flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -892,9 +801,6 @@
                 "summary": "Exports questions as csv file",
                 "operationId": "exportQuestions",
                 "produces": ["text/csv", "application/json"],
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -911,9 +817,6 @@
                 "summary": "Imports question csv file",
                 "operationId": "importQuestions",
                 "consumes": ["multipart/form-data"],
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "questioncsv",
                     "in": "formData",
@@ -945,9 +848,6 @@
             "get": {
                 "summary": "Gets question",
                 "operationId": "getQuestion",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -955,6 +855,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 1
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Include federated identifiers",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -971,9 +877,6 @@
             "delete": {
                 "summary": "Deletes question",
                 "operationId": "deleteQuestion",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -989,9 +892,6 @@
             "patch": {
                 "summary": "Updates or translates question text fields",
                 "operationId": "updateQuestionText",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -1028,9 +928,6 @@
             "post": {
                 "summary": "Add identifiers for question",
                 "operationId": "addQuestionIdentifiers",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newQuestionIdentifiers",
                     "in": "body",
@@ -1050,740 +947,11 @@
                 }
             }
         },
-        "/consent-types": {
-            "x-swagger-router-controller": "consent-type.controller",
-            "post": {
-                "summary": "Creates new consent type",
-                "description": "Each consent type describes a consent section that users have to accept for various registry functionality.  There can be multiple consent sections with the same type but only one of them can be active at one time.",
-                "operationId": "createConsentType",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newConsentType",
-                    "in": "body",
-                    "description": "New consent type.",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newConsentType"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Lists consent types",
-                "operationId": "listConsentTypes",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentTypes"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-types/{id}": {
-            "x-swagger-router-controller": "consent-type.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets consent type",
-                "operationId": "getConsentType",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response.",
-                        "schema": {
-                            "$ref": "#/definitions/consentType"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "delete": {
-                "summary": "Deletes consent type",
-                "operationId": "deleteConsentType",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response."
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-types/text/{language}": {
-            "x-swagger-router-controller": "consent-type.controller",
-            "patch": {
-                "summary": "Updates or translates consent type tetx fields",
-                "operationId": "updateConsentTypeText",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "path",
-                    "description": "Language code",
-                    "required": true,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "textUpdate",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/consentTypeTextUpdate"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "post": {
-                "summary": "Creates consent document (section)",
-                "operationId": "createConsentDocument",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newConsentDocument",
-                    "in": "body",
-                    "description": "Content text",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newConsentDocument"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/{id}": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets consent document (section)",
-                "operationId": "getConsentDocument",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocument"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/type-name/{typeName}": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "parameters": [{
-                "name": "typeName",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets consent document (section)",
-                "operationId": "getConsentDocumentByTypeName",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocument"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/type-id/{typeId}/update-comments": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "parameters": [{
-                "name": "typeId",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets update comments history for consent type",
-                "operationId": "getUpdateCommentHistory",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentUpdateComments"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/text/{language}": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "patch": {
-                "summary": "Translates consent document (section)",
-                "operationId": "updateConsentDocumentText",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "path",
-                    "description": "Language code",
-                    "required": true,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "textUpdate",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/consentDocumentTextUpdate"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-signatures": {
-            "x-swagger-router-controller": "consent-signature.controller",
-            "post": {
-                "summary": "Marks consent document (section) signed",
-                "operationId": "createSignature",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "consent_document",
-                    "in": "body",
-                    "description": "ConsentDocument to be signed",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/signedConsentDocument"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets history of consent signatures",
-                "operationId": "getSignatureHistory",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "user-id",
-                    "in": "query",
-                    "description": "User id",
-                    "required": true,
-                    "type": "integer",
-                    "minimum": 1
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentSignatureHistory"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-signatures/bulk": {
-            "x-swagger-router-controller": "consent-signature.controller",
-            "post": {
-                "summary": "Marks consent documents (sections) signed",
-                "operationId": "bulkCreateSignatures",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "consent_documents",
-                    "in": "body",
-                    "description": "Id of consent documents to be signed",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/signedConsentDocuments"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/anyArray"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/user-consent-documents": {
-            "x-swagger-router-controller": "user-consent-document.controller",
-            "get": {
-                "operationId": "listUserConsentDocuments",
-                "summary": "Lists consent documents (section)",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "include-signed",
-                    "in": "query",
-                    "description": "Flag to include signed documents",
-                    "required": false,
-                    "type": "boolean"
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentDashboard"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/user-consent-documents/{id}": {
-            "x-swagger-router-controller": "user-consent-document.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets consent document/signature (section)",
-                "operationId": "getUserConsentDocument",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentWithSignature"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/user-consent-documents/type-name/{typeName}": {
-            "x-swagger-router-controller": "user-consent-document.controller",
-            "parameters": [{
-                "name": "typeName",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets consent document (section)/signature by type name",
-                "operationId": "getUserConsentDocumentByTypeName",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentWithSignature"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents": {
-            "x-swagger-router-controller": "consent.controller",
-            "post": {
-                "summary": "Creates new consent",
-                "operationId": "createConsent",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newConsent",
-                    "in": "body",
-                    "description": "Consent object",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newConsent"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets all consents",
-                "operationId": "listConsents",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consents"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/{id}": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets consent",
-                "operationId": "getConsent",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consent"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "delete": {
-                "summary": "Deletes consent",
-                "operationId": "deleteConsent",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response."
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/name/{name}": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "name",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets consent by name",
-                "operationId": "getConsentByName",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consent"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/{id}/documents": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets documents (sections)",
-                "operationId": "getConsentDocuments",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentWithDocuments"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/name/{name}/documents": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "name",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets documents (sections) by name",
-                "operationId": "getConsentDocumentsByName",
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentWithDocuments"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/{id}/user-documents": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets current user consents",
-                "operationId": "getUserConsentDocuments",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentWithDocuments"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consents/name/{name}/user-documents": {
-            "x-swagger-router-controller": "consent.controller",
-            "parameters": [{
-                "name": "name",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets current user consents by name",
-                "operationId": "getUserConsentDocumentsByName",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentWithDocuments"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/languages": {
             "x-swagger-router-controller": "language.controller",
             "post": {
                 "summary": "Creates new language",
                 "operationId": "createLanguage",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "body",
@@ -1805,9 +973,6 @@
             "get": {
                 "summary": "Gets all languages",
                 "operationId": "listLanguages",
-                "security": [{
-                    "participant": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1832,9 +997,6 @@
             "get": {
                 "summary": "Gets language",
                 "operationId": "getLanguage",
-                "security": [{
-                    "participant": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1850,9 +1012,6 @@
             "patch": {
                 "summary": "Updates language fields",
                 "operationId": "patchLanguage",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "languageUpdate",
                     "in": "body",
@@ -1874,113 +1033,9 @@
             "delete": {
                 "summary": "Deletes language",
                 "operationId": "deleteLanguage",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/smtp": {
-            "x-swagger-router-controller": "smtp.controller",
-            "post": {
-                "summary": "Update smtp settings",
-                "operationId": "createSmtp",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newSmtpSpec",
-                    "in": "body",
-                    "description": "Smtp specifications",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newSmtpSpec"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets smtp setting",
-                "operationId": "getSmtp",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language requested",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 1
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/smtpSpec"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "delete": {
-                "summary": "Deletes smtp setting",
-                "operationId": "deleteSmtp",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/smtp/text/{language}": {
-            "x-swagger-router-controller": "smtp.controller",
-            "patch": {
-                "summary": "Updates or translates reset password text fields",
-                "operationId": "updateSmtpText",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "path",
-                    "description": "Language code",
-                    "required": true,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "textUpdate",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/smtpSpecTextUpdate"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1994,9 +1049,6 @@
                 "summary": "Lists user surveys",
                 "description": "Only returns id, name and status fields.",
                 "operationId": "listUserSurveys",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -2004,6 +1056,14 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                },
+                {
+                    "name": "user-survey-status",
+                    "in": "query",
+                    "description": "Status of survey completion by user",
+                    "required": false,
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
                 }],
                 "responses": {
                     "200": {
@@ -2030,9 +1090,6 @@
             "get": {
                 "summary": "Gets answered survey and its status",
                 "operationId": "getUserSurvey",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -2066,9 +1123,6 @@
             "get": {
                 "summary": "Gets survey status",
                 "operationId": "getUserSurveyStatus",
-                "security": [{
-                    "participant": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2077,7 +1131,7 @@
                             "required": ["status"],
                             "properties": {
                                 "status": {
-                                    "$ref": "#/definitions/userSurveyStatus"
+                                    "$ref": "#/definitions/answerStatus"
                                 }
                             },
                             "additionalProperties": false
@@ -2101,9 +1155,6 @@
             "post": {
                 "summary": "Create answers and set status for survey",
                 "operationId": "createUserSurveyAnswers",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "userSurveyAnswers",
                     "in": "body",
@@ -2125,9 +1176,6 @@
             "get": {
                 "summary": "Gets survey answers and status",
                 "operationId": "getUserSurveyAnswers",
-                "security": [{
-                    "participant": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -2155,126 +1203,11 @@
                 }
             }
         },
-        "/survey-consents": {
-            "x-swagger-router-controller": "survey-consent.controller",
-            "post": {
-                "summary": "Creates new survey consent",
-                "operationId": "createSurveyConsent",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newSurveyConsent",
-                    "in": "body",
-                    "description": "Survey consent object",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newSurveyConsent"
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
-            "get": {
-                "summary": "Gets all survey consents",
-                "operationId": "listSurveyConsents",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/surveyConsentDashboard"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/survey-consents/{id}": {
-            "x-swagger-router-controller": "survey-consent.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "delete": {
-                "summary": "Deletes survey consent",
-                "operationId": "deleteSurveyConsent",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response."
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/survey-consent-documents": {
-            "x-swagger-router-controller": "survey-consent-document.controller",
-            "get": {
-                "summary": "Gets all survey consent documents",
-                "operationId": "listSurveyConsentDocuments",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "survey-id",
-                    "in": "query",
-                    "description": "Survey id",
-                    "required": true,
-                    "type": "integer",
-                    "minimum": 1
-                }, {
-                    "name": "action",
-                    "in": "query",
-                    "description": "Action",
-                    "required": true,
-                    "type": "string",
-                    "enum": ["create", "read"]
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                 "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/surveyConsentDocumentDashboard"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/assessments": {
             "x-swagger-router-controller": "assessment.controller",
             "post": {
                 "summary": "Creates new assessment",
                 "operationId": "createAssessment",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newAssessment",
                     "in": "body",
@@ -2296,8 +1229,13 @@
             "get": {
                 "summary": "List assessments",
                 "operationId": "listAssessments",
-                "security": [{
-                    "admin": []
+                "parameters": [{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group key",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
                 }],
                 "responses": {
                     "200": {
@@ -2323,15 +1261,24 @@
             "get": {
                 "summary": "Gets assessment",
                 "operationId": "getAssessment",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
                         "schema": {
                             "$ref": "#/definitions/assessment"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes assessment",
+                "operationId": "deleteAssessment",
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2344,9 +1291,6 @@
             "post": {
                 "summary": "Opens new user assessment",
                 "operationId": "openUserAssessment",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newAssessment",
                     "in": "body",
@@ -2354,8 +1298,7 @@
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/newUserAssessment"
-                    }
-                }],
+                }}],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
@@ -2368,9 +1311,6 @@
             "get": {
                 "summary": "List user assessmentd",
                 "operationId": "listUserAssessments",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "user-id",
                     "in": "query",
@@ -2401,9 +1341,6 @@
             "delete": {
                 "summary": "Close active user assessment",
                 "operationId": "closeUserAssessment",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "user-id",
                     "in": "query",
@@ -2440,9 +1377,6 @@
             "get": {
                 "summary": "List user assesment answers",
                 "operationId": "listUserAssessmentAnswers",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2464,9 +1398,6 @@
             "get": {
                 "summary": "Gets question id from identifier",
                 "operationId": "getQuestionIdByIdentifier",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "type",
                     "in": "path",
@@ -2500,9 +1431,6 @@
             "get": {
                 "summary": "Gets question id from identifier",
                 "operationId": "getIdsByAnswerIdentifier",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "type",
                     "in": "path",
@@ -2531,14 +1459,260 @@
                 }
             }
         },
+       "/assessment-answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "get": {
+                "summary": "Lists assessment answers",
+                "description": "Do not return attached surveys.",
+                "operationId": "getAssessmentAnswersList",
+                "parameters": [{
+                    "name": "assessment-answers-status",
+                    "in": "query",
+                    "description": "status of assessment completion by user",
+                    "required": false,
+                    "type":"string",
+                    "enum":["new", "in-progress", "completed"]
+                },{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group for assessments",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswersDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Creates assessment answers",
+                "operationId": "createAssessmentAnswers",
+                "parameters": [{
+                    "name": "newAssessmentAnswers",
+                    "in": "body",
+                    "description": "Answers to the survey",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newAssessmentAnswers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets assessment answers",
+                "operationId": "getAssessmentAnswers",
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/as-copy": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Copies assessment answers",
+                "operationId": "copyAssessmentAnswers",
+                "parameters": [{
+                    "name": "prevAssessment",
+                    "in": "body",
+                    "description": "Assessment id to copy from",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/prevAssessment"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers only",
+                "operationId": "getAssessmentAnswersOnly",
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentLinkedAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/csv" : {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters":[{
+                "description": "survey Id that of the assessments' answers that will be returned",
+                "name": "survey-id",
+                "in": "query",
+                "required": true,
+                "type":"integer"
+            }, {
+                "description": "questionId filter on the assessments' anwers that will be returned",
+                "name": "question-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            },{
+                "description": "sectionId filter on the assessments' answers that will be returned",
+                "name": "section-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            }],
+            "get": {
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in json format",
+                "operationId":"assessmentAnswersCSV",
+                "produces": ["text/csv", "application/json"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+
+            }
+        },
+        "/assessment-answers/export" : {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters":[{
+                "description": "survey Id that of the assessments' answers that will be returned",
+                "name": "survey-id",
+                "in": "query",
+                "required": true,
+                "type":"integer"
+            }, {
+                "description": "questionId filter on the assessments' answers that will be returned",
+                "name": "question-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            },{
+                "description": "sectionId filter on the assessments' answers that will be returned",
+                "name": "section-id",
+                "in": "query",
+                "required": false,
+                "type":"integer"
+            }, {
+                "description": "boolean param to request comments along with question answers",
+                "name": "include-comments",
+                "in": "query",
+                "required": false,
+                "type":"boolean"
+            }],
+            "get": {
+                "summary":"returns the answers of the question specified from latest assessments that use the specified survey, in csv format",
+                "operationId":"exportAssessmentAnswers",
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswersExportList"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/status": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers Status",
+                "operationId": "getAssessmentAnswersStatus",
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "$ref": "#/definitions/answerStatus"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/choice-sets": {
             "x-swagger-router-controller": "choice-set.controller",
             "post": {
                 "summary": "Creates new choice set",
                 "operationId": "createChoiceSet",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "newChoiceSet",
                     "in": "body",
@@ -2560,9 +1734,6 @@
             "get": {
                 "summary": "Lists choice sets",
                 "operationId": "listChoiceSets",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -2595,9 +1766,6 @@
             "get": {
                 "summary": "Gets choice set",
                 "operationId": "getChoiceSet",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -2621,9 +1789,6 @@
             "delete": {
                 "summary": "Deletes choice set",
                 "operationId": "deleteChoiceSet",
-                "security": [{
-                    "admin": []
-                }],
                 "responses": {
                     "204": {
                         "description": "Successful response."
@@ -2639,9 +1804,6 @@
             "patch": {
                 "summary": "Updates or translates question choice textx",
                 "operationId": "updateMultipleChoiceTexts",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "language",
                     "in": "path",
@@ -2667,68 +1829,18 @@
                 }
             }
         },
-        "/question-choices/{id}": {
+        "/question-choices": {
             "x-swagger-router-controller": "question-choice.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "delete": {
-                "summary": "Deletes question choice",
-                "operationId": "deleteQuestionChoice",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successful response."
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/research-sites": {
-            "x-swagger-router-controller": "research-site.controller",
-            "get": {
-                "operationId": "listResearchSites",
-                "summary": "List research sites",
-                "parameters": [{
-                    "name": "near-zip",
-                    "in": "query",
-                    "description": "Restrict list to nearby zips",
-                    "required": false,
-                    "type": "string",
-                    "pattern": "^[0-9]{5}$"
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/researchSites"
-                        }
-                     },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
             "post": {
-                "operationId": "createResearchSite",
-                "summary": "Creates new research site",
-                "security": [{
-                    "admin": []
-                }],
+                "operationId": "createQuestionChoice",
+                "summary": "Creates new question choice",
                 "parameters": [{
-                    "name": "researchSite",
+                    "name": "newQuestionChoice",
                     "in": "body",
-                    "description": "Research site specification",
+                    "description": "Question choice specification",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newResearchSite"
+                        "$ref": "#/definitions/newQuestionChoice"
                     }
                 }],
                 "responses": {
@@ -2741,8 +1853,93 @@
                 }
             }
         },
-        "/research-sites/{id}": {
-            "x-swagger-router-controller": "research-site.controller",
+        "/question-choices/{id}": {
+            "x-swagger-router-controller": "question-choice.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "patch": {
+                "summary": "Patches question choice",
+                "operationId": "patchQuestionChoice",
+                "parameters": [{
+                    "name": "questionChoicePatch",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/questionChoicePatch"
+                    }
+                }],
+                 "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes question choice",
+                "operationId": "deleteQuestionChoice",
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/files": {
+            "x-swagger-router-controller": "file.controller",
+            "post": {
+                "summary": "Stores file in database",
+                "operationId": "createFile",
+                "consumes": ["multipart/form-data"],
+                "parameters": [{
+                    "name": "file",
+                    "in": "formData",
+                    "description": "File to be stored in db",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "filename",
+                    "in": "formData",
+                    "description": "Name of the file",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all files",
+                "operationId": "listFiles",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/files"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "x-swagger-router-controller": "file.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -2750,13 +1947,95 @@
                 "type": "integer"
             }],
             "get": {
-                "operationId": "getResearchSite",
-                "summary": "Gets research site",
+                "summary": "Get contents of file",
+                "operationId": "getFile",
+                "produces": ["application/octet-stream"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-audits": {
+            "x-swagger-router-controller": "user-audit.controller",
+            "get": {
+                "operationId": "listUserAudits",
+                "summary": "List user audits",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userAudits"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters": {
+            "x-swagger-router-controller": "filter.controller",
+            "get": {
+                "operationId": "listFilters",
+                "summary": "List filters",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/filterList"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createFilter",
+                "summary": "Creates new filter",
+                "parameters": [{
+                    "name": "filter",
+                    "in": "body",
+                    "description": "Filter specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newFilter"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters/{id}": {
+            "x-swagger-router-controller": "filter.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getFilter",
+                "summary": "Gets filter",
                 "responses": {
                     "200": {
                         "description": "Successul response",
                         "schema": {
-                            "$ref": "#/definitions/researchSite"
+                            "$ref": "#/definitions/filter"
                         }
                     },
                     "default": {
@@ -2765,18 +2044,15 @@
                 }
             },
             "patch": {
-                "operationId": "patchResearchSite",
-                "summary": "Patches research site",
-                "security": [{
-                    "admin": []
-                }],
+                "operationId": "patchFilter",
+                "summary": "Patches filter",
                 "parameters": [{
-                    "name": "researchSitePatch",
+                    "name": "filterPatch",
                     "in": "body",
-                    "description": "Update to research site specification",
+                    "description": "Filter patch specification",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/researchSitePatch"
+                        "$ref": "#/definitions/filterPatch"
                     }
                 }],
                 "responses": {
@@ -2789,44 +2065,8 @@
                 }
             },
             "delete": {
-                "operationId": "deleteResearchSite",
-                "summary": "Deletes research site",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/research-sites/{id}/vicinities": {
-            "x-swagger-router-controller": "research-site.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "post": {
-                "operationId": "createResearchSiteVicinity",
-                "summary": "Creates vicinity for research site",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "researchSite",
-                    "in": "body",
-                    "description": "Research site specification",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/researchSiteVicinity"
-                    }
-                }],
+                "operationId": "deleteFilter",
+                "summary": "Deletes filter",
                 "responses": {
                     "204": {
                         "description": "Successul response"
@@ -2839,21 +2079,6 @@
         }
     },
     "securityDefinitions": {
-        "admin": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
-        "participant": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
-        "clinician": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
-        },
         "self": {
             "type": "apiKey",
             "in": "header",
@@ -2873,17 +2098,44 @@
                 "$ref": "#/definitions/id"
             }
         },
-        "anyArray": {
-            "description": "Unrestricted object.",
+        "healthCheckSuccess": {
+            "description": "health check Success",
             "schema": {
-                "type": "array",
-                "items": {
-                    "type": "object"
-                }
+                "$ref": "#/definitions/healthCheckResponse"
             }
         }
     },
     "definitions": {
+        "healthCheckResponse": {
+            "description": "health check response",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                }
+            }
+        },
+      "resetPasswordInfo": {
+          "type": "object",
+          "required": [
+              "token",
+              "password"
+          ],
+          "properties": {
+              "token": {
+                  "type": "string",
+                  "minLength": 1
+              },
+              "password": {
+                  "type": "string",
+                  "minLength": 1
+              }
+          },
+          "additionalProperties": false
+      },
         "error": {
             "type": "object",
             "required": [
@@ -2904,92 +2156,13 @@
                 }
             }
         },
-        "resetPasswordInfo": {
-            "type": "object",
-            "required": [
-                "token",
-                "password"
-            ],
-            "properties": {
-                "token": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "newUser": {
-            "type": "object",
-            "required": ["password"],
-            "properties": {
-                "username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string",
-                    "format": "email"
-                }
-            },
-            "additionalProperties": false,
-            "minProperties": 2
-        },
-        "user": {
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "username": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string",
-                    "format": "email"
-                }
-            },
-            "additionalProperties": false,
-            "minProperties": 1
-        },
-        "users": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/user"
-            }
-        },
-        "userUpdate": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string",
-                    "format": "email"
-                }
-            },
-            "additionalProperties": false
-        },
         "questionType": {
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
-                "date", "year", "month", "day", "choice-ref",
-                "pounds", "zip", "feet-inches", "blood-pressure"
+                "date", "year", "month", "day", "choice-ref", "open-choice",
+                "pounds", "zip", "feet-inches", "blood-pressure", "file",
+                "bullet", "scale"
             ]
         },
         "questionMeta": {
@@ -3046,6 +2219,9 @@
                 "instruction": {
                     "type": "string"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
@@ -3087,6 +2263,9 @@
                         "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
             "minProperties": 2,
@@ -3096,13 +2275,20 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/newSurveyQuestion"
-            },
-            "minItems": 1
+            }
         },
         "newSection": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -3119,7 +2305,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "section": {
@@ -3131,6 +2317,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description" :{
                     "type": "string",
                     "minLength": 1
                 },
@@ -3147,7 +2337,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "sectionTextUpdate": {
@@ -3159,6 +2349,10 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
                     "type": "string",
                     "minLength": 1
                 }
@@ -3175,6 +2369,9 @@
                 "name"
             ],
             "properties": {
+              "authorId": {
+                  "type": "integer"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -3196,8 +2393,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/newSection"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/newSurveyQuestions"
@@ -3259,6 +2455,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "sections": {
                   "type": "array",
                     "items": {
@@ -3289,6 +2488,9 @@
                     },
                     "minItems": 1
                 },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
+                },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 },
@@ -3309,26 +2511,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/surveyQuestion"
-            },
-            "minItems": 1
-        },
-        "surveyConsentType": {
-            "type": "object",
-            "required": ["id", "name", "title"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string"
-                }
-             },
-            "additionalProperties": false
+            }
         },
         "survey": {
             "type": "object",
@@ -3348,6 +2531,9 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -3358,17 +2544,10 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/section"
-                    },
-                    "minItems": 1
+                    }
                 },
                 "questions": {
                     "$ref": "#/definitions/surveyQuestions"
-                },
-                "consentDocuments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/surveyConsentType"
-                    }
                 }
             },
             "additionalProperties": false
@@ -3433,29 +2612,52 @@
             },
             "additionalProperties": false
         },
-        "profileSurvey": {
+        "surveyInfoSection": {
             "type": "object",
-            "required": ["exists"],
+            "required": ["id"],
             "properties": {
-                "exists": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
+                },
+                "questions": {
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 2
+        },
+        "surveyInfoQuestion": {
+            "type": "object",
+            "required": ["id", "required"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "required": {
                     "type": "boolean"
                 },
-                "survey": {
-                    "$ref": "#/definitions/survey"
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
                 }
             },
             "additionalProperties": false
         },
-        "newProfileSurveyId": {
-            "type": "object",
-            "required": ["profileSurveyId"],
-            "properties": {
-                "profileSurveyId": {
-                    "type": "integer",
-                    "minimum": 1
-                }
-            },
-            "additionalProperties": false
+        "surveyInfoQuestions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoQuestion"
+            }
+        },
+        "surveyInfoSections": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoSection"
+            }
         },
         "surveyInfo": {
             "type": "object",
@@ -3470,25 +2672,23 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["id", "required"],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "required": {
-                                "type": "boolean"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
                 }
             },
             "additionalProperties": false
@@ -3505,36 +2705,53 @@
             "required": ["questions"],
             "properties": {
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/questionQuery"
-                    },
-                    "minItems": 1
+                    "$ref": "#/definitions/questionQueries"
+                },
+                "federated": {
+                    "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questionQuery": {
             "type": "object",
-            "required": ["id"],
+            "required": ["id", "answers"],
             "properties": {
                 "id": {
                     "type": "integer"
                 },
-                "answer": {
-                    "$ref": "#/definitions/answer"
+                "exclude": {
+                    "type": "boolean"
                 },
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/answer"
-                    }
+                        "$ref": "#/definitions/filterAnswer"
+                    },
+                    "minItems": 1
                 }
+            },
+            "additionalProperties": false
+        },
+        "answerIdentifiersQuery": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/answerIdentifierQuery"
+            }
+        },
+        "questionQueries": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/questionQuery"
             }
         },
         "userSurveyInfo": {
             "type": "object",
             "required": ["id", "name", "status"],
             "properties": {
+                "authorId": {
+                  "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -3545,7 +2762,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 }
             },
             "additionalProperties": false
@@ -3559,7 +2776,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
+            "enum": ["bool", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "surveyStatus": {
             "type": "string",
@@ -3580,8 +2797,15 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "code": {
                     "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
@@ -3641,6 +2865,10 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
                 }
             },
             "maxProperties": 2
@@ -3708,6 +2936,281 @@
                     },
                     "additionalProperties": false
                 },
+                "fileValue": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "content": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Base64 encoded binary or text content"
+                        }
+                    },
+                    "minProperties": 1,
+                    "maxProperties": 2
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                }
+            },
+            "minProperties": 1,
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
+        "filterAnswer": {
+            "type": "object",
+            "properties": {
+                "choice": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "zipcodeValue": {
+                    "type":"string",
+                    "pattern": "^\\d{5}$"
+                }
+            },
+            "minProperties": 1,
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
+        "newFilter": {
+            "type": "object",
+            "required": ["name", "questions"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filter": {
+            "type": "object",
+            "required": ["id", "name", "questions", "createdAt"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filterList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name", "createdAt"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "dateTime"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "filterPatch": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+        "answerIdentifierQuery": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "exclude": {
+                    "type": "boolean"
+                },
+                "questionChoiceText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "yearValue": {
                     "type": "string",
                     "pattern": "^\\d{4}$"
@@ -3721,11 +3224,11 @@
                     "pattern": "^\\d{2}$"
                 }
             },
-            "minProperties": 1,
-            "maxProperties": 2,
+            "minProperties": 2,
+            "maxProperties": 5,
             "additionalProperties": false
         },
-         "newRuleChoicesItem": {
+        "newRuleChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3849,6 +3352,14 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "answerIdentifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "text": {
                     "type": "string",
                      "minLength": 1
@@ -3858,6 +3369,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "common": {
+                    "type": "boolean"
                 },
                 "multiple": {
                     "type": "boolean"
@@ -3874,6 +3388,9 @@
                     "items": {
                         "$ref": "#/definitions/choice"
                     }
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
@@ -3915,6 +3432,21 @@
             "additionalProperties": false,
             "minProperties": 2
         },
+        "newIdentifier": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "newChoice": {
             "type": "object",
             "required": ["text"],
@@ -3931,6 +3463,12 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 }
             },
             "additionalProperties": false
@@ -3955,9 +3493,18 @@
                 "multiple": {
                     "type": "boolean"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "questionIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 },
                 "choiceSetId": {
                     "type": "integer",
@@ -3985,8 +3532,24 @@
                     "items": {
                         "$ref": "#/definitions/newChoice"
                     }
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
+            "additionalProperties": false
+        },
+        "scaleLimits": {
+            "type": "object",
+            "properties": {
+                "min": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                }
+            },
+            "minProperties": 1,
             "additionalProperties": false
         },
         "linkedAnswer": {
@@ -4002,6 +3565,9 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                },
+                "meta": {
+                    "type": "object"
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
@@ -4020,55 +3586,6 @@
             "items": {
                 "$ref": "#/definitions/linkedAnswer"
             }
-        },
-        "newUserProfile": {
-            "type": "object",
-            "required": [
-                "user"
-            ],
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/newUser"
-                },
-                "answers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/linkedAnswer"
-                    }
-                },
-                "signatures": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    }
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "updateUserProfile": {
-            "type": "object",
-            "required": ["user"],
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/userUpdate"
-                },
-                "answers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/linkedAnswer"
-                    }
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
         },
         "surveyAnswers": {
             "type": "object",
@@ -4094,378 +3611,6 @@
                 }
             },
             "additionalProperties": false
-        },
-        "userProfile": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/user"
-                },
-                "survey": {
-                    "$ref": "#/definitions/survey"
-                }
-            }
-        },
-        "newConsent": {
-            "type": "object",
-            "required": [
-                "name",
-                "sections"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "minItems": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consent": {
-            "type": "object",
-            "required": [
-                "id",
-                "name",
-                "sections"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "minItems": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consents": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/consent"
-            }
-        },
-        "consentWithDocuments": {
-            "type": "object",
-            "required": [
-                "id",
-                "name",
-                "sections"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/consentSectionDocument"
-                    }
-                }
-            },
-            "additionalProperties": false
-        },
-        "signedConsentDocument": {
-            "type": "object",
-            "required": ["consentDocumentId"],
-            "properties": {
-                "consentDocumentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "signedConsentDocuments": {
-            "type": "object",
-            "required": ["consentDocumentIds"],
-            "properties": {
-                "consentDocumentIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    }
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentSectionDocument": {
-            "type": "object",
-            "required": [
-                "id",
-                "name",
-                "title",
-                "type",
-                "content"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "type": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "updateComment": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "boolean"
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "newConsentType": {
-            "type": "object",
-            "required": ["name", "title", "type"],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "type": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentType": {
-            "type": "object",
-            "required": ["id", "name", "title", "type"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "type": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentTypes": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/consentType"
-            }
-        },
-        "newConsentDocument": {
-            "type": "object",
-            "required": ["typeId", "content"],
-            "properties": {
-                "typeId": {
-                    "type": "integer"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "updateComment": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentDocument": {
-            "type": "object",
-            "required": ["id", "typeId", "content"],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "typeId": {
-                    "type": "integer"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "updateComment": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentDocumentWithSignature": {
-            "type": "object",
-            "required": ["id", "typeId", "content", "signature"],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "typeId": {
-                    "type": "integer"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "updateComment": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "boolean"
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentUpdateComments": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "consentDocumentInfo": {
-            "type": "object",
-            "required": ["id", "name", "title"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "type": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "signature": {
-                    "type": "boolean"
-                },
-                "language": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentDocumentDashboard": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/consentDocumentInfo"
-            }
-        },
-        "consentTypeTextUpdate": {
-            "type": "object",
-            "required": ["id", "title"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentDocumentTextUpdate": {
-            "type": "object",
-            "required": ["id", "content"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "updateComment": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "consentSignatureHistory": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["id", "language"],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "language": {
-                        "type": "string",
-                        "minLength": 2
-                    }
-                },
-                "additionalProperties": false
-            }
         },
         "language": {
             "type": "object",
@@ -4506,107 +3651,6 @@
             },
             "additionalProperties": false
        },
-       "smtpSpec": {
-            "type": "object",
-            "required": ["exists"],
-            "properties": {
-                "exists": {
-                    "type": "boolean"
-                },
-                "smtp": {
-                    "type": "object",
-                    "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
-                    "properties": {
-                        "protocol": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "username": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "password": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "host": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "from": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "otherOptions": {
-                            "type": "object"
-                        },
-                        "content": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "subject": {
-                            "type": "string",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
-        "newSmtpSpec": {
-            "type": "object",
-            "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
-            "properties": {
-                "protocol": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "username": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "host": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "from": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "otherOptions": {
-                    "type": "object"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "subject": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-       "smtpSpecTextUpdate": {
-            "type": "object",
-            "required": ["subject", "content"],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "subject": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
         "resetTokenRecipient": {
             "type": "object",
             "required": ["email"],
@@ -4622,7 +3666,7 @@
             },
             "additionalProperties": false
         },
-        "userSurveyStatus": {
+        "answerStatus": {
             "type": "string",
             "enum": ["new", "in-progress", "completed"]
         },
@@ -4631,7 +3675,7 @@
             "required": ["status", "survey"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
@@ -4644,7 +3688,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -4661,7 +3705,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -4672,96 +3716,276 @@
             },
             "additionalProperties": false
         },
-        "newSurveyConsent": {
+        "prevAssessment": {
             "type": "object",
-            "required": ["surveyId", "consentTypeId", "action"],
+            "required": ["prevAssessmentId"],
+            "properties": {
+                "prevAssessmentId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "newComment": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "enum": ["agree", "disagree"]
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentLinkedAnswer": {
+            "type": "object",
+            "required": [
+                "questionId"
+            ],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                },
+                "comment": {
+                    "$ref": "#/definitions/newComment"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentLinkedAnswers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newAssessmentLinkedAnswer"
+            }
+        },
+        "newAssessmentAnswers": {
+            "type": "object",
+            "required": ["answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/newAssessmentLinkedAnswers"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "comment": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": ["agree", "disagree"]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentLinkedAnswer": {
+            "type": "object",
+            "required": [
+                "questionId"
+            ],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                },
+                "comment": {
+                    "$ref": "#/definitions/comment"
+                },
+                "commentHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/comment"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentLinkedAnswers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentLinkedAnswer"
+            }
+        },
+        "assessmentAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/assessmentLinkedAnswers"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersInfo": {
+            "type": "object",
+            "required": ["id", "name", "status"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "stage": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersExportList": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentAnswersExport"
+            }
+        },
+        "assessmentAnswersExport": {
+            "type": "object",
+            "required": [
+                "surveyId",
+                "assessmentId",
+                "userId",
+                "questionId",
+                "questionType",
+                "value"
+
+            ],
             "properties": {
                 "surveyId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "consentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentTypeId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "action": {
+                "surveyName": {
                     "type": "string",
-                    "enum": ["read", "create"]
-                }
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentInfo": {
-            "type": "object",
-            "required": ["id", "consentTypeId", "action"],
-            "properties": {
-                "id": {
+                    "minimum": 1
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "assessmentId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "consentId": {
+                "userId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "consentName": {
-                    "type": "string"
-                },
-                "consentTypeId": {
+                "questionId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "consentTypeName": {
+                "questionType": {
                     "type": "string"
                 },
-                "consentTypeTitle": {
+                "value": {
                     "type": "string"
                 },
-                "action": {
+                "questionText": {
+                    "type":"string",
+                    "minimum": 1
+                },
+                "questionInstruction": {
+                    "type":"string",
+                    "minimum": 1
+                },
+                "date": {
                     "type": "string",
-                    "enum": ["read", "create"]
+                    "format": "dateTime",
+                    "minimum": 1
+                },
+                "group": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "stage": {
+                    "type": "string",
+                    "minimum": 1
+                },
+                "code": {
+                    "type": "string"
                 }
-            },
-            "additionalProperties": false
+
+            }
         },
-        "surveyConsentDashboard": {
+        "assessmentAnswersDashboard": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/surveyConsentInfo"
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentDocumentInfo": {
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "consentName": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "surveyConsentDocumentDashboard": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/surveyConsentDocumentInfo"
+                "$ref": "#/definitions/assessmentAnswersInfo"
             },
             "additionalProperties": false
         },
@@ -4774,9 +3998,6 @@
                     "id": {
                         "type": "integer",
                         "minimum": 1
-                    },
-                    "lookback": {
-                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false
@@ -4790,11 +4011,15 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -4811,11 +4036,15 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -4831,6 +4060,13 @@
                         "minimum": 1
                     },
                     "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "stage": {
+                        "type": "integer"
+                    },
+                    "group": {
                         "type": "string",
                         "minLength": 1
                     }
@@ -4857,13 +4093,13 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["id", "sequence"],
+                "required": ["id", "version"],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "minimum": 1
                     },
-                     "sequence": {
+                     "version": {
                         "type": "integer"
                     }
                 },
@@ -4886,17 +4122,17 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "choices": {
+                "answerIdentifiers": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "answerIdentifier"],
+                        "required": ["identifier", "questionChoiceId"],
                         "properties": {
-                            "id": {
+                            "questionChoiceId": {
                                 "type": "integer",
                                 "minimum": 1
                             },
-                            "answerIdentifier": {
+                            "identifier": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -4956,6 +4192,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -4993,6 +4232,9 @@
                             "code": {
                                 "type": "string",
                                 "minLength": 1
+                            },
+                            "weight": {
+                                "type": "integer"
                             }
                         },
                         "additionalProperties": false
@@ -5035,41 +4277,97 @@
                 }
             }
         },
-        "zip": {
-            "type": "string",
-            "pattern": "^[0-9]{5}$"
-        },
-        "newResearchSite": {
+        "newQuestionChoice": {
             "type": "object",
-            "required": ["name", "url", "city", "state", "zip"],
+            "required": ["text"],
             "properties": {
-                "name": {
+                "text": {
                     "type": "string",
                     "minLength": 1
                 },
-                "url": {
-                    "type": "string",
-                    "format": "uri",
-                    "minLength": 1
+                "code": {
+                    "type": "string"
                 },
-                "city": {
-                    "type": "string",
-                    "minLength": 1
+                "weight": {
+                    "type": "integer"
                 },
-                "state": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2
+                "meta": {
+                    "type": "object"
                 },
-                "zip": {
-                    "$ref": "#/definitions/zip"
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
         },
-        "researchSite": {
+        "questionChoicePatch": {
             "type": "object",
-            "required": ["id", "name", "url", "city", "state", "zip"],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "userAudit": {
+            "type": "object",
+            "required": ["userId", "endpoint", "operation"],
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "endpoint": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "operation": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "userAudits": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/userAudit"
+            }
+        },
+        "file": {
+            "type": "object",
+            "required": ["id", "name"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -5078,73 +4376,15 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
-                },
-                "url": {
-                    "type": "string",
-                    "format": "uri",
-                    "minLength": 1
-                },
-                "city": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "state": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2
-                },
-                "zip": {
-                    "$ref": "#/definitions/zip"
                 }
             },
             "additionalProperties": false
         },
-        "researchSites": {
+        "files": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/researchSite"
+                "$ref": "#/definitions/file"
             }
-        },
-        "researchSitePatch": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "url": {
-                    "type": "string",
-                    "format": "uri",
-                    "minLength": 1
-                },
-                "city": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "state": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2
-                },
-                "zip": {
-                    "$ref": "#/definitions/zip"
-                }
-            },
-            "minProperties": 1,
-            "additionalProperties": false
-        },
-        "researchSiteVicinity": {
-            "type": "object",
-            "required": ["zipCodes"],
-            "properties": {
-                "zipCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/zip"
-                    }
-                }
-            },
-            "additionalProperties": false
         }
     }
 }

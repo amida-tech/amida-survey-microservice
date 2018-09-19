@@ -1,82 +1,15 @@
 'use strict';
 
-const chai = require('chai');
 const _ = require('lodash');
+const chai = require('chai');
 
 const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
-const Answerer = require('./generator/answerer');
+const modelsAnswerCommon = require('../../models/dao/answer-common');
+const shared = require('./shared-answer');
 
 const expect = chai.expect;
-
-const testQuestions = [{
-    survey: [0, 1, 2, 3, 4],
-    answerSequences: [
-        [
-            [0, 1, 2, 3, 4],
-            [0, 1, 2, 3, 4],
-            [-1, -2]
-        ]
-    ]
-}, {
-    survey: [4, 5, 6, 0],
-    answerSequences: [
-        [
-            [4, 5, 6, 0],
-            [4, -6],
-            [6, 0]
-        ]
-    ]
-}, {
-    survey: [7, 8, 9, 10, 11, 12],
-    answerSequences: [
-        [
-            [8, 10, 11, 12],
-            [7, 10, -12],
-            [9, 10, 11, -8]
-        ]
-    ]
-}, {
-    survey: [9, 11, 13, 6],
-    answerSequences: [
-        [
-            [9, 13],
-            [6, 11],
-            [-9, 11]
-        ],
-        [
-            [9, 11, 13, 6],
-            [9, 11, -6],
-            [11, 13]
-        ]
-    ]
-}, {
-    survey: [14, 15, 16, 17, 18, 19],
-    answerSequences: [
-        [
-            [14, 15, 16, 17, 18, 19],
-            [-15, 16, -17, -19],
-            [14, 17, 19]
-        ]
-    ]
-}];
-
-const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
-    if (qxIndices) {
-        return qxIndices.map(questionIndex => {
-            if (questionIndex < 0) {
-                const questionId = hxQuestion.id(-questionIndex);
-                return { questionId };
-            } else {
-                const question = hxQuestion.server(questionIndex);
-                return generator.answerQuestion(question);
-            }
-        });
-    } else {
-        return generator.answerQuestions(survey.questions);
-    }
-};
 
 const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     const expectedRaw = hxAnswer.listFlatForUser(userIndex);
@@ -84,18 +17,18 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
         const survey = hxSurvey.server(e.surveyIndex);
         const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
         const choiceIdToType = new Map();
-        survey.questions.forEach(question => {
+        survey.questions.forEach((question) => {
             if (question.type === 'choices') {
                 question.choices.forEach(choice => choiceIdToType.set(choice.id, choice.type));
             }
         });
         const surveyId = survey.id;
-        e.answers.forEach(answer => {
-            const dbAnswers = models.answer.toDbAnswer(answer.answer);
-            dbAnswers.forEach(dbAnswer => {
+        e.answers.forEach((answer) => {
+            const dbAnswers = modelsAnswerCommon.prepareAnswerForDB(answer.answer);
+            dbAnswers.forEach((dbAnswer) => {
                 const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
                 value.questionType = idToType.get(value.questionId);
-                if (value.hasOwnProperty('value')) {
+                if (Object.prototype.hasOwnProperty.call(value, 'value')) {
                     value.value = value.value.toString();
                 }
                 if (value.questionType === 'choices') {
@@ -109,51 +42,45 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     return expected;
 };
 
-const answersToSearchQuery = function (answers) {
-    const questions = answers.map(answer => {
-        return {
-            id: answer.questionId,
-            answer: answer.answer,
-            answers: answer.answers
-        };
+const answersToSearchQuery = function (inputAnswers) {
+    const questions = inputAnswers.map((inputAnswer) => {
+        const id = inputAnswer.questionId;
+        let answers = null;
+        if (inputAnswer.answers) {
+            answers = inputAnswer.answers.map(r => _.omit(r, 'multipleIndex'));
+        } else if (inputAnswer.answer.choices) {
+            answers = inputAnswer.answer.choices.map(c => ({ choice: c.id, boolValue: true }));
+        } else {
+            answers = [inputAnswer.answer];
+        }
+        return { id, answers };
     });
     return { questions };
 };
 
-const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
-    constructor() {
-        super();
-    }
-
-    choices(question) {
-        const choices = question.choices.map(choice => {
-            ++this.answerIndex;
-            const answer = { id: choice.id };
-            const type = _.camelCase(choice.type || 'bool');
-            Object.assign(answer, this[type]());
-            return answer;
-        });
-        return { choices };
-    }
-};
-
-const BoolSoleChoicesAnswerer = class BoolSoleChoicesAnswerer extends Answerer {
-    constructor() {
-        super();
-    }
-
-    choices(question) {
-        const choice = question.choices.find(choice => choice.type === 'bool-sole');
-        return { choices: [{ id: choice.id, boolValue: true }] };
-    }
+const compareImportedAnswers = function (actual, rawExpected, maps) {
+    const { userIdMap, questionIdMap } = maps;
+    const expected = _.cloneDeep(rawExpected);
+    expected.forEach((r) => {
+        const questionIdInfo = questionIdMap[r.questionId];
+        r.questionId = questionIdInfo.questionId;
+        if (r.questionChoiceId) {
+            const choicesIds = questionIdInfo.choicesIds;
+            r.questionChoiceId = choicesIds[r.questionChoiceId];
+        }
+        if (userIdMap) {
+            r.userId = userIdMap[r.userId];
+        }
+    });
+    expect(actual).to.deep.equal(expected);
 };
 
 const SpecTests = class AnswerSpecTests {
-    constructor(generator, hxUser, hxSurvey, hxQuestion) {
-        this.generator = generator;
-        this.hxUser = hxUser;
-        this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion;
+    constructor(options) {
+        this.generator = options.generator;
+        this.hxUser = options.hxUser;
+        this.hxSurvey = options.hxSurvey;
+        this.hxQuestion = options.hxQuestion;
         this.hxAnswer = new AnswerHistory();
     }
 
@@ -163,10 +90,10 @@ const SpecTests = class AnswerSpecTests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function answerSurvey() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
             const language = generator.nextLanguage();
@@ -183,14 +110,14 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
-            return models.answer.getAnswers({
-                    userId: hxUser.id(userIndex),
-                    surveyId: hxSurvey.id(surveyIndex)
-                })
-                .then(function (result) {
+        return function getAnswers() {
+            const surveyId = hxSurvey.id(surveyIndex);
+            const userId = hxUser.id(userIndex);
+            return models.answer.getAnswers({ userId, surveyId })
+                .then((result) => {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     comparator.answers(expected, result);
+                    hxAnswer.pushServer(userIndex, surveyIndex, result);
                 });
         };
     }
@@ -199,12 +126,12 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function verifyAnsweredSurvey() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
             return models.survey.getAnsweredSurvey(userId, survey.id)
-                .then(answeredSurvey => {
+                .then((answeredSurvey) => {
                     comparator.answeredSurvey(survey, answers, answeredSurvey);
                 });
         };
@@ -214,47 +141,69 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function listAnswersForUser() {
             const userId = hxUser.id(userIndex);
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
             return models.answer.listAnswers({ scope: 'export', userId })
-                .then(answers => {
+                .then((answers) => {
                     expect(answers).to.deep.equal(expected);
-                    hxAnswer.lastAnswers = answers;
+                    return answers;
+                });
+        };
+    }
+
+    listAnswersForUsersFn(userIndices) {
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function listAnswersForUsers() {
+            const userIds = userIndices.map(index => hxUser.id(index));
+            const expected = [];
+            userIndices.forEach((index) => {
+                const userExpected = expectedAnswerListForUser(index, hxSurvey, hxAnswer);
+                const userId = hxUser.id(index);
+                userExpected.forEach(r => Object.assign(r, { userId }));
+                expected.push(...userExpected);
+            });
+            return models.answer.listAnswers({ scope: 'export', userIds })
+                .then((answers) => {
+                    const actual = _.sortBy(answers, ['userId', 'surveyId']);
+                    expect(actual).to.deep.equal(expected);
+                    return actual;
                 });
         };
     }
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
-    constructor(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion) {
-        this.rrSuperTest = rrSuperTest;
-        this.generator = generator;
-        this.hxUser = hxUser;
-        this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion;
+    constructor(surveySuperTest, options) {
+        this.surveySuperTest = surveySuperTest;
+        this.generator = options.generator;
+        this.hxUser = options.hxUser;
+        this.hxSurvey = options.hxSurvey;
+        this.hxQuestion = options.hxQuestion;
         this.hxAnswer = new AnswerHistory();
     }
 
     answerSurveyFn(userIndex, surveyIndex, qxIndices) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function answerSurvey() {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
             const input = {
                 surveyId: survey.id,
-                answers
+                answers,
             };
             const language = generator.nextLanguage();
             if (language) {
                 input.language = language;
             }
-            return rrSuperTest.post('/answers', input, 204)
-                .expect(function () {
+            return surveySuperTest.post('/answers', input, 204)
+                .expect(() => {
                     hxAnswer.push(userIndex, surveyIndex, answers, language);
                 })
                 .then(() => answers);
@@ -262,15 +211,16 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     getAnswersFn(userIndex, surveyIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function (done) {
+        return function getAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
-                .expect(function (res) {
+            surveySuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
+                .expect((res) => {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     comparator.answers(expected, res.body);
+                    hxAnswer.pushServer(userIndex, surveyIndex, res.body);
                 })
                 .end(done);
         };
@@ -279,12 +229,12 @@ const IntegrationTests = class AnswerIntegrationTests {
     verifyAnsweredSurveyFn(userIndex, surveyIndex) {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        const rrSuperTest = this.rrSuperTest;
-        return function (done) {
-            const survey = hxSurvey.server(surveyIndex);
+        const surveySuperTest = this.surveySuperTest;
+        return function verifyAnsweredSurvey(done) {
+            const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
-            rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
-                .expect(function (res) {
+            surveySuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
+                .expect((res) => {
                     comparator.answeredSurvey(survey, answers, res.body);
                 })
                 .end(done);
@@ -292,27 +242,47 @@ const IntegrationTests = class AnswerIntegrationTests {
     }
 
     listAnswersForUserFn(userIndex) {
-        const rrSuperTest = this.rrSuperTest;
+        const surveySuperTest = this.surveySuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function (done) {
+        return function listAnswersForUser() {
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
-            rrSuperTest.get(`/answers/export`, true, 200)
-                .expect(function (res) {
+            return surveySuperTest.get('/answers/export', true, 200)
+                .then((res) => {
                     expect(res.body).to.deep.equal(expected);
-                    hxAnswer.lastAnswers = res.body;
-                })
-                .end(done);
+                    return res.body;
+                });
+        };
+    }
+
+    listAnswersForUsersFn(userIndices) {
+        const surveySuperTest = this.surveySuperTest;
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function listAnswersForUsers() {
+            const userIds = userIndices.map(index => hxUser.id(index));
+            const expected = [];
+            userIndices.forEach((index) => {
+                const userExpected = expectedAnswerListForUser(index, hxSurvey, hxAnswer);
+                const userId = hxUser.id(index);
+                userExpected.forEach(r => Object.assign(r, { userId }));
+                expected.push(...userExpected);
+            });
+            const query = { 'user-ids': userIds };
+            return surveySuperTest.get('/answers/multi-user-export', true, 200, query)
+                .then((res) => {
+                    const actual = _.sortBy(res.body, ['userId', 'surveyId']);
+                    expect(actual).to.deep.equal(expected);
+                    return actual;
+                });
         };
     }
 };
 
 module.exports = {
-    testQuestions,
     answersToSearchQuery,
-    generateAnswers,
+    compareImportedAnswers,
     SpecTests,
     IntegrationTests,
-    AllChoicesAnswerer,
-    BoolSoleChoicesAnswerer
 };

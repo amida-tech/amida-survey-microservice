@@ -1,7 +1,10 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
+const moment = require('moment');
 
 const models = require('../../models');
 
@@ -21,27 +24,29 @@ const comparator = {
                 }
                 clientRule.id = serverRule.id;
                 const answer = clientRule.answer;
-                const question = options.serverQuestionMap[serverRule.questionId];
-                if (answer && answer.choiceText) {
-                    const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
-                    answer.choice = enableWhenChoice.id;
-                    delete answer.choiceText;
-                }
-                if (answer && answer.choices) {
-                    answer.choices.forEach(answerChoice => {
-                        const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
-                        answerChoice.id = enableWhenChoice.id;
-                        delete answerChoice.text;
-                        if (Object.keys(answerChoice).length === 1) {
-                            answerChoice.boolValue = true;
-                        }
-                    });
-                    answer.choices = _.sortBy(answer.choices, 'id');
+                if (answer) {
+                    const question = options.serverQuestionMap[serverRule.questionId];
+                    if (answer.choiceText) {
+                        const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
+                        answer.choice = enableWhenChoice.id;
+                        delete answer.choiceText;
+                    }
+                    if (answer.choices) {
+                        answer.choices.forEach((answerChoice) => {
+                            const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
+                            answerChoice.id = enableWhenChoice.id;
+                            delete answerChoice.text;
+                            if (Object.keys(answerChoice).length === 1) {
+                                answerChoice.boolValue = true;
+                            }
+                        });
+                        answer.choices = _.sortBy(answer.choices, 'id');
+                    }
                 }
                 if (answer && (answer.code !== undefined)) {
                     const questionId = serverRule.questionId;
                     const question = options.serverQuestionMap[questionId];
-                    const choice = question.choices.find(choice => (choice.code === answer.code));
+                    const choice = question.choices.find(ch => (ch.code === answer.code));
                     answer.choice = choice.id;
                     delete answer.code;
                 }
@@ -53,7 +58,7 @@ const comparator = {
         const id = server.id;
         const expected = _.cloneDeep(client);
         if (expected.type === 'choices') {
-            expected.choices.forEach((choice) => choice.type = choice.type || 'bool');
+            expected.choices.forEach((choice) => { choice.type = choice.type || 'bool'; });
         }
         if (expected.type === 'choice' && expected.oneOfChoices) {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
@@ -70,6 +75,9 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
+        if (!expected.common) {
+            expected.common = false;
+        }
         delete expected.parentId;
         if (options.ignoreQuestionIdentifier) {
             delete expected.questionIdentifier;
@@ -77,15 +85,37 @@ const comparator = {
         if (options.ignoreAnswerIdentifier) {
             delete expected.answerIdentifier;
             delete expected.answerIdentifiers;
+        } else if (expected.answerIdentifier) {
+            if (expected.answerIdentifier.type === 'federated') {
+                expected.answerIdentifier = expected.answerIdentifier.value;
+            }
         }
         expect(server.type).to.equal(expected.type);
-        if (expected.type === 'choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
+        if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
                 if (options.ignoreAnswerIdentifier) {
                     delete choice.answerIdentifier;
+                } else if (choice.answerIdentifier) {
+                    if (choice.answerIdentifier.type === 'federated') {
+                        choice.identifier = choice.answerIdentifier.value;
+                    }
+                    delete choice.answerIdentifier;
                 }
             });
+        }
+        if (options.identifiers) {
+            const identifiers = options.identifiers[id];
+            if (expected.type === 'choice' || expected.type === 'choices') {
+                const map = new Map(identifiers.answerIdentifiers.map(answerIdentifier => [answerIdentifier.questionChoiceId, answerIdentifier.identifier]));
+                expected.choices.forEach((choice) => {
+                    choice.identifier = map.get(choice.id);
+                });
+            } else {
+                expected.answerIdentifier = identifiers.answerIdentifier;
+            }
+        }
+        if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expect(server.choices).to.deep.equal(expected.choices);
         }
         this.enableWhen(expected, server, options);
@@ -149,9 +179,12 @@ const comparator = {
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
+        answers.forEach((answer) => {
+            const questionId = answer.questionId;
+            answerMap.set(questionId, _.pick(answer, ['answer', 'answers', 'language']));
+        });
         const surveyQuestions = models.survey.getQuestions(expected);
-        surveyQuestions.forEach(qx => {
+        surveyQuestions.forEach((qx) => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {
                 if (qx.multiple) {
@@ -163,8 +196,8 @@ const comparator = {
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
                         const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                            if (choice.hasOwnProperty(p)) {
-                                ++r;
+                            if (Object.prototype.hasOwnProperty.call(choice, p)) {
+                                r += 1;
                             }
                             return r;
                         }, 0);
@@ -177,15 +210,16 @@ const comparator = {
         });
         expect(serverAnsweredSurvey).to.deep.equal(expected);
     },
-    answers(answers, serverAnswers, language) {
-        const expected = _.cloneDeep(answers);
-        expected.forEach(answer => {
-            answer.language = answer.language || language || 'en';
+    answers(answers, serverAnswers) {
+        const expected = _.sortBy(_.cloneDeep(answers), 'questionId');
+        const actual = _.sortBy(serverAnswers, 'questionId');
+        expected.forEach((answer, index) => {
+            answer.language = answer.language || 'en';
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
-                        if (choice.hasOwnProperty(p)) {
-                            ++r;
+                        if (Object.prototype.hasOwnProperty.call(choice, p)) {
+                            r += 1;
                         }
                         return r;
                     }, 0);
@@ -194,27 +228,37 @@ const comparator = {
                     }
                 });
             }
+            const fileValue = _.get(answer, 'answer.fileValue');
+            if (fileValue && fileValue.content) {
+                delete fileValue.content;
+                fileValue.id = actual[index].answer.fileValue.id;
+            }
+            if (answer.comment) {
+                const id = _.get(actual, `${index}.comment.id`);
+                if (id) {
+                    answer.comment.id = id;
+                }
+            }
+            if (answer.commentHistory) {
+                answer.commentHistory.forEach((comment, commentIndex) => {
+                    const id = _.get(actual, `${index}.commentHistory.${commentIndex}.id`);
+                    if (id) {
+                        comment.id = id;
+                    }
+                });
+            }
         });
-        const orderedExpected = _.sortBy(expected, 'questionId');
-        const orderedActual = _.sortBy(serverAnswers, 'questionId');
-        expect(orderedActual).to.deep.equal(orderedExpected);
+        expect(actual).to.deep.equal(expected);
     },
-    user(client, server) {
-        const expected = _.cloneDeep(client);
-        expected.id = server.id;
-        delete expected.password;
-        if (!expected.hasOwnProperty('role')) {
-            expected.role = 'participant';
-        }
-        if (!expected.username) {
-            expected.username = expected.email.toLowerCase();
-        }
-        expect(server).to.deep.equal(expected);
+    createdAt(server) {
+        const compareDateTime = moment().subtract(2, 'second');
+        const createdDateTime = moment(server.createdAt);
+        expect(createdDateTime.isAfter(compareDateTime)).to.equal(true);
     },
     choiceSet(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
-        _.range(server.choices.length).forEach(index => {
+        _.range(server.choices.length).forEach((index) => {
             expected.choices[index].id = server.choices[index].id;
         });
         expect(server).to.deep.equal(expected);
@@ -239,7 +283,6 @@ const comparator = {
                 this.conditionalSurveyTwiceCreatedQuestions(section.questions, firstServerSections[index].questions);
             }
         });
-
     },
     conditionalSurveyTwiceCreatedQuestions(firstServerQuestions, secondServerQuestions) {
         secondServerQuestions.forEach((question, index) => {
@@ -268,17 +311,34 @@ const comparator = {
     },
     updateChoiceSetMap(choiceSets) {
         choiceSetMap = new Map();
-        choiceSets.forEach(choiceSet => {
+        choiceSets.forEach((choiceSet) => {
             const choices = choiceSet.choices.map(({ id, text, code }) => ({ id, text, code }));
             choiceSetMap.set(choiceSet.id, choices);
             choiceSetMap.set(choiceSet.reference, choices);
         });
     },
-    researchSite(client, server) {
+    section(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         expect(server).to.deep.equal(expected);
-    }
+    },
+    filter(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        this.createdAt(server);
+        expected.createdAt = server.createdAt;
+        expected.questions.forEach(({ answers }, index) => {
+            answers.forEach((answer, index2) => {
+                if (answer.choice) {
+                    const serverAnswer = server.questions[index].answers[index2];
+                    if ('boolValue' in serverAnswer) {
+                        answer.boolValue = serverAnswer.boolValue;
+                    }
+                }
+            });
+        });
+        expect(server).to.deep.equal(expected);
+    },
 };
 
 module.exports = comparator;

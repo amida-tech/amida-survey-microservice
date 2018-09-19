@@ -1,8 +1,8 @@
-## Recruitment Registry Integration Document
+## Survey Service Integration Document
 
 ### Introduction
 
-This document gives examples for most resources available in Recruitment Registry API.
+This document gives examples for resources available in Survey Service API.
 
 ##### Code Snippets
 
@@ -22,24 +22,12 @@ Snippets in later stages of the document can depend on variables that are define
 
 ##### Seed Data
 
-Recruitment Registry installations come with a super user who has `admin` priviledges.  In this document it is assumed that the username and password are `super` and `Am!d@2017PW` respectively.
+Survey Service installations come with a super user.  In this document it is assumed that the username and password are `super` and `Am!d@2017PW` respectively.
 
 ### Authentication
 <a name="authentication"/>
 
-This API uses Basic Authentication where username and password are passed to resource `/auth/basic` in the HTTP Authorization header as `Basic code` where code is the base64 encoded string for `username:password`.  Most HTTP clients provide a specific option for this authentication including superagent
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/auth/basic')
-    .auth('super', 'Am!d@2017PW')
-    .then(res => {
-    	console.log(res.status); // 200
-    	console.log(res.body);   // {token: ...}
-    });
-```
-
-Server responds with a `set-cookie` header which includes a [JSON Web Token](https://jwt.io/) (JWT) as value of a cookie named `rr-jwt-token`.
+This API uses Basic Authentication where username and password are passed to an accompanying authentication service that provides a [JSON Web Token](https://jwt.io/) (JWT) as value of a cookie named `auth-jwt-token`.
 
 ### Authorization
 <a name="authorization"/>
@@ -58,7 +46,6 @@ In the case of error the following error codes are used
 
 - 400 (Bad Request): Indicates bad parameter(s) is/are passed to the API.  This can be wrong input object format, invalid value (for example not existing id) or constraint violations such as trying to create a new user with the same username.
 - 401 (Unauthorized): Indicates JWT specified in the Authorization header is invalid or does not correspond to an active user.
-- 403 (Forbidden): Indicates JWT specified in the Authorization header is valid and corresponds to a user but that user does not have permission to access to the resource requested.
 - 404 (Not Found): Indicates resource does not exist.
 - 500 (Internal Server Error): Indicates an unexpected run time error.
 
@@ -67,15 +54,14 @@ When server responds with an error status, an error object is always included in
 ### System Administration
 <a name="system-administration"/>
 
-Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (asurvey that needs to be answered during registration), those artifacts need to be created as well.
+Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.
 
-This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
+This section discusses administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with survey service specific system initialization scripts.  In addition the input format of resources (questions, surveys, etc.) are exemplified.
 
-All API requests in this section requires `admin` authorization.
 
 ##### Questions
 
-Questions can be created either individually or as part of a [survey](#admin-surveys).  Either way they are stored independently than surveys and can be shared.
+Questions can be created either individually or as part of a survey.  Either way they are stored independently than surveys and can be shared.
 
 There are four basic types of questions: `text`, `bool`, `choice` and `choices`.
 
@@ -143,30 +129,6 @@ choiceQx = {
 ```
 
 It an error to specify `type` for a `choices` element for a `choice` question.
-
-For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts that needs to shown to user
-
-```js
-choicesQx = {
-    type: 'choices',
-    text: 'What kind of exercises do you do?',
-    choices: [
-        { text: 'Walking' },
-        { text: 'Jogging', type: 'bool' },
-        { text: 'Cycling', type: 'bool' },
-        { text: 'Please specify other', type: 'text' }
-    ],
-    actions: [{
-        type: 'true',
-        text: 'Confirm'
-    }, {
-        type: 'false',
-        text: 'I don\'t exercise.'
-    }]
-};
-```
-
-This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` property.
 
 Questions are created using the `/questions` resource
 
@@ -284,13 +246,6 @@ Questions can be grouped into sections.  Currenly only one level deep sections a
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     questions: [{
         required: false,
         id: textQxId
@@ -314,20 +269,11 @@ survey = {
 };
 ```
 
-Section indices refer to the index of the question inside the survey.  This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
-
 In addition this API supports a client specific `meta` property which can be used to store any settings that relates to user interface or any other client setting
 
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     meta: {
         displayAsWizard: true,
         saveProgress: false
@@ -374,687 +320,9 @@ The server responds with the new survey `id` in the response body.
 
 Surveys can be soft deleted by `/surveys/{id}` resource.  It is also possible replace an existing survey with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing surveys are linked in the database and the existing survey is soft-deleted.  Currently there are no resources that exposes linked surveys on the API level.
 
-##### Profile Survey
-<a name="admin-profile-survey"/>
-
-Recruitment Registries can have a special survey called profile survey that can be used during registration of participants. Profile surveys are optional but if one is specified, answers are required during registration.
-
-Any existing survey can be assigned to be the profile survey using `/profile-survey-id` resource
-
-```
-agent
-    .post('http://localhost:9005/api/v1.0/profile-survey-id')
-    .send({ profileSurveyId: 1})
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body);    // id of the survey
-    });
-```
-
-The id of the survey that is assigned to be the profile survey is available using `/profile-survey-id` resource
-
-```
-agent
-    .get('http://localhost:9005/api/v1.0/profile-survey-id')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(res.body);    // id of the profile survey
-    });
-```
-
-Profile survey assignment can be removed in case your modified use case does not require it anymore
-
-```
-agent
-    .delete('http://localhost:9005/api/v1.0/profile-survey-id')
-    .then(res => {
-        console.log(res.status);  // 204
-    });
-```
-
-An additional resource `/profile-survey` is available to create a new survey and assign it as the profile survey with one call. JSON definition of the input survey is as described in [survey administration](#admin-surveys)
-
-```
-const profileSurvey = {
-    name: 'Alzheimer',
-    questions: [{
-        text: 'Gender',
-        required: true,
-        type: 'choice',
-        oneOfChoices: ['male', 'female', 'other']
-    }, {
-        text: 'Zip code',
-        required: false,
-        type: 'text'
-    }, {
-        text: 'Family history of memory disorders/AD/dementia?',
-        required: true,
-        type: 'bool'
-    }, {
-        text: 'How did you hear about us?',
-        required: false,
-        type: 'choices',
-        choices: [
-            { text: 'TV' },
-            { text: 'Radio' },
-            { text: 'Newspaper' },
-            { text: 'Facebook/Google Ad/OtherInternet ad' },
-            { text: 'Physician/nurse/healthcare professional' },
-            { text: 'Caregiver' },
-            { text: 'Friend/Family member' },
-            { text: 'Other source', type: 'text' }
-        ]
-    }]
-};
-
-agent
-	.post('http://localhost:9005/api/v1.0/profile-survey')
-	.send(profileSurvey)
-	.then(res => {
-		console.log(res.status);  // 201
-		console.log(res.body.id); // id of the profile survey
-	});
-```
-
-Server responds with the profile survey `id` in the response body.
-
-##### Consent Documents
-<a name="admin-consent-document"/>
-
-Recruitment Registries support multiple consent document types.  Consent Types in this API may refer to an actual Consent Form or other document types that participants have to sign such as Terms Of Use.  Separate resources are provided for Consent Types and Consent Documents since it is expected to have evolving versions of Consent Documents of the same type.  This API enforces to have a single active Consent Document of a certain Consent Type at any point in time; when a new Consent Document of a particular type is created, the previous active one is deactivated.
-
-Consent Type JSON descriptions are minimal
-
-```js
-let consentTypeTOU = {
-    name: 'terms-of-use',
-    title: 'Terms of Use',
-    type: 'single'
-};
-
-let consentTypeConsent = {
-    name: 'consent',
-    title: 'Consent Form',
-    type: 'single'
-}
-```
-
-Property `title` is shown in listings of consent documents and `type` is designed to be used by clients for [SAGE](#sage) support where various icons can be shown based on type.  Consent types are created using `/consent-types` resource
-
-```js
-let consentTypeTOUId = null;
-agent
-	.post('http://localhost:9005/api/v1.0/consent-types')
-	.send(consentTypeTOU)
-	.then(res => {
-		console.log(res.status);  // 201
-		console.log(res.body.id); // id of the new consent type
-		consentTypeTOUId = res.body.id;
-	});
-```
-
-The server responds with the consent type `id` in the response body.  The `type` id is needed to create the actual consent documents with its content using `consent-documents` resource
-
-```js
-let consentDocTOU = {
-	typeId: consentTypeTOUId,
-	content: 'This is a terms of use document.'
-};
-
-agent
-	.post('http://localhost:9005/api/v1.0/consent-documents')
-	.send(consentDocTOU)
-	.then(res => {
-		console.log(res.status);  // 201
-		console.log(res.body.id); // id of the new consent document
-		consentDocTOUId = res.body.id;
-	});
-```
-
-The server responds with the consent document `id` in the response body.  The rest of this document assumes that the second type in this section (`consent`) is similary created.
-
-This API does not provide a resource to delete Consent Documents since there is no need.  If a certain Consent Type is not needed resource `/consent_types/{id}` can be used.  This will soft delete the Consent Type and the active Consent Document with that type.
-
-### Registration
-<a name="registration"/>
-
-This section describes the resources that are needed to register a participant.  During registration participants are expected to specify their account details `username`, `password` and `email`. If a profile server has been specified as in [Profile Survey Administration](#admin-profile-survey) then answers to the profile survey have to be specifed specified as well.
-
-The profile survey is available without authorization using `/profile-survey` resource
-
-```js
-let profileSurvey;
-agent
-	.get('http://localhost:9005/api/v1.0/profile-survey')
-	.then(res => {
-		console.log(res.status);  // 200
-		profileSurvey = res.body;
-		console.log(JSON.stringify(profileSurvey, undefined, 4));
-	});
-```
-
-Server responds with the profile survey in response body and includes survey, question and choice id's that are needed to create answers.
-
-```js
-// content of profileSurvey
-{
-    "exists": true,
-    "survey": {
-        "id": 2,
-        "name": "Alzheimer",
-        "questions": [
-            {
-                "id": 6,
-                "type": "choice",
-                "text": "Gender",
-                "choices": [
-                    {
-                        "id": 13,
-                        "text": "male"
-                    },
-                    {
-                        "id": 14,
-                        "text": "female"
-                    },
-                    {
-                        "id": 15,
-                        "text": "other"
-                    }
-                ],
-                "required": true
-            },
-            {
-                "id": 7,
-                "type": "text",
-                "text": "Zip code",
-                "required": false
-            },
-            {
-                "id": 8,
-                "type": "bool",
-                "text": "Family history of memory disorders/AD/dementia?",
-                "required": true
-            },
-            {
-                "id": 9,
-                "type": "choices",
-                "text": "How did you hear about us?",
-                "choices": [
-                    {
-                        "id": 16,
-                        "type": "bool",
-                        "text": "TV"
-                    },
-                    {
-                        "id": 17,
-                        "type": "bool",
-                        "text": "Radio"
-                    },
-                    {
-                        "id": 18,
-                        "type": "bool",
-                        "text": "Newspaper"
-                    },
-                    {
-                        "id": 19,
-                        "type": "bool",
-                        "text": "Facebook/Google Ad/OtherInternet ad"
-                    },
-                    {
-                        "id": 20,
-                        "type": "bool",
-                        "text": "Physician/nurse/healthcare professional"
-                    },
-                    {
-                        "id": 21,
-                        "type": "bool",
-                        "text": "Caregiver"
-                    },
-                    {
-                        "id": 22,
-                        "type": "bool",
-                        "text": "Friend/Family member"
-                    },
-                    {
-                        "id": 23,
-                        "type": "text",
-                        "text": "Other source"
-                    }
-                ],
-                "required": false
-            }
-        ]
-    }
-}
-```
-
-If no profile survey is specified for the system, `exists` flag is set to false and no answers is required.
-
-Based on use-cases clients can require consent documents of certain types to be signed during registration.  As an example Terms Of Use ( see [Consent Document Administration](#admin-consent-document)) is available without authorization
-
-```js
-let touDocument;
-agent
-	.get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
-	.then(res => {
-		console.log(res.status);  // 200
-		touDocument = res.body;
-		console.log(JSON.stringify(touDocument, undefined, 4));
-	})
-```
-
-Server responds with the consent document content in the response body
-
-```js
-{
-    "id": 1,
-    "typeId": 1,
-    "content": "This is a terms of use document.",
-    "updateComment": null
-}
-```
-
-Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated.
-
-There are three seperate pieces of information that might be required for participant registration.  First is the account information which consists of username, email, and password and is always required
-
-```js
-const user = {
-	username: 'testparticipant',
-	password: 'testpassword',
-	email: 'test@example.com'
-};
-```
-
-Second is the answers to profile survey questions if a profile survey is specifed.  JSON desription of answers is an array where each element includes the question id and the answer
-
-```js
-const answers = [{
-	questionId: 6,
-	answer: { choice: 13 }
-}, {
-	questionId: 7,
-	answer: { textValue: '20850' }
-}, {
-	questionId: 8,
-	answer: { boolValue: true }
-}, {
-	questionId: 9,
-	answer: {
-		choices: [{
-			id: 16,
-			boolValue: true
-		}, {
-			id: 17
-		}, {
-			id: 23,
-			textValue: 'Community event'
-		}]
-	}
-}];
-```
-
-Notice that each answer gets a different property based on the question type.  For `choices` questions, `boolValue` property can be ignored and it is then assumed to be `true`.  `boolValue` cannot be ignored for `bool` questions.
-
-Third piece of information is the signatures for the Consent Documents that are required during registration.  Signatures are simply indicated by the id of the Consent Documents the participant saw and accepted during registration.  Signatures are optional and Consent Document requirements are not validated by the API and are totally under the control of the client.
-
-```js
-const signatures = [1];
-```
-
-Registration is completed using `/profiles` resource
-
-```js
-const registration = { user, answers, signatures };
-
-agent
-	.post('http://localhost:9005/api/v1.0/profiles')
-	.send(registration)
-	.then(res => {
-		console.log(res.status);  // 201
-	})
-```
-
-Server responds with the JWT cookie for the participant so that participant does not have to be authenticated again after the registration.  For later sessions participants are authenticated as described in [Authentication](#authentication)
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/auth/basic')
-    .auth('testuser', 'testpassword')
-    .then(res => {
-    	console.log(res.status);     // 200
-    });
-```
-
-This completes the registration.
-
-### Profiles
-<a name="profile"/>
-
-Participant profile is the account information and the profile survey answers that are created during [Registration](#registration).  Consent document signatures, which can also be collected during registration, are not considered part of profile and discussed in [Consent Documents](#consent-document) section.
-
-Existing profiles are available to authorized participants using `/profiles` resource
-
-```js
-agent
-	.get('http://localhost:9005/api/v1.0/profiles')
-	.then(res => {
-		console.log(res.status);                                // 200
-		console.log(JSON.stringify(res.body, undefined, 4));    // profile
-	});
-```
-
-Server responds with the profile in the response body.  Profile contains account information, profile survey questions and answers
-
-```js
-{
-    "user": {
-        "id": 2,
-        "username": "testparticipant",
-        "email": "test@example.com",
-        "role": "participant"
-    },
-    "survey": {
-        "id": 2,
-        "name": "Alzheimer",
-        "questions": [
-            {
-                "id": 6,
-                "type": "choice",
-                "text": "Gender",
-                "choices": [
-                    {
-                        "id": 13,
-                        "text": "male"
-                    },
-                    {
-                        "id": 14,
-                        "text": "female"
-                    },
-                    {
-                        "id": 15,
-                        "text": "other"
-                    }
-                ],
-                "required": true,
-                "language": "en",
-                "answer": {
-                    "choice": 13
-                }
-            },
-            {
-                "id": 7,
-                "type": "text",
-                "text": "Zip code",
-                "required": false,
-                "language": "en",
-                "answer": {
-                    "textValue": "20850"
-                }
-            },
-            {
-                "id": 8,
-                "type": "bool",
-                "text": "Family history of memory disorders/AD/dementia?",
-                "required": true,
-                "language": "en",
-                "answer": {
-                    "boolValue": true
-                }
-            },
-            {
-                "id": 9,
-                "type": "choices",
-                "text": "How did you hear about us?",
-                "choices": [
-                    {
-                        "id": 16,
-                        "type": "bool",
-                        "text": "TV"
-                    },
-                    {
-                        "id": 17,
-                        "type": "bool",
-                        "text": "Radio"
-                    },
-                    {
-                        "id": 18,
-                        "type": "bool",
-                        "text": "Newspaper"
-                    },
-                    {
-                        "id": 19,
-                        "type": "bool",
-                        "text": "Facebook/Google Ad/OtherInternet ad"
-                    },
-                    {
-                        "id": 20,
-                        "type": "bool",
-                        "text": "Physician/nurse/healthcare professional"
-                    },
-                    {
-                        "id": 21,
-                        "type": "bool",
-                        "text": "Caregiver"
-                    },
-                    {
-                        "id": 22,
-                        "type": "bool",
-                        "text": "Friend/Family member"
-                    },
-                    {
-                        "id": 23,
-                        "type": "text",
-                        "text": "Other source"
-                    }
-                ],
-                "required": false,
-                "language": "en",
-                "answer": {
-                    "choices": [
-                        {
-                            "id": 16,
-                            "boolValue": true
-                        },
-                        {
-                            "id": 17,
-                            "boolValue": true
-                        },
-                        {
-                            "id": 23,
-                            "textValue": "Community event"
-                        }
-                    ]
-                }
-            }
-        ]
-    }
-}
-```
-
-Answers are only returned for systems where a profile survey is required.
-
-Once profile is created only email and password can be updated for account information.  Any profile survey answer can be resubmitted.  Answers will be updated only for resubmitted questions.  For each resubmitted question all the old answers will be soft deleted.  If a `questionId` is specified without any answer the old answer will be removed for questions that are not required
-
-```js
-const user = {
-	email: 'test2@example2.com'
-};
-
-const answers = [{
-	questionId: 6,
-	answer: { choice: 14 }
-}, {
-	questionId: 7
-}, {
-	questionId: 8,
-	answer: { boolValue: false }
-}, {
-	questionId: 9,
-	answer: {
-		choices: [{
-			id: 15,
-			boolValue: true
-		}, {
-			id: 23,
-			textValue: 'Community event'
-		}]
-	}
-}];
-
-agent
-	.patch('http://localhost:9005/api/v1.0/profiles')
-	.send({ user, answers })
-	.then(res => {
-		console.log(res.status);  // 204
-	})
-```
-
-Server does not return any content after updates.  Updated profile is available using `/profiles` resource as disccused earlier in this section
-
-```js
-{
-    "user": {
-        "id": 2,
-        "username": "testparticipant",
-        "email": "test2@example2.com",
-        "role": "participant"
-    },
-    "survey": {
-        "id": 2,
-        "name": "Alzheimer",
-        "questions": [
-            {
-                "id": 6,
-                "type": "choice",
-                "text": "Gender",
-                "choices": [
-                    {
-                        "id": 13,
-                        "text": "male"
-                    },
-                    {
-                        "id": 14,
-                        "text": "female"
-                    },
-                    {
-                        "id": 15,
-                        "text": "other"
-                    }
-                ],
-                "required": true,
-                "language": "en",
-                "answer": {
-                    "choice": 14
-                }
-            },
-            {
-                "id": 7,
-                "type": "text",
-                "text": "Zip code",
-                "required": false
-            },
-            {
-                "id": 8,
-                "type": "bool",
-                "text": "Family history of memory disorders/AD/dementia?",
-                "required": true,
-                "language": "en",
-                "answer": {
-                    "boolValue": false
-                }
-            },
-            {
-                "id": 9,
-                "type": "choices",
-                "text": "How did you hear about us?",
-                "choices": [
-                    {
-                        "id": 16,
-                        "type": "bool",
-                        "text": "TV"
-                    },
-                    {
-                        "id": 17,
-                        "type": "bool",
-                        "text": "Radio"
-                    },
-                    {
-                        "id": 18,
-                        "type": "bool",
-                        "text": "Newspaper"
-                    },
-                    {
-                        "id": 19,
-                        "type": "bool",
-                        "text": "Facebook/Google Ad/OtherInternet ad"
-                    },
-                    {
-                        "id": 20,
-                        "type": "bool",
-                        "text": "Physician/nurse/healthcare professional"
-                    },
-                    {
-                        "id": 21,
-                        "type": "bool",
-                        "text": "Caregiver"
-                    },
-                    {
-                        "id": 22,
-                        "type": "bool",
-                        "text": "Friend/Family member"
-                    },
-                    {
-                        "id": 23,
-                        "type": "text",
-                        "text": "Other source"
-                    }
-                ],
-                "required": false,
-                "language": "en",
-                "answer": {
-                    "choices": [
-                        {
-                            "id": 15,
-                            "boolValue": true
-                        },
-                        {
-                            "id": 23,
-                            "textValue": "Community event"
-                        }
-                    ]
-                }
-            }
-        ]
-    }
-}
-```
-
-### User Management
-
-Participants are expected to use `/profiles` resource to register. But a `admin` only `/users` resource is also provided and can be used to create a new user
-
-```js
-const user = {
-    username: 'test2participant',
-    password: 'test2password',
-    email: 'test2@example.com'
-};
-
-let jwtUser2 = null;
-agent
-    .post('http://localhost:9005/api/v1.0/users')
-    .send(user)
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body);    // {token: ...}
-        jwtUser2 = res.body.token;
-    });
-```
-
 ### Questions
 
-A list of all questions is available to admins using resource `/questions`
+A list of all questions is available using resource `/questions`
 
 ```js
 agent
@@ -1107,18 +375,6 @@ Server responds with the list in the response body
         "id": 4,
         "type": "choices",
         "text": "What kind of exercises do you do?",
-        "actions": [
-            {
-                "id": 1,
-                "type": "true",
-                "text": "Confirm"
-            },
-            {
-                "id": 2,
-                "type": "false",
-                "text": "I don't exercise."
-            }
-        ],
         "choices": [
             {
                 "id": 5,
@@ -1259,7 +515,7 @@ agent
 ### Surveys
 <a name="surveys"/>
 
-A list of all surveys in the registry is available to authorized participants and admins using resource `/surveys`
+A list of all surveys available using resource `/surveys`
 
 ```js
 agent
@@ -1303,9 +559,9 @@ Server responds with all the survey details and in particular its questions
 ```js
 {
     "id": 1,
-    meta: {
-        displayAsWizard: true,
-        saveProgress: false
+    "meta": {
+        "displayAsWizard": true,
+        "saveProgress": false
     },
     "name": "Example",
     "questions": [
@@ -1349,18 +605,6 @@ Server responds with all the survey details and in particular its questions
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1384,24 +628,6 @@ Server responds with all the survey details and in particular its questions
                 }
             ],
             "required": false
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
         }
     ]
 }
@@ -1510,6 +736,7 @@ Server responds with answers in the the response body and the format is identica
 
 It is possible to show a survey with its answers using resource `/answered-surveys/{id}`
 
+
 ```js
 agent
 	.get('http://localhost:9005/api/v1.0/answered-surveys/1')
@@ -1582,18 +809,6 @@ Survey responds with the survey details in the response body.  Survey details is
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1635,24 +850,6 @@ Survey responds with the survey details in the response body.  Survey details is
                 ]
             }
         }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
-        }
     ]
 }
 ```
@@ -1690,6 +887,36 @@ Server responds with the list of user surveys in the body
 ]
 
 ```
+
+A parameter called "user-survey-status" can be added to filter by status
+
+```js
+agent
+    .get('http://localhost:9005/api/v1.0/user-surveys?user-survey-status=complete')
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // survey list with status with answers
+    });
+```
+
+Server responds with the list of user surveys in the body, filtered by status
+
+```js
+[
+    {
+        "id": 3,
+        "name": "Completed3",
+        "status": "completed"
+    },
+    {
+        "id": 4,
+        "name": "Completed4",
+        "status": "completed"
+    }
+]
+
+```
+
 
 Status can be changed when answering the survey using resource `/user-surveys/{id}/answers`.  If status is set to `in-progress` required questions can be left unanswered
 
@@ -1865,18 +1092,6 @@ Server responds with the answered survey and the status in the body
                 "id": 4,
                 "type": "choices",
                 "text": "What kind of exercises do you do?",
-                "actions": [
-                    {
-                        "id": 1,
-                        "type": "true",
-                        "text": "Confirm"
-                    },
-                    {
-                        "id": 2,
-                        "type": "false",
-                        "text": "I don't exercise."
-                    }
-                ],
                 "choices": [
                     {
                         "id": 5,
@@ -1914,302 +1129,42 @@ Server responds with the answered survey and the status in the body
                     ]
                 }
             }
-        ],
-        "sections": [
-            {
-                "id": 1,
-                "indices": [
-                    1,
-                    2
-                ],
-                "name": "Demographics"
-            },
-            {
-                "id": 2,
-                "indices": [
-                    0,
-                    3
-                ],
-                "name": "Health"
-            }
         ]
     }
 }
 ```
 
-### Consent Documents
-<a name="consent-document"/>
-
-Participant have to sign registry specific Consent Documents to be able to get access to various functionality. Currently this API does not enforce any requirement on consent documents itself and leaves any requirement enforcement to clients.  Consent Document API stores and provides content and signature status of consent documents.
-
-All consent documents that has to be signed for a user is shown by resource `/user-consent-documents`
+Comments can also be included with answers:
 
 ```js
-agent
-	.get('http://localhost:9005/api/v1.0/user-consent-documents')
-	.then(res => {
-		console.log(res.status);  // 200
-		console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
-	});
-```
-
-Server responsds withs a list in the response body that shows id of the consent document and type information
-
-```js
-[
-    {
-        "id": 2,
-        "name": "consent",
-        "title": "Consent Form"
-    }
-]
-```
-
-It is also possible to show already signed documents in the list with parameter `include-server`.
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/user-consent-documents?include-signed')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // all consent documents
-    });
-```
-
-In this case sigature status also shown
-
-```js
-[
-    {
-        "id": 1,
-        "name": "terms-of-use",
-        "title": "Terms of Use",
-        "signature": false
+const answers = [{
+    questionId: 1,
+    answer: { textValue: 'Try another medicine' }
+}, {
+    questionId: 4,
+    answer: {
+        choices: [{
+            id: 5,
+            boolValue: true
+        }, {
+            id: 8,
+            textValue: 'Basketball'
+        }]
     },
-    {
-        "id": 2,
-        "name": "consent",
-        "title": "Consent Form",
-        "signature": true,
-        "language": "en"
-    }
-]
-```
 
-Content of the documents can be shown using user `/consent-documents/{id}` resource
+}];
 
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consent-documents/2')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
-    });
-```
-
-Server responds with details of consent document include the content in the response body
-
-```js
-{
-    "id": 2,
-    "typeId": 2,
-    "content": "This is consent form.",
-    "updateComment": null
+const comment = {
+	reason: "agree",
+	text: "This answer is true"
 }
-```
-
-Same information is also available using the type name of the consent document
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
-    });
-```
-
-Consent documents can be signed with `consent-signatures` resource.  This resource accepts the `id` of the consent document
-
-```js
-agent
-    .post('http://localhost:9005/api/v1.0/consent-signatures')
-    .send( {consentDocumentId : 2} )
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body.id); // id of the signature
-    });
-```
-
-Consent documents can be shown with the signature information
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/user-consent-documents/type-name/consent')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature
-    });
-```
-
-Server responds with the consent document and its signature status
-
-```js
-{
-    "id": 2,
-    "typeId": 2,
-    "content": "This is consent form.",
-    "updateComment": null,
-    "signature": true,
-    "language": "en"
-}
-```
-
-A new version of the consent document can be created using `/consent-document` resource.
-
-```js
-let consentDocUpdate = {
-    typeId: 2,
-    content: 'This is an updated Consent Form.',
-    updateComment: 'Updated notice added'
-};
 
 agent
-    .post('http://localhost:9005/api/v1.0/consent-documents')
-    .send(consentDocUpdate)
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body.id); // id of the updated consent document
-    });
-```
-
-Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to be signed by the participant.  The list is shown by `/user-consent-documents` as discussed before
-
-```js
-[
-    {
-        "id": 3,
-        "name": "consent",
-        "title": "Consent Form"
-    }
-]
-```
-
-Resource `/consent-documents/{id}/with-signature` shows the content and the new signature status
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/user-consent-documents/3')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature information
-    });
-```
-
-Server responds with the new signature status which is false
-
-```js
-{
-    "id": 3,
-    "typeId": 2,
-    "content": "This is an updated Consent Form.",
-    "updateComment": "Updated notice added",
-    "signature": false
-}
-```
-
-### Password Reset
-<a name="password-reset"/>
-
-##### SMTP
-
-Reset password functionality requires an email delivery service specification as well as specification for the content of the reset password email. Both of these specifications are created using  `/smtp` resource
-
-```js
-const smtpSpec = {
-    protocol: 'smtp',
-    username: 'smtp@example.com',
-    password: 'pw',
-    host: 'localhost',
-    from: 'admin@rr.com',
-    otherOptions: {},
-    subject: 'Registry Admin',
-    content: 'Click on this: ${link}'
-};
-
-agent
-    .post('http://localhost:9005/api/v1.0/smtp')
-    .send(smtpSpec)
+    .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
+    .send({ answers, comment })
     .then(res => {
         console.log(res.status);  // 204
     });
-```
-
-Notice that content of the email includes a template `${link}` which is replaced by a clickable link that the client should handle.  The link is generated by adding a reset pasword token to a client base url that is specified during system installation/start.  All `smtpSpec` properties as well as the email of the user whose password to be reset is passed to [nodemailer](https://github.com/nodemailer/nodemailer) package to be sent to destination.
-
-SMTP specification is available using `/smtp` resource
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/smtp')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4));
-    });
-```
-
-Server response is identical to what has been creted (`smtpSpec`).  `smtp` resource can also be deleted if reset password functionality is to be disabled.
-
-##### Reset Tokens
-
-Resource `/reset-tokens` is used to generate reset tokens and send an email to the user with instructions on how to reset e-mail.
-
-```js
-agent
-    .post('http://localhost:9005/api/v1.0/reset-tokens')
-    .send({ email: 'test2@example2.com' })
-    .then(res => {
-        console.log(res.status);  // 204
-    });
-```
-
-Email is sent according to the specifications discussed in the previous section. The token is used in the clickable link (hyperlink) that is included in the email body.  Handling of the hyperlink is to be done by the client.  An example email based on the settings in the previous email is
-
-```
-Content-Type: text/plain
-From: smtp@rr.com
-To: test2@example2.com
-Subject: Registry Admin
-Message-ID: <49ed389d-f332-5a81-8e6e-18188cb47d36@rr.com>
-X-Mailer: nodemailer (2.6.0; +http://nodemailer.com/;
- SMTP/2.7.2[client:2.12.0])
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 08 Nov 2016 05:27:27 +0000
-MIME-Version: 1.0
-
-Click on this: http://localhost:401/reset-tokens/1b5326eba6bea2cdfaf34f45cb=
-f7b43e7ed308de
-```
-
-Reset tokens expire after a finite amount of time which by default is 1 hour.  Expiration can be specified during installation or when ever the server is restarted.
-
-##### User Password
-
-The link in the reset password email is to be handled by the client. It is expected that the client collects a new password for the user. Once the new password is collected, the password is updated using `/users/password` resource which also requires the reset token
-
-```js
-const passwordInfo = {
-    password: 'newPassw0rd',
-    token: '1b5326eba6bea2cdfaf34f45cbf7b43e7ed308de'
-};
-
-agent
-    .post('http://localhost:9005/api/v1.0/users/password')
-    .send(passwordInfo)
-    .then(res => {
-        console.log(res.status);  // 204
-    });
-
 ```
 
 ### Multi Lingual Support
@@ -2219,9 +1174,9 @@ This API follows an English first approach where every newly created resource is
 
 ##### Languages
 
-This section describes preloaded language definitions and how to add a new language to the system. All [GET] operations in this section is available to both participants and admins while only admins are authorized for other operations.
+This section describes preloaded language definitions and how to add a new language to the system.
 
-Recruitment Registry installations are preloaded with languages that can be listed by `/languages` resource
+Survey Service installations are preloaded with languages that can be listed by `/languages` resource
 
 ```js
 agent
@@ -2379,16 +1334,6 @@ All question text fields are translated by `/questions/text/{language}` resource
 const choicesQxTurkish = {
     'id': 4,
     'text': 'Hangi eksersizleri yapıyorsunuz?',
-    'actions': [
-        {
-            'id': 1,
-            'text': 'Kabul Et'
-        },
-        {
-            'id': 2,
-            'text': 'Eksersiz yapmıyorum.'
-        }
-    ],
     'choices': [
         {
             'id': 5,
@@ -2435,18 +1380,7 @@ server responds with the Turkish translation in the body
 {
     "id": 4,
     "type": "choices",
-    "text": "Hangi eksersizleri yapıyorsunuz?",
-    "actions": [
-        {
-            "id": 1,
-            "type": "true",
-            "text": "Kabul Et"
-        },
-        {
-            "id": 2,
-            "type": "false",
-            "text": "Eksersiz yapmıyorum."
-        }
+    "text": "Hangi eksersizleri yapıyorsunuz?"
     ],
     "choices": [
         {
@@ -2561,18 +1495,6 @@ responds with the Turkish translation in the body
             "id": 4,
             "type": "choices",
             "text": "Hangi eksersizleri yapıyorsunuz?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Kabul Et"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "Eksersiz yapmıyorum."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -2597,432 +1519,250 @@ responds with the Turkish translation in the body
             ],
             "required": false
         }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Kişisel Bilgiler"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Sağlık"
-        }
     ]
 }
 ```
 
 Note that all questions that are not yet translated is shown in English.
 
-###### Consent Types
+##### Assessment
+Assessments can be seen as an instance of one or several surveys. This can be used to track answers to survey(s) over time, or to even copy one user's answers into another assessment to be edited by further users. An assessment is assigned survey(s) that determines its questions set, as well as a group, and a stage, and can be created with a POST of the following format:
 
-The `title` field of consent type is translated by `/consent-types/text/{language}` resource
-
-```js
-const consentTypeConsentTurkish = {
-    id: 2,
-    title: 'İzin Metni'
-};
-
-agent
-    .patch('http://localhost:9005/api/v1.0/consent-types/text/tr')
-    .send(consentTypeConsentTurkish)
-    .then(res => {
-        console.log(res.status);  // 204
-    });
-```
-
-Translations are available to any [GET] request that responds with the `title` field. As an example for `/consent-type` resource
 
 ```js
-agent
-    .get(`http://localhost:9005/api/v1.0/consent-types/2`)
-    .query({ language: 'tr' })
-    .then(res => {
-        console.log(res.status); // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the consent type
-    });
-```
-
-Server responds with the Turkish translation in the body
-
-```js
-{
-    "id": 2,
-    "name": "consent",
-    "type": "single",
-    "title": "İzin Metni"
+const assessment = {
+  "name": "Example Assessment",
+  "stage": 0,
+  "surveys": [
+    {
+      "id": 0
+    }
+  ],
+  "group": "Bermuda"
 }
-```
-
-###### Consent Documents
-
-Consent document text fields are translated by `/consent-documents/text/{language} resource
-
-```js
-const consentDocTurkish = {
-    id: 3,
-    content: 'Bu güncelleştirilmiş bir izin metnidir.',
-    updateComment: 'Güncelleştirilmiş ibaresi eklendi'
-};
 
 agent
-    .patch('http://localhost:9005/api/v1.0/consent-documents/text/tr')
-    .send(consentDocTurkish)
+    .post('http://localhost:9005/api/v1.0/assessments')
+    .send(assessment)
     .then(res => {
         console.log(res.status);  // 204
     });
+
 ```
-Translations are available to any [GET] request that responds with one of consent document text fields by specifying language as url query parameter. As an example for `/consent-documents/{id}` resource
+
+A list of available assessments can be retrieved by a GET to /assessments. For example:
 
 ```js
-agent
-    .get('http://localhost:9005/api/v1.0/consent-documents/3')
-    .query({language: 'tr'})
-    .then(res => {
+agent.get('http://localhost:9005/api/v1.0/assessments').then(res => {
         console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the consent document
+        console.log(JSON.stringify(res.body, undefined, 4));
     });
 ```
+could return a JSON object like this:
 
-server responds with the Turkish translation in the body
+```js
+
+	[{
+        "id": 1,
+        "name": "name_0",
+        "stage": 0,
+        "group": "0"
+    },
+    {
+        "id": 2,
+        "name": "name_0",
+        "stage": 1,
+        "group": "0"
+    },
+    {
+        "id": 3,
+        "name": "name_0",
+        "stage": 2,
+        "group": "0"
+    },
+    {
+        "id": 4,
+        "name": "name_0",
+        "stage": 3,
+        "group": "0"
+    },
+    {
+        "id": 5,
+        "name": "name_1",
+        "stage": 0,
+        "group": "1"
+    },
+    {
+        "id": 6,
+        "name": "name_1",
+        "stage": 1,
+        "group": "1"
+    },
+    {
+        "id": 7,
+        "name": "name_1",
+        "stage": 2,
+        "group": "1"
+    }]
+```
+One can also retrieve an assessment by ID, via assessments/{id}:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessments/1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4));
+    });
+```
+server responds with a single assessment:
 
 ```js
 {
-    "id": 3,
-    "typeId": 2,
-    "content": "Bu güncelleştirilmiş bir izin metnidir.",
-    "updateComment": "Güncelleştirilmiş ibaresi eklendi"
+    "id": 1,
+    "name": "name_0",
+    "stage": 0,
+    "group": "0",
+    "surveys": [
+        {
+            "id": 1
+        }
+    ]
 }
 ```
-###### Smtp
+Note that assessments can be assigned **and** re-assigned with a post to /user-assessments as follows:
 
-Reset password email contents and subject is translated using `smtp/text/{code}` resource
 
 ```js
-const emailContentTurkish = {
-    subject: 'Kayıtlama Yönetimi',
-    content: 'Buna tıklayınız: ${link}'
-};
+const userAssessment = {
+  "userId": 0,
+  "assessmentId": 0
+}
 
-agent
-    .patch('http://localhost:9005/api/v1.0/smtp/text/tr')
-    .send(emailContentTurkish)
-    .then(res => {
+agent.post('http://localhost:9005/api/v1.0/assessments').send(userAssessment).then(res => {
         console.log(res.status);  // 204
+    });
+
+```
+
+##### Assessment-Answers
+Assessment-answers is a unit comprised of an assessment and a user's answers along with a status of progress that is either 'new', 'in-progress', or 'complete'. Assessment answers can be created via a post to the assessment-answers/{id} endpoint with the id of the assessment to be answered, in a similar manner to posting answers to user-survey/answers/{id} or to /survey.
+
+```js
+const answers = [{
+    questionId: 1,
+    answer: { textValue: 'Try another medicine' }
+}, {
+    questionId: 4,
+    answer: {
+        choices: [{
+            id: 5,
+            boolValue: true
+        }, {
+            id: 8,
+            textValue: 'Basketball'
+        }]
+    },
+
+}];
+
+agent.post('http://localhost:9005/api/v1.0/assessment-answers/1')
+.send(answers)
+.then(res => {
+        console.log(res.status);  // 204
+    });
+
+```
+
+They can be retrieved via a get request to the same endpoint, and the server response is similar to the user-survey/{id}, however it does not provide the survey questions rather a status and a list of answers for each survey.
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
     });
 ```
 
-When reset token generation is requested by the client, the language of the email content and subject can also be specified
+Server responds with the assessment-answers and the status in the body
 
 ```js
-agent
-    .post('http://localhost:9005/api/v1.0/reset-tokens')
-    .send({ email: 'test2@example2.com', language: 'tr' })
-    .then(res => {
-        console.log(res.status);  // 204
+{
+    "status": "completed",
+    "answers": [
+        {
+            "questionId": 9,
+            "language": "en",
+            "answer": {
+                "floatValue": 0.1
+            }
+        },
+        {
+            "questionId": 10,
+            "language": "en",
+            "meta": {
+                "prop_1": "value_1"
+            },
+            "answer": {
+                "dateValue": "1971-02-11"
+            }
+        },
+        {
+            "questionId": 11,
+            "language": "en",
+            "answer": {
+                "yearValue": "1982"
+            }
+        },
+        {
+            "questionId": 12,
+            "language": "en",
+            "answer": {
+                "monthValue": "04"
+            }
+        }
+	]
+}
+```
+To receive only the answers, call /assessment-answers/1/answers.
+
+It is possible to export assessment-answers in csv format by survey id and/or section id as well as question id via /assessment-answers/csv. For example:
+
+with questionId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1&question-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
     });
 ```
+With sectionId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1&section-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
+With only surveyId:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/CSV?survey-id=1').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+It is also possible to export assessment-answers in a flat, JSON format which corresponds to the CSV file by calling /assessment-answers/export. This endpoint allows for an optional query parameter to include question comments. This endpoint can be accessed like so:
+
+```js
+agent.get('http://localhost:9005/api/v1.0/assessment-answers/export?survey-id=1&includeComments=true').then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
 
 ##### Language Specification
 <a name="language_spec"/>
 
-This API keeps track of the language the Consent Documents and Questions are in when participants signs the documents or answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
+This API keeps track of the language the Questions are in when participants answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
 
-- `/profiles` [POST] and [PATCH]
 - `/answers` [POST]
-- `/consent-signatures` [POST]
-
-
-### Consents
-<a name="sage"/>
-
-This API allows grouping of multiple Consent Documents.  This overall collection, which is simply referred as Consent hereafter, is mainly designed to support [Sage](http://sagebase.org/platforms/governance/participant-centered-consent-toolkit/).
-
-Consents are created by specifying Consent Types they are composed of using `/consents` resource
-
-```js
-const consent = {
-    name: 'primary-consent',
-    sections: [1, 2]
-};
-
-agent
-    .post('http://localhost:9005/api/v1.0/consents')
-    .send(consent)
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body.id); // id of the new consent
-    });
-```
-
-Consent `name` property is not designed to be user facing and identify the consent in the API request.
-
-A list of all consents is available using `/consents` resource
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // list of consents
-    });
-```
-
-Server responds with the list of consents in the body
-
-```js
-[
-    {
-        "id": 1,
-        "name": "primary-consent",
-        "sections": [
-            1,
-            2
-        ]
-    }
-]
-```
-
-Consents can be shown using resource `/consents/{id}`
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents/1')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent details
-    });
-```
-
-Server responds with the details of the Consent in the body
-
-```js
-{
-    "id": 1,
-    "name": "primary-consent",
-    "sections": [
-        1,
-        2
-    ]
-}
-```
-
-Consent can also be shown using resource `/consents/name/{name}`
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent details
-    });
-```
-
-Server responds with the same details as `/consents/{id}`.
-
-Actual content of the documents in Consent is available unauthorized using `/consents/{id}/documents` resource
-
-```
-agent
-    .get('http://localhost:9005/api/v1.0/consents/1/documents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent with documents
-    });
-```
-
-Server responds with the Consent and details of its documents in the body.
-
-```js
-{
-    "id": 1,
-    "name": "primary-consent",
-    "sections": [
-        {
-            "id": 1,
-            "content": "This is a terms of use document.",
-            "updateComment": null,
-            "name": "terms-of-use",
-            "type": "single",
-            "title": "Terms of Use"
-        },
-        {
-            "id": 3,
-            "content": "This is an updated Consent Form.",
-            "updateComment": "Updated notice added",
-            "name": "consent",
-            "type": "single",
-            "title": "Consent Form"
-        }
-    ]
-}
-```
-
-Same response is also available using the name of the consent and resource `/consents/name/{name}/documents`
-
-```
-agent
-    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/documents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // consent with documents
-    });
-```
-
-Resource `/consents/{id}/documents` only provide document content.  It is available unauthorized since certain use cases may require documents before a user is authenticated or registered.  Authorized users can use resource `/consents/{id}/user-documents` to show both the consent document content and signature status
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents/1/user-documents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
-    });
-```
-
-```js
-{
-    "id": 1,
-    "name": "primary-consent",
-    "sections": [
-        {
-            "id": 1,
-            "content": "This is a terms of use document.",
-            "updateComment": null,
-            "name": "terms-of-use",
-            "type": "single",
-            "title": "Terms of Use",
-            "signature": true,
-            "language": "en"
-        },
-        {
-            "id": 3,
-            "content": "This is an updated Consent Form.",
-            "updateComment": "Updated notice added",
-            "name": "consent",
-            "type": "single",
-            "title": "Consent Form",
-            "signature": false
-        }
-    ]
-}
-```
-
-Same response is available using the name of the consent and resource `/consents/name/{name}/user-documents`
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
-    });
-```
-
-Updating Consent Document remains the same even when the document is a section of Consent
-
-```js
-const consentDocUpdate = {
-    typeId: 1,
-    content: 'This is an updated Terms of Use.',
-    updateComment: 'Updated TOU notice added'
-};
-
-agent
-    .post('http://localhost:9005/api/v1.0/consent-documents')
-    .send(consentDocUpdate)
-    .then(res => {
-        console.log(res.status);  // 201
-        console.log(res.body.id); // id of the updated consent document
-    });
-```
-
-Resource `/consents/{id}/user-documents` or `/consents/name/{name}/user-documents` can be used to show the updated
-
-```js
-agent
-    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
-    .then(res => {
-        console.log(res.status);  // 200
-        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
-    });
-```
-
-Server responds with the updated content and signature information
-
-```js
-{
-    "id": 1,
-    "name": "primary-consent",
-    "sections": [
-        {
-            "id": 4,
-            "content": "This is an updated Terms of Use.",
-            "updateComment": "Updated TOU notice added",
-            "name": "terms-of-use",
-            "type": "single",
-            "title": "Terms of Use",
-            "signature": false
-        },
-        {
-            "id": 3,
-            "content": "This is an updated Consent Form.",
-            "updateComment": "Updated notice added",
-            "name": "consent",
-            "type": "single",
-            "title": "Consent Form",
-            "signature": false
-        }
-    ]
-}
-```
-
-Since Consent sections are expected to be signed at the same time, an additional resource `/consent-signatures/bulk` is provided
-
-```js
-agent
-    .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
-    .send({ consentDocumentIds: [3, 4] })
-    .then(res => {
-        console.log(res.status);  // 201
-    });
-```
-
-Changes in signature status can be shown again by using resource `/consents/{id}/user-documents` or `/consents/name/{name}/user-documents`
-
-```js
-{
-    "id": 1,
-    "name": "primary-consent",
-    "sections": [
-        {
-            "id": 4,
-            "content": "This is an updated Terms of Use.",
-            "updateComment": "Updated TOU notice added",
-            "name": "terms-of-use",
-            "type": "single",
-            "title": "Terms of Use",
-            "signature": true,
-            "language": "en"
-        },
-        {
-            "id": 3,
-            "content": "This is an updated Consent Form.",
-            "updateComment": "Updated notice added",
-            "name": "consent",
-            "type": "single",
-            "title": "Consent Form",
-            "signature": true,
-            "language": "en"
-        }
-    ]
-}
-```

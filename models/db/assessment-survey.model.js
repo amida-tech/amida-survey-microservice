@@ -1,54 +1,52 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('assessment_survey', {
+module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
+    const tableName = 'assessment_survey';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         assessmentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'assessment_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'assessment'
+                    schema,
+                    tableName: 'assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
-        },
-        lookback: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
+                key: 'id',
+            },
         },
         createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at',
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        indexes: [{
+            fields: ['assessment_id'],
+            where: { deleted_at: { $eq: null } },
+        }],
+        paranoid: true,
     });
 };

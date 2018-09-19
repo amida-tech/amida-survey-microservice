@@ -1,52 +1,63 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('section_text', {
+module.exports = function sectionText(sequelize, Sequelize, schema) {
+    const tableName = 'section_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         sectionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'section_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'section'
+                    schema,
+                    tableName: 'section',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         name: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         description: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
-    }, {
-        freezeTableName: true,
-        schema: sequelize.options.schema,
-        createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
-    });
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
+    },
+        {
+            validate: {
+                descriptionAndNameOrNone() {
+                    if ((!this.name) && (this.description)) {
+                        throw new Error('Section Name required for description');
+                    }
+                },
+            },
+            freezeTableName: true,
+            tableName,
+            schema,
+            createdAt: 'createdAt',
+            updatedAt: false,
+            deletedAt: 'deletedAt',
+            paranoid: true,
+        });
 };

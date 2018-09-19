@@ -1,38 +1,41 @@
-/* global describe,before,it*/
+/* global describe,before,it */
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration.js');
-const RRSuperTest = require('./util/rr-super-test');
+const SurveySuperTest = require('./util/survey-super-test');
 
 const config = require('../config');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
 
-describe('language integration', function () {
-    const store = new RRSuperTest();
-
-    before(shared.setUpFn(store));
+describe('language integration', () => {
+    const surveySuperTest = new SurveySuperTest();
+    const shared = new SharedIntegration(surveySuperTest);
+    before(shared.setUpFn());
 
     let languages;
 
     const listLanguagesFn = function (done) {
-        store.get('/languages', true, 200)
-            .expect(function (res) {
+        surveySuperTest.get('/languages', true, 200)
+            .expect((res) => {
                 expect(res.body).to.deep.equal(languages);
             })
             .end(done);
     };
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
-    it('list existing languages', function (done) {
-        store.get('/languages', true, 200)
-            .expect(function (res) {
+    it('list existing languages', (done) => {
+        surveySuperTest.get('/languages', true, 200)
+            .expect((res) => {
                 languages = res.body;
                 expect(languages).to.have.length.above(0);
             })
@@ -42,21 +45,21 @@ describe('language integration', function () {
     const example = {
         code: 'tr',
         name: 'Turkish',
-        nativeName: 'Türkçe'
+        nativeName: 'Türkçe',
     };
 
-    it('create language', function (done) {
-        store.post('/languages', example, 201)
-            .expect(function () {
+    it('create language', (done) => {
+        surveySuperTest.post('/languages', example, 201)
+            .expect(() => {
                 languages.push(example);
                 _.sortBy(languages, 'code');
             })
             .end(done);
     });
 
-    it('get language', function (done) {
-        store.get(`/languages/${example.code}`, true, 200)
-            .expect(function (res) {
+    it('get language', (done) => {
+        surveySuperTest.get(`/languages/${example.code}`, true, 200)
+            .expect((res) => {
                 expect(res.body).to.deep.equal(example);
             })
             .end(done);
@@ -64,9 +67,9 @@ describe('language integration', function () {
 
     it('list existing languages', listLanguagesFn);
 
-    it('delete language', function (done) {
-        store.delete('/languages/fr', 204)
-            .expect(function () {
+    it('delete language', (done) => {
+        surveySuperTest.delete('/languages/fr', 204)
+            .expect(() => {
                 _.remove(languages, { code: 'fr' });
             })
             .end(done);
@@ -74,10 +77,10 @@ describe('language integration', function () {
 
     it('list existing languages', listLanguagesFn);
 
-    it('patch language', function (done) {
+    it('patch language', (done) => {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
-        store.patch('/languages/tr', languageUpdate, 204)
-            .expect(function () {
+        surveySuperTest.patch('/languages/tr', languageUpdate, 204)
+            .expect(() => {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);
             })
@@ -86,5 +89,5 @@ describe('language integration', function () {
 
     it('list existing languages', listLanguagesFn);
 
-    shared.verifyUserAudit(store);
+    shared.verifyUserAudit();
 });

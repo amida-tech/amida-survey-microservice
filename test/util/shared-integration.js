@@ -1,258 +1,147 @@
-/* global it*/
+/* global it */
+
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
+const _ = require('lodash');
+
+const config = require('../../config');
 
 const appgen = require('../../app-generator');
-const db = require('../../models/db');
+const models = require('../../models');
+const SurveyError = require('../../lib/survey-error');
 const Generator = require('./generator');
-const translator = require('./translator');
-const comparator = require('./comparator');
+// const translator = require('./translator');
+// const comparator = require('./comparator');
 
 const expect = chai.expect;
+const unknownError = new SurveyError('unknown');
+const i18n = require('../../i18n');
 
 class SharedIntegration {
-    constructor(generator) {
+    constructor(surveySuperTest, generator) {
         this.generator = generator || new Generator();
+        this.surveySuperTest = surveySuperTest;
     }
 
-    setUpFn(store, options = {}) {
-        return function (done) {
-            appgen.generate(options, function (err, app) {
+    setUpFn(options) {
+        const surveySuperTest = this.surveySuperTest;
+        return function setup(done) {
+            appgen.generate(options || { models }, (err, app) => {
                 if (err) {
                     return done(err);
                 }
-                store.initialize(app);
-                done();
+                surveySuperTest.initialize(app);
+                return done();
             });
         };
     }
 
-    loginFn(store, login) {
-        return function (done) {
-            store.authBasic(login).end(done);
+    static setUpMultiFn(surveySuperTests, options = {}) {
+        return function setupMulti(done) {
+            appgen.generate(options, (err, app) => {
+                if (err) {
+                    return done(err);
+                }
+                surveySuperTests.forEach(surveySuperTest => surveySuperTest.initialize(app));
+                return done();
+            });
         };
     }
 
-    loginIndexFn(store, history, index) {
-        const shared = this;
-        return function (done) {
-            const login = history.client(index);
-            login.username = login.username || login.email.toLowerCase();
-            shared.loginFn(store, login)(done);
+    setUpErrFn(options = {}) { // eslint-disable-line class-methods-use-this
+        return function setupErr(done) {
+            appgen.generate(options, (err) => {
+                if (!err) {
+                    return done(new Error('Expected error did not happen.'));
+                }
+                return done();
+            });
         };
     }
 
-    logoutFn(store) {
-        return function () {
-            store.resetAuth();
+    loginFn(user, method = 'cookie') {
+        const surveySuperTest = this.surveySuperTest;
+        return function login() {
+            const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
+            return surveySuperTest.authBasic(fullUser, 200, method);
         };
     }
 
-    badLoginFn(store, login) {
-        return function (done) {
-            store.authBasic(login, 401).end(done);
+
+    loginIndexFn(hxUser, index, method = 'cookie') {
+        const self = this;
+        return function loginIndex() {
+            const user = _.cloneDeep(hxUser.client(index));
+            user.username = user.username || user.email.toLowerCase();
+            user.id = hxUser.id(index);
+            return self.surveySuperTest.authBasic(user, 200, method);
         };
     }
 
-    createProfileSurveyFn(store, hxSurvey) {
+    logoutFn() {
+        const surveySuperTest = this.surveySuperTest;
+        return function logout() {
+            surveySuperTest.resetAuth();
+        };
+    }
+
+    badLoginFn(login) {
+        const surveySuperTest = this.surveySuperTest;
+        return function badLogin() {
+            return surveySuperTest.authBasic(login, 401);
+        };
+    }
+
+
+    createUserFn(history, user, override) {
         const generator = this.generator;
-        return function (done) {
-            const clientSurvey = generator.newSurvey();
-            store.post('/profile-survey', clientSurvey, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
-        };
-    }
-
-    verifyProfileSurveyFn(store, hxSurvey, index) {
-        return function (done) {
-            store.get('/profile-survey', false, 200)
-                .expect(function (res) {
-                    expect(res.body.exists).to.equal(true);
-                    const survey = res.body.survey;
-                    const id = hxSurvey.id(index);
-                    expect(survey.id).to.equal(id);
-                    hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey);
-                })
-                .end(done);
-        };
-    }
-
-    createUserFn(store, history, user, override) {
-        const generator = this.generator;
-        return function (done) {
+        const surveySuperTest = this.surveySuperTest;
+        return function createUser() {
             if (!user) {
                 user = generator.newUser(override);
             }
-            store.post('/users', user, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.push(user, { id: res.body.id });
-                    done();
-                });
+            surveySuperTest.authService.addUser(user);
+            history.push(user, { id: history.clients.length + 2 });
         };
     }
 
-    createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
-        const generator = this.generator;
-        return function (done) {
-            const inputSurvey = generator.newSurvey();
-            delete inputSurvey.sections;
-            if (hxQuestion) {
-                inputSurvey.questions = qxIndices.map(index => ({
-                    id: hxQuestion.server(index).id,
-                    required: false
-                }));
-            }
-            store.post('/surveys', inputSurvey, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxSurvey.push(inputSurvey, res.body);
-                    done();
-                });
-        };
-    }
+    verifyUserAudit() {
+        const surveySuperTest = this.surveySuperTest;
+        it('login as super', this.loginFn(config.superUser));
 
-    createSurveyProfileFn(store, survey) {
-        return function (done) {
-            store.post('/profile-survey', survey, 201)
-                .expect(function (res) {
-                    expect(!!res.body.id).to.equal(true);
-                })
-                .end(done);
-        };
-    }
+        it('verify user audit', function vua() {
+            const userAudit = surveySuperTest.getUserAudit();
 
-    createConsentTypeFn(store, history) {
-        const generator = this.generator;
-        return function (done) {
-            const cst = generator.newConsentType();
-            store.post('/consent-types', cst, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.pushType(cst, res.body);
-                    done();
-                });
-        };
-    }
-
-    createConsentFn(store, hxConsent, hxConsentDocument, typeIndices) {
-        const generator = this.generator;
-        return function (done) {
-            const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
-            const clientConsent = generator.newConsent({ sections });
-            store.post('/consents', clientConsent, 201)
-                .expect(function (res) {
-                    hxConsent.pushWithId(clientConsent, res.body.id);
-                })
-                .end(done);
-        };
-    }
-
-    verifyConsentFn(store, hxConsent, index) {
-        return function (done) {
-            const id = hxConsent.id(index);
-            store.get(`/consents/${id}`, true, 200)
-                .expect(function (res) {
-                    const expected = hxConsent.server(index);
-                    expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
-        };
-    }
-
-    signConsentTypeFn(store, hxConsentDocument, userIndex, typeIndex) {
-        return function (done) {
-            const consentDocumentId = hxConsentDocument.id(typeIndex);
-            hxConsentDocument.sign(typeIndex, userIndex);
-            store.post('/consent-signatures', { consentDocumentId }, 201).end(done);
-        };
-    }
-
-    bulkSignConsentTypeFn(store, hxConsentDocument, userIndex, typeIndices) {
-        return function (done) {
-            const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
-            typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
-            store.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
-        };
-    }
-
-    createConsentDocumentFn(store, history, typeIndex) {
-        const generator = this.generator;
-        return function (done) {
-            const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentDocument({ typeId });
-            store.post('/consent-documents', cs, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.push(typeIndex, cs, res.body);
-                    done();
-                });
-        };
-    }
-
-    translateConsentTypeFn(store, index, language, hxType) {
-        return function (done) {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            store.patch(`/consent-types/text/${language}`, translation, 204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxType.translate(index, language, translation);
-                    done();
-                });
-        };
-    }
-
-    translateConsentDocumentFn(store, index, language, history) {
-        return function (done) {
-            const server = history.server(index);
-            const translation = translator.translateConsentDocument(server, language);
-            store.patch(`/consent-documents/text/${language}`, translation, 204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.hxDocument.translateWithServer(server, language, translation);
-                    done();
-                });
-        };
-    }
-
-    verifyUserAudit(store) {
-        it('verify user audit', function () {
-            const userAudit = store.getUserAudit();
-            return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
-                .then(users => new Map(users.map(user => [user.username, user.id])))
-                .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
-                .then(expected => {
-                    return db.UserAudit.findAll({
-                            raw: true,
-                            attributes: ['userId', 'endpoint', 'operation'],
-                            order: 'created_at'
-                        })
-                        .then(actual => {
-                            expect(actual).to.deep.equal(expected);
-                        });
+            return surveySuperTest.get('/user-audits', true, 200)
+                .then((resAudit) => {
+                    expect(resAudit.body).to.deep.equal(userAudit);
                 });
         });
+
+        it('logout as super', this.logoutFn());
+    }
+
+    verifyErrorMessage(res, code, ...params) { // eslint-disable-line class-methods-use-this
+        const req = {};
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new SurveyError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
+    }
+
+    verifyErrorMessageLang(res, language, code, ...params) { // eslint-disable-line class-methods-use-this
+        const req = { url: `http://aaa.com/anything?language=${language}` };
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new SurveyError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
     }
 }
 
