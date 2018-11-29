@@ -13,7 +13,7 @@ const SharedIntegration = require('./util/shared-integration.js');
 const SurveySuperTest = require('./util/survey-super-test');
 
 const models = require('../models');
-const config = require('../config');
+const config = require('../config/config');
 const SPromise = require('../lib/promise');
 
 const language = models.language;
