@@ -2,7 +2,7 @@
 FROM node:8.10.0
 
 # set /app directory as default working directory
-WORKDIR /app/
+WORKDIR /app
 COPY . /app/
 
 # Run yarn
