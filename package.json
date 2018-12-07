@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --harmony index.js",
+    "serve": "node --harmony index.js",
     "test": "NODE_ENV=test mocha test/*.js test/import-export/*.js --bail --timeout 5000",
     "beautify": "esw -c .eslintrc *.js ./**/*.js --color --fix",
     "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
