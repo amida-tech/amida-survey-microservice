@@ -7,7 +7,9 @@
     "start": "node --harmony index.js",
     "serve": "node --harmony index.js",
     "seed": "node seed.js",
-    "test": "NODE_ENV=test mocha test/*.js test/import-export/*.js --bail --timeout 5000",
+    "create_db": "cross-env NODE_ENV=test node create_db.js",
+    "delete_db": "cross-env NODE_ENV=test node delete_db.js",
+    "test": "cross-env NODE_ENV=test yarn create_db && mocha test/*.js test/import-export/*.js --bail --timeout 5000 && yarn delete_db",
     "beautify": "esw -c .eslintrc *.js ./**/*.js --color --fix",
     "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
     "coveragehtml": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
@@ -53,6 +55,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "cross-env": "3.1.3",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-import": "^2.2.0",
