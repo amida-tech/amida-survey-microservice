@@ -1,18 +1,18 @@
 {
-  "name": "survey-service",
+  "name": "amida-survey-microservice",
   "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --harmony index.js",
-    "serve": "node --harmony index.js",
-    "seed": "node seed.js",
     "create_db": "cross-env NODE_ENV=test node create_db.js",
     "delete_db": "cross-env NODE_ENV=test node delete_db.js",
+    "lint": "esw -c .eslintrc *.js ./**/*.js --color --fix",
+    "seed": "node seed.js",
+    "serve": "node --harmony index.js",
+    "start": "node --harmony index.js",
     "test": "cross-env NODE_ENV=test yarn create_db && mocha test/*.js test/import-export/*.js --bail --timeout 5000 && yarn delete_db",
-    "beautify": "esw -c .eslintrc *.js ./**/*.js --color --fix",
-    "coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
-    "coveragehtml": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
+    "test:coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
+    "test:coverage:html": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
   },
   "repository": {
     "type": "git",
@@ -66,6 +66,7 @@
     "grunt-eslint": "^19.0.0",
     "grunt-mocha-test": "^0.12.7",
     "grunt-shell": "^1.3.1",
+    "istanbul": "1.1.0-alpha.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.5.3",
     "rewire": "^2.5.2",

@@ -43,3 +43,6 @@ private.key.pub
 
 # Environment variables files
 .env
+
+# The dist folder
+dist
