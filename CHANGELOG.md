@@ -1,5 +1,11 @@
-# v0.0.1 - 12/21/2016
+# Changelog
 
+## [Unreleased]
+- Multi-stage Dockerfile build using alpine base image
+- `npm` --> `yarn`
+
+
+## [v0.0.1] -- 2016-12-21
 This is the initial release to mark first go-live.
 
 - See README for all the functionality.

@@ -1,18 +1,20 @@
-# Dockerfile
-FROM node:8.9.0
+# node image
+FROM node:8.14.0-alpine as builder
 
-# Add package.json before rest of repo, for Docker caching purposes
-# See http://ilikestuffblog.com/2014/01/06/
-ADD package.json /app/
+# set /app directory as default working directory
+WORKDIR /app/
+COPY . /app/
+
+# Run yarn
+RUN yarn install --pure-lockfile
+
+FROM node:8.14.0-alpine
+
 WORKDIR /app
-RUN npm install --production
 
-# If you use Bower, uncomment the following lines:
-# RUN npm install -g bower
-# ADD bower.json /app/
-# RUN bower install --allow-root
+COPY --from=builder /app/ /app/
 
-ADD . /app
-
+# expose port 9005
 EXPOSE 9005
-CMD node seed.js && node --harmony index.js
+
+CMD ["yarn", "serve"]

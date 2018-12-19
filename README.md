@@ -14,23 +14,28 @@ Survey Service API
 ## Installation
 
 1. Install all dependencies:
-	* Node.js v6 (previous node versions may require Babel)
+	* Node.js v8 or greater
 	* Postgres (v9.5 or greater)
 	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
 
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
-2. Create database surveyService:
-`createdb surveyService`
-3. Install Grunt:
-`npm install -g grunt`
-4. Install npm dependencies:
-`npm install`
-5. Create a `.env` file in root.
+
+2. Install dependencies:
+`yarn`
+
+3. Create a `.env` file in root:
+`cp .env.example .env`
+
 > Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
-6. Populate your database:
-`node seed.js`
-7. Run:
-`npm start`
+
+4. Create database:
+`yarn create_db`
+
+5. Populate database:
+`yarn seed`
+
+6. Run:
+`yarn serve`
 
 ### Installing Python and Visual C++ Build Tools (Windows)
 
@@ -41,7 +46,7 @@ installing the needed components for node-gyp. And all users will probably have 
 2. Set the Environmental Variables for the Python install, including the variable 'PYTHON.'
 3. Download & install [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools).
 4. Run 'npm config set msvs_version 2015 --global'
-5. If errors continue to occur, update to the latest version of npm with 'npm install npm -g'
+5. If errors continue to occur, update to the latest version of yarn with 'npm install npm -g'
 
 
 ## Configuration
@@ -95,27 +100,26 @@ A list of full environment variable settings is below.  They can be either manua
 
 ## Commands
 
-`npm start`
+`yarn start` OR `yarn serve`
 
 > Run server (default port is 9005)
 
-`grunt`
-
-> First beautifies and lints all files and then runs all the tests.
-
-`npm test`
+`yarn test`
 
 > Runs all the tests.
 
-`npm run-script coverage`
+`yarn test:coverage`
 
 > Runs all the tests and displays coverage metrics.
 
+`yarn lint`
+
 ## Multitenant Support
 
-Multitenancy is supported through postgres schemas.  Multiple schemas are specified using SURVEY_SERVICE_DB_SCHEMA as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
+Multitenancy is supported through postgres schemas.  Multiple schemas are specified using `SURVEY_SERVICE_DB_SCHEMA` as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
 
 ## Tests
+`yarn test`
 
 This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and [Super Test](https://github.com/visionmedia/supertest) for automated testing.  [Sinon](http://sinonjs.org/) is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
 
