@@ -2,7 +2,7 @@
 
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config()
 
 const _ = require('lodash');
 
