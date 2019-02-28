@@ -1,21 +1,21 @@
-# Survey Service API
+# Amida Survey Microservice
 
-Survey Service API
+## Table of Contents
 
-## Features
-
-- [Node.js](https://nodejs.org/en/)
-- [Express](https://expressjs.com/)
-- [Postgres](https://www.postgresql.org/)
-- [Sequelize](http://docs.sequelizejs.com/en/v3/)
-- [Mocha + Chai + SuperTest](http://engineering.invisionapp.com/post/express-integration-testing-supertest/)
-- [Grunt](https://gruntjs.com/)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Commands](#commands)
+  - [Multitenant Support](#multitenant-support)
+  - [Tests](#tests)
+  - [API](#api)
+  - [Database Design](#database-design)
+  - [Deployment](#deployment)
 
 ## Installation
 
 1. Install all dependencies:
 	* Node.js v8 or greater
-	* Postgres (v9.5 or greater)
+	* Postgres (v9.6 or greater)
 	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
 
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
@@ -119,7 +119,20 @@ A list of full environment variable settings is below.  They can be either manua
 Multitenancy is supported through postgres schemas.  Multiple schemas are specified using `SURVEY_SERVICE_DB_SCHEMA` as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
 
 ## Tests
-`yarn test`
+```sh
+# Make sure .env.test exists
+# deletes db, creates db, runs migrations and then tests
+yarn jenkins
+
+# Only run the tests (assumes migrations have been run)
+yarn test
+
+# Run test along with code coverage
+yarn test:coverage
+
+# Run tests enforcing code coverage (configured via .istanbul.yml)
+yarn test:check-coverage
+```
 
 This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and [Super Test](https://github.com/visionmedia/supertest) for automated testing.  [Sinon](http://sinonjs.org/) is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
 
@@ -230,32 +243,9 @@ This is a English first design where all logical records are assumed to be in En
 
 Except account columns `email` and `password` in users table, none of the user facing columns ever overwrite a previous value and a history is always available.  There are a few overwriting columns such as `meta` in `survey` table.  These are mainly used for client level settings and do not contribute to any business logic.
 
-## Migration
+### Database migrations
 
-This project uses [sequelize-cli](https://github.com/sequelize/cli) for migrations.  The bootstrap model is located [here](./migration/models) and corresponds to the state of the database during first go-live.
-
-All migrations can be run using[sequelize-cli](https://github.com/sequelize/cli) in migration directory
-```bash
-cd migration
-sequelize
-```
-
-Migration uses the `.env` file in the root directory.  Each run creates/updates a file named `sequelize-meta.json` in the migration directory.  This file must be preserved in this directory to avoid running the same migrations again.
-
-## References
-
-- [Node.js](https://nodejs.org/en/)
-- [Express.js](https://expressjs.com/)
-- [Grunt](http://gruntjs.com/)
-- [Sequelize](http://docs.sequelizejs.com/en/v3/)
-- [Sequelize-Cli](https://github.com/sequelize/cli)
-- [Postgres](https://www.postgresql.org/)
-- [Sinon](http://sinonjs.org/)
-- [Mocha](http://mochajs.org/)
-- [Chai](http://chaijs.com/)
-- [Supertest](https://github.com/visionmedia/supertest)
-- [Babel](http://babeljs.io/)
-- [Swagger](http://swagger.io/)
+There are no migrations for the project. The DB schema is created by `sequelize.model.sync()`, triggered at application start and `./seed.js`
 
 ## Deployment
 

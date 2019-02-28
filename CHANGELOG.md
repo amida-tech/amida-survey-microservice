@@ -1,8 +1,11 @@
 # Changelog
 
 ## [Unreleased]
-- Multi-stage Dockerfile build using alpine base image
+### Added
 - `npm` --> `yarn`
+- `yarn test` command changed to _only_ run tests
+  * `yarn jenkins` includes DB creation, migrations, etc.
+- Multi-stage Dockerfile build using alpine base image
 
 
 ## [v0.0.1] -- 2016-12-21
