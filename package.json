@@ -3,6 +3,11 @@
   "version": "0.0.2",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": ">=8.14.0",
+    "npm": ">=6.4.0",
+    "yarn": ">=1.12.0"
+  },
   "scripts": {
     "create_db": "node create_db.js",
     "delete_db": "node delete_db.js",
@@ -80,8 +85,5 @@
     "supertest-session": "^3.0.0",
     "unzipper": "^0.8.9",
     "winston-spy": "^0.2.0"
-  },
-  "engines": {
-    "node": ">=8.9.0"
   }
 }
