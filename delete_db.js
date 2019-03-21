@@ -3,6 +3,8 @@
 const pg = require('pg');
 const config = require('./config');
 
+console.log(config.db);
+
 const conStringPri = `postgres://${config.db.user}:${config.db.pass}@${config.db.host}:${config.db.port}/postgres`;
 
 pg.connect(conStringPri, (err, client, done) => { // eslint-disable-line no-unused-vars

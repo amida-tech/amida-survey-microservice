@@ -2,7 +2,13 @@
 
 const dotenv = require('dotenv');
 
-dotenv.config();
+
+if (process.env.NODE_ENV === 'test') {
+    console.log('using env.test'); // eslint-disable-line no-console
+    dotenv.config({ path: '.env.test' });
+} else {
+    dotenv.config();
+}
 
 const _ = require('lodash');
 
