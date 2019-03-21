@@ -1,4 +1,7 @@
 # Amida Survey Microservice
+[![dependencies Status](https://david-dm.org/amida-tech/amida-survey-microservice/status.svg)](https://david-dm.org/amida-tech/amida-survey-microservice)
+[![devDependencies Status](https://david-dm.org/amida-tech/amida-survey-microservice/dev-status.svg)](https://david-dm.org/amida-tech/amida-survey-microservice?type=dev)
+[![Jenkins CI](https://jenkins.amida.com/buildStatus/icon?job=Survey%20Microservice%20Unit%20Test/)](https://jenkins.amida.com/job/Survey%20Microservice%20Unit%20Test/)
 
 ## Table of Contents
 

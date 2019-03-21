@@ -37,6 +37,6 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=surveyService
+      - POSTGRES_DB=amida_survey_microservice
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
