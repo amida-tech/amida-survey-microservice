@@ -10,10 +10,10 @@ if (process.env.NODE_ENV === 'test') {
     dotenv.config();
 }
 
+
 const _ = require('lodash');
 
 const developmentEnv = require('./development');
-const testEnv = require('./test');
 const productionEnv = require('./production');
 
 const all = {
