@@ -95,7 +95,6 @@ const main = {
 const configBase = _.merge(all, main);
 const envBase = {
     development: developmentEnv,
-    test: testEnv,
     production: productionEnv,
 };
 const config = _.merge(configBase, envBase[configBase.env]);
