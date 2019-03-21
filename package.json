@@ -3,17 +3,24 @@
   "version": "0.0.2",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": ">=8.14.0",
+    "npm": ">=6.4.0",
+    "yarn": ">=1.12.0"
+  },
   "scripts": {
-    "create_db": "cross-env NODE_ENV=test node create_db.js",
-    "delete_db": "cross-env NODE_ENV=test node delete_db.js",
+    "create_db": "node create_db.js",
+    "delete_db": "node delete_db.js",
+    "jenkins": "cross-env NODE_ENV=test yarn delete_db; cross-env NODE_ENV=test yarn create_db && cross-env NODE_ENV=test yarn test",
     "lint": "esw -c .eslintrc *.js ./**/*.js --color",
     "lint:fix": "yarn lint --fix",
     "seed": "node seed.js",
     "serve": "node --harmony index.js",
     "start": "node --harmony index.js",
-    "test": "cross-env NODE_ENV=test yarn create_db && mocha test/*.js test/import-export/*.js --bail --timeout 5000 && yarn delete_db",
-    "test:coverage": "NODE_ENV=test istanbul cover --report cobertura ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000",
-    "test:coverage:html": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 5000"
+    "test": "cross-env NODE_ENV=test mocha --opts .mocharc",
+    "test:check-coverage": "yarn test:coverage && nyc check-coverage",
+    "test:coverage": "cross-env NODE_ENV=test nyc mocha --opts .mocharc",
+    "test:watch": "yarn test --watch"
   },
   "repository": {
     "type": "git",
@@ -68,7 +75,7 @@
     "grunt-mocha-test": "^0.12.7",
     "grunt-shell": "^1.3.1",
     "husky": "1.2.1",
-    "istanbul": "1.1.0-alpha.1",
+    "nyc": "^13.0.0",
     "mkdirp": "^0.5.1",
     "mocha": "^3.5.3",
     "rewire": "^2.5.2",
@@ -78,8 +85,5 @@
     "supertest-session": "^3.0.0",
     "unzipper": "^0.8.9",
     "winston-spy": "^0.2.0"
-  },
-  "engines": {
-    "node": ">=8.9.0"
   }
 }
