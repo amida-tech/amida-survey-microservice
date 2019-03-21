@@ -2,12 +2,18 @@
 
 const dotenv = require('dotenv');
 
-dotenv.config();
+
+if (process.env.NODE_ENV === 'test') {
+    console.log('using env.test'); // eslint-disable-line no-console
+    dotenv.config({ path: '.env.test' });
+} else {
+    dotenv.config();
+}
+
 
 const _ = require('lodash');
 
 const developmentEnv = require('./development');
-const testEnv = require('./test');
 const productionEnv = require('./production');
 
 const all = {
@@ -89,7 +95,6 @@ const main = {
 const configBase = _.merge(all, main);
 const envBase = {
     development: developmentEnv,
-    test: testEnv,
     production: productionEnv,
 };
 const config = _.merge(configBase, envBase[configBase.env]);

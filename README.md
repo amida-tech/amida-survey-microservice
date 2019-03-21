@@ -55,22 +55,9 @@ Use `export NODE_ENV=development` (or `production` or `test`) to set node enviro
 
 Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
-A minimal sample `.env` file is below.  Change according to your database. `.env.example` in the root directory can be used (`cp .env.example .env`)
-```
-SURVEY_SERVICE_PG_DB=surveyService
-SURVEY_SERVICE_PG_USER=postgres
-SURVEY_SERVICE_PG_PASSWORD=postgres
-SURVEY_SERVICE_PG_HOST=localhost
-SURVEY_SERVICE_PG_PORT=5432
-SURVEY_SERVICE_DB_DIALECT=postgres
-SURVEY_SERVICE_PG_POOL_MAX=5
-SURVEY_SERVICE_PG_POOL_MIN=0
-SURVEY_SERVICE_PG_POOL_IDLE=10000
-SURVEY_SERVICE_LOGGING_LEVEL=emerg
-SURVEY_SERVICE_CORS_ORIGIN=http://localhost:4000\
-```
+`.env.example` is a a minimal example. To use, `cp .env.example .env`.
 
-A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
+A list of full environment variable settings is below. They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
 
 - JWT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
 - AUTH_MICROSERVICE_URL: Base client url for password reset (no default).
@@ -120,7 +107,6 @@ Multitenancy is supported through postgres schemas.  Multiple schemas are specif
 
 ## Tests
 ```sh
-# Make sure .env.test exists
 # deletes db, creates db, runs migrations and then tests
 yarn jenkins
 
