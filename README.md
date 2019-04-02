@@ -1,4 +1,5 @@
 # Amida Survey Microservice
+[![Known Vulnerabilities](https://snyk.io/test/github/amida-tech/amida-survey-microservice/badge.svg)](https://snyk.io/test/github/amida-tech/amida-survey-microservice)
 [![dependencies Status](https://david-dm.org/amida-tech/amida-survey-microservice/status.svg)](https://david-dm.org/amida-tech/amida-survey-microservice)
 [![devDependencies Status](https://david-dm.org/amida-tech/amida-survey-microservice/dev-status.svg)](https://david-dm.org/amida-tech/amida-survey-microservice?type=dev)
 [![Jenkins CI](https://jenkins.amida.com/buildStatus/icon?job=Survey%20Microservice%20Unit%20Test/)](https://jenkins.amida.com/job/Survey%20Microservice%20Unit%20Test/)
