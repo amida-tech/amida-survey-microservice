@@ -3,6 +3,8 @@
 const _ = require('lodash');
 
 const Base = require('./base');
+const CSVConverterExport = require('../../export/csv-converter');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class AssessmentDAO extends Base {
     createAssessmentSurveys(assessmentId, surveys, transaction) {
@@ -62,4 +64,30 @@ module.exports = class AssessmentDAO extends Base {
         return Assessment.findAll(findOptions)
             .then(assessments => assessments.map(assessment => _.omitBy(assessment, _.isNil)));
     }
+
+    exportAssessmentscsv(options = {}) {
+        const csvConverter = new CSVConverterExport();
+        return this.listAssessments(options)
+            .then((assessments) => {
+                if (assessments.length) {
+                    return csvConverter.dataToCSV(assessments);
+                }
+                return '';
+            });
+    }
+
+    importAssessments(stream) {
+        const converter = new ImportCSVConverter({ checkType: false });
+        const assessmentIdMap = {};
+        return converter.streamToRecords(stream)
+            .then((records) => {
+                records.forEach((r) => {
+                    assessmentIdMap[r.id] = Number(r.id);
+                });
+                return records;
+            })
+            .then(records => this.db.Assessment.bulkCreate(records))
+            .then(() => assessmentIdMap);
+    }
+
 };

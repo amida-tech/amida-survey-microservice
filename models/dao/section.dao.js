@@ -63,7 +63,7 @@ module.exports = class SectionDAO extends Translatable {
             .then(sections => this.updateAllTexts(sections, options.language));
     }
 
-    exportSections() {
+    exportSectionscsv() {
         return this.listSections({ scope: 'export' })
             .then((sections) => {
                 const converter = new ExportCSVConverter();

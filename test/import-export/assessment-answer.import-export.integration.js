@@ -8,6 +8,9 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
 
 const config = require('../../config');
 const SharedIntegration = require('../util/shared-integration');
@@ -48,8 +51,18 @@ describe('export assessment answers integration', function answerAssessmentImpor
     const sectionCount = 3;
     const nameCount = assessmentAnswerCommon.findMax(answerSession, 'name');
     const stageCount = assessmentAnswerCommon.findMax(answerSession, 'stage');
+    const generatedDirectory = path.join(__dirname, '../generated');
+    const userIdMap = {};
+    _.range(0, 13).forEach((x) => {
+        userIdMap[String(x)] = x;
+    });
+
 
     before(shared.setUpFn());
+
+    it('create output directory if necessary', (done) => {
+        mkdirp(generatedDirectory, done);
+    });
 
     it('sanity checks', function sanityChecks() {
         expect(userCount).to.be.above(0);
@@ -117,9 +130,9 @@ describe('export assessment answers integration', function answerAssessmentImpor
         return function verify() {
             let call;
             if (format === 'JSON') {
-                call = surveySuperTest.get('/assessment-answers/export', true, 200, options);
+                call = surveySuperTest.get('/assessment-answers/answers/export', true, 200, options);
             } else if (format === 'CSV') {
-                call = surveySuperTest.get('/assessment-answers/csv', true, 200, options);
+                call = surveySuperTest.get('/assessment-answers/answers/csv', true, 200, options);
             }
             return call.then((res) => {
                 const controllerOptions = Object.assign({}, { questionId: options['question-id'],
@@ -127,7 +140,7 @@ describe('export assessment answers integration', function answerAssessmentImpor
                     surveyId: options['survey-id'],
                     includeComments: options['include-comments'] });
                 let answers;
-                let expected = exportBuilder.getExpectedExportedAsessmentAnswers(controllerOptions);
+                let expected = exportBuilder.getExpectedExportedAsessmentAnswerAnswers(controllerOptions);
                 if (format === 'JSON') {
                     answers = res.body;
                     expected.forEach((e, indx) => {
@@ -236,7 +249,7 @@ describe('export assessment answers integration', function answerAssessmentImpor
             'include-comments': options.includeComments,
             'section-id': options.sectionId };
         return function verify() {
-            return surveySuperTest.get('/assessment-answers/export', true, 400, controllerOptions)
+            return surveySuperTest.get('/assessment-answers/answers/export', true, 400, controllerOptions)
             .then(res => shared.verifyErrorMessage(res, error));
         };
     };
@@ -249,5 +262,153 @@ describe('export assessment answers integration', function answerAssessmentImpor
 
     it('verifyErrorMsgSurveyNotFound', verifyErrorMsg({ sectionId: 1, surveyId: 5 }, 'surveyNotFound'));
 
+    it('export questions to csv', (done) => {
+        surveySuperTest.get('/questions/csv', true, 200)
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'question.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export sections to csv', (done) => {
+        surveySuperTest.get('/sections/csv', true, 200)
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'section.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export surveys to csv', (done) => {
+        surveySuperTest.get('/surveys/csv', true, 200)
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'survey.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export assessments to csv', (done) => {
+        surveySuperTest.get('/assessments/csv', true, 200)
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'assessment.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export assessment answers to csv', (done) => {
+        surveySuperTest.get('/assessment-answers/csv', true, 200)
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'assessmentAnswer.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export assessment answer answers survey 1 to csv', (done) => {
+        surveySuperTest.get('/assessment-answers/answers/csv', true, 200, { 'survey-id': 1 })
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'assessmentAnswerAnswersSurvey1.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('export assessment answer answers survey 2 to csv', (done) => {
+        surveySuperTest.get('/assessment-answers/answers/csv', true, 200, { 'survey-id': 2 })
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'assessmentAnswerAnswersSurvey2.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
     it('logout as super', shared.logoutFn());
+
+    it('reset database', shared.setUpFn());
+
+    it('reset user history', function resetUserHistory() {
+        hxUser.reset();
+    });
+
+    let questionIdMap;
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    it('import question csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'question.csv');
+        surveySuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
+            .expect((res) => {
+                questionIdMap = res.body;
+            })
+            .end(done);
+    });
+
+    let sectionIdMap;
+
+    it('import section csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'section.csv');
+        surveySuperTest.postFile('/sections/csv', 'sectioncsv', filepath, null, 201)
+            .expect((res) => {
+                sectionIdMap = res.body;
+            })
+            .end(done);
+    });
+    let surveyIdMap;
+
+    it('import survey csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'survey.csv');
+        const questionidmap = JSON.stringify(questionIdMap);
+        const sectionidmap = JSON.stringify(sectionIdMap);
+        surveySuperTest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap, sectionidmap }, 201)
+            .expect((res) => {
+                surveyIdMap = res.body;
+            })
+            .end(done);
+    });
+
+    let assessmentIdMap;
+
+    it('import assessment csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'assessment.csv');
+        surveySuperTest.postFile('/assessments/csv', 'assessmentscsv', filepath, { }, 201)
+            .expect((res) => {
+                assessmentIdMap = res.body;
+            })
+            .end(done);
+    });
+
+    it('import assessment-answers csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'assessmentAnswer.csv');
+        const assessmentidmap = JSON.stringify(assessmentIdMap);
+        surveySuperTest.postFile('/assessment-answers/csv', 'assessmentAnswercsv', filepath, { assessmentidmap }, 204)
+            .expect(() => {})
+            .end(done);
+    });
+
+    it('import assessment-answer-answers survey 1 csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'assessmentAnswerAnswersSurvey1.csv');
+        const assessmentidmap = JSON.stringify(assessmentIdMap);
+        const useridmap = JSON.stringify(userIdMap);
+        const questionidmap = JSON.stringify(questionIdMap);
+        const surveyidmap = JSON.stringify(surveyIdMap);
+        surveySuperTest.postFile('/assessment-answers/answers/csv', 'assessmentAnswerAnswerscsv', filepath, { assessmentidmap, useridmap, surveyidmap, questionidmap }, 204)
+            .expect(() => {})
+            .end(done);
+    });
+
+    it('import assessment-answer-answers survey 2 csv into db', (done) => {
+        const filepath = path.join(generatedDirectory, 'assessmentAnswerAnswersSurvey2.csv');
+        const assessmentidmap = JSON.stringify(assessmentIdMap);
+        const useridmap = JSON.stringify(userIdMap);
+        const questionidmap = JSON.stringify(questionIdMap);
+        const surveyidmap = JSON.stringify(surveyIdMap);
+        surveySuperTest.postFile('/assessment-answers/answers/csv', 'assessmentAnswerAnswerscsv', filepath, { assessmentidmap, useridmap, surveyidmap, questionidmap }, 204)
+            .expect((res) => {
+                assessmentIdMap = res.body;
+            })
+            .end(done);
+    });
 });

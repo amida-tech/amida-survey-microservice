@@ -6,8 +6,10 @@ const Base = require('./base');
 const SurveyError = require('../../lib/survey-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+const intoStream = require('into-stream');
 
 const CSVConverterExport = require('../../export/csv-converter');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const copySql = queryrize.readQuerySync('copy-answers.sql');
 
@@ -54,31 +56,7 @@ const mergeAnswerComments = function (answers, comments, scope) {
 
 const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportObjects(answers, includeComments) { // eslint-disable-line max-len
     return answers.map((e) => {
-        if (includeComments) {
-            return Object.assign({}, {
-                surveyId: e.surveyId,
-                questionId: e.questionId,
-                questionType: e.questionType,
-                assessmentId: e.assessmentId,
-                userId: e.userId,
-                meta: e.meta,
-                value: e.value,
-                group: e.group,
-                stage: e.stage,
-                surveyName: e.surveyName,
-                weight: e.weight,
-                date: e.date,
-                questionText: e.questionText,
-                questionInstruction: e.questionInstruction,
-                questionIndex: e.questionIndex,
-                choiceText: e.choiceText,
-                choiceType: e.choiceType || '',
-                code: e.code,
-                comment: e.comment || {},
-                commentHistory: e.commentHistory || [],
-            });
-        }
-        return Object.assign({}, {
+        const obj = Object.assign({}, {
             surveyId: e.surveyId,
             questionId: e.questionId,
             questionType: e.questionType,
@@ -94,10 +72,16 @@ const orderAssessmentAnswerExportObjects = function orderAssessmentAnswerExportO
             questionText: e.questionText,
             questionInstruction: e.questionInstruction,
             questionIndex: e.questionIndex,
+            questionChoiceId: e.questionChoiceId,
             choiceText: e.choiceText,
             choiceType: e.choiceType || '',
             code: e.code,
         });
+        if (includeComments) {
+            obj.comment = e.comment || {};
+            obj.commentHistory = e.commentHistory || [];
+        }
+        return obj;
     });
 };
 
@@ -331,13 +315,14 @@ module.exports = class AnswerAssessmentDAO extends Base {
         });
     }
 
-    exportAssessmentAnswers(options) {
+    exportAssessmentAnswerAnswers(options) {
         const surveyId = options.surveyId;
         const questionId = options.questionId;
         const includeComments = options.includeComments;
         const sectionId = options.sectionId;
         let questionsPromise;
         // TODO: const userIds = options.userIds
+        // TODO: const groups = options.groups
 
         if (sectionId && questionId) {
             return SurveyError.reject('surveyBothQuestionsSectionsSpecified');
@@ -468,6 +453,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                             questionText: qTextsMap.get(a.questionId).text || '',
                             questionInstruction: qTextsMap.get(a.questionId).instruction || '',
                             questionIndex: questionLinesMap.get(a.questionId),
+                            questionChoiceId: a.questionChoiceId || '',
                             choiceText: '',
                             choiceType: a.choiceType || '',
                             code: '',
@@ -503,7 +489,6 @@ module.exports = class AnswerAssessmentDAO extends Base {
                                         choiceText: choiceTextMap.get(a.questionChoiceId) || '',
                                         code: a.code || '',
                                     });
-                                    delete newAnswer.questionChoiceId;
                                     return newAnswer;
                                 });
 
@@ -565,14 +550,61 @@ module.exports = class AnswerAssessmentDAO extends Base {
         })));
     }
 
-    exportAssessmentAnswersCSV(options) {
+    exportAssessmentAnswerAnswersCSV(options = {}) {
         const csvConverter = new CSVConverterExport();
-        return this.exportAssessmentAnswers(options)
+        return this.exportAssessmentAnswerAnswers(options)
                 .then((answers) => {
                     if (answers.length) {
-                        return csvConverter.dataToCSV(answers);
+                        const csv = csvConverter.dataToCSV(answers);
+                        return csv;
                     }
                     return '';
                 });
+    }
+
+    importAssessmentAnswerAnswers(csvFile, maps) {
+        const { assessmentIdMap, surveyIdMap } = maps;
+        const converter = new ImportCSVConverter({ checkType: false });
+        const stream1 = intoStream(csvFile);
+        const stream2 = intoStream(csvFile);
+        return converter.streamToRecords(stream1)
+            .then((records) => {
+                const assessmentSurveys = records.reduce((acc, curr) => {
+                    if (!_.some(acc, x => x.assessmentId === assessmentIdMap[curr.assessmentId])) {
+                        acc.push(Object.assign({}, {
+                            assessmentId: assessmentIdMap[curr.assessmentId],
+                            surveyId: surveyIdMap[curr.surveyId] }));
+                        return acc;
+                    }
+                    return acc;
+                }, []);
+                return this.db.AssessmentSurvey.bulkCreate(assessmentSurveys)
+                    .then(() => this.answer.importAnswers(stream2, maps));
+            });
+    }
+
+
+    exportAssessmentAnswersCSV(options = {}) {
+        const csvConverter = new CSVConverterExport();
+        return this.getAssessmentAnswersList(options)
+                .then((assessments) => {
+                    if (assessments.length) {
+                        const csv = csvConverter.dataToCSV(assessments);
+                        return csv;
+                    }
+                    return '';
+                });
+    }
+
+    importAssessmentAnswers(stream, maps) {
+        const { assessmentIdMap } = maps;
+        const converter = new ImportCSVConverter({ checkType: false });
+        return converter.streamToRecords(stream)
+            .then(records => records.map((record) => {
+                const r = record;
+                r.assessmentId = assessmentIdMap[record.id];
+                return r;
+            }))
+            .then(records => this.db.AssessmentAnswer.bulkCreate(records));
     }
 };

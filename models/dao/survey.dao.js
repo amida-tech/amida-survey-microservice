@@ -441,7 +441,7 @@ module.exports = class SurveyDAO extends Translatable {
 
 
                         if (removedQuestionIds.length || (!noQuestionIds && (survey.questionIds.length !== questions.length))) { // eslint-disable-line max-len
-                            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft' && survey.status !== 'draft') ) {
+                            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft' && survey.status !== 'draft')) {
                                 return SurveyError.reject('surveyChangeQuestionWhenPublished');
                             }
                         }

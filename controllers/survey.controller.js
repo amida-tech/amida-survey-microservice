@@ -80,10 +80,12 @@ exports.exportSurveys = function exportSurveys(req, res) {
 
 exports.importSurveys = function importSurveys(req, res) {
     const csvFile = _.get(req, 'swagger.params.surveycsv.value');
-    const idMapAsString = _.get(req, 'swagger.params.questionidmap.value');
-    const idMap = JSON.parse(idMapAsString);
+    const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
+    const sectionIdMapAsString = _.get(req, 'swagger.params.sectionidmap.value');
+    const questionIdMap = JSON.parse(questionIdMapAsString);
+    const sectionIdMap = sectionIdMapAsString ? JSON.parse(sectionIdMapAsString) : {};
     const stream = intoStream(csvFile.buffer);
-    req.models.survey.importSurveys(stream, { questionIdMap: idMap })
+    req.models.survey.importSurveys(stream, { questionIdMap, sectionIdMap })
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

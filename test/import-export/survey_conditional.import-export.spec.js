@@ -66,7 +66,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
     });
 
     it('export sections to csv', function exportSectionsToCSV() {
-        return models.section.exportSections()
+        return models.section.exportSectionscsv()
             .then((result) => { sectionCsvContent = result; });
     });
 
