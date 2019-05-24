@@ -71,7 +71,8 @@ const main = {
         poolMin: process.env.SURVEY_SERVICE_PG_POOL_MIN,
         poolIdle: process.env.SURVEY_SERVICE_PG_POOL_IDLE,
         schema: process.env.SURVEY_SERVICE_PG_SCHEMA,
-        ssl: process.env.SURVEY_SERVICE_PG_SSL,
+        ssl: (process.env.SURVEY_SERVICE_PG_SSL == 'true'), // eslint-disable-line eqeqeq
+        sslCaCert: process.env.SURVEY_SERVICE_PG_CA_CERT,
     },
     superUser: {
         username: process.env.SURVEY_SERVICE_SUPER_USER_USERNAME,

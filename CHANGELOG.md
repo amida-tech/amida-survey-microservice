@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+
+### Changed
+- PG connection will now fail (and this service will abort) if `SURVEY_SERVICE_PG_SSL=true` but `SURVEY_SERVICE_PG_CA_CERT` is not set to a valid value.
+
 ### Added
 - `npm` --> `yarn`
 - `yarn test` command changed to _only_ run tests

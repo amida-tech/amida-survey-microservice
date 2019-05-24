@@ -76,7 +76,21 @@ A list of full environment variable settings is below. They can be either manual
 - SURVEY_SERVICE_PG_POOL_MAX: Maximum number of connections in pool.
 - SURVEY_SERVICE_PG_POOL_MIN: Minimum number of connections in pool.
 - SURVEY_SERVICE_PG_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
-- SURVEY_SERVICE_PG_SSL: Use secure connections with SSL.
+- SURVEY_SERVICE_PG_SSL: Use secure connections with SSL. If `true`, then `SURVEY_SERVICE_PG_CA_CERT` (probably) must be set to a valid value (see nuance about override in description of this variable below).
+- SURVEY_SERVICE_PG_CA_CERT:
+
+If SSL is enabled with `SURVEY_SERVICE_PG_SSL` this can be set to a certificate to override the CAs that are trusted while initiating the SSL connection to postgres. Without this set, Mozilla's list of trusted CAs is used.
+ Note that this variable should contain the certificate itself, not a filename.
+ Example usage with AWS RDS
+ ```
+# Download CA cert bundle for AWS RDS
+wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+```
+ ```
+# Start the server with the AWS RDS cert bundle
+SURVEY_SERVICE_PG_CA_CERT=$(cat rds-combined-ca-bundle.pem) yarn start
+```
+
 - SURVEY_SERVICE_SUPER_USER_USERNAME: Super user username (super).
 - SURVEY_SERVICE_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
 - SURVEY_SERVICE_SUPER_USER_EMAIL: Super user email (survey_demo@amida.com).
