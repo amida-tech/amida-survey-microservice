@@ -14,7 +14,6 @@ module.exports = function sequelizeGenerator(prependSearchPath, inputDbName) {
         dialect: config.db.dialect,
         native: false,
         dialectOptions: {
-            ssl: (config.db.ssl === 'true'),
             prependSearchPath,
         },
         port: config.db.port,
@@ -25,6 +24,16 @@ module.exports = function sequelizeGenerator(prependSearchPath, inputDbName) {
         },
         logging: message => logger.info(message),
     };
+
+    if (config.db.ssl) {
+        sequelizeOptions.ssl = config.db.ssl
+        sequelizeOptions.dialectOptions.ssl = {
+            rejectUnauthorized: true,
+        };
+        if (config.db.sslCaCert) {
+          sequelizeOptions.dialectOptions.ssl.ca = config.db.sslCaCert
+        }
+    }
 
     const { name, user, pass } = config.db;
     const dbName = inputDbName || name;
