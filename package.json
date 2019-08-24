@@ -42,7 +42,7 @@
     "csvtojson": "^1.1.2",
     "dotenv": "^4.0.0",
     "express": "^4.14.0",
-    "express-actuator": "^1.1.0",
+    "express-actuator": "^1.1.1",
     "express-winston": "^2.0.0",
     "i18n": "^0.8.3",
     "into-stream": "^3.1.0",
