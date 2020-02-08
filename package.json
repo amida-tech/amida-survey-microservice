@@ -20,7 +20,9 @@
     "test": "cross-env NODE_ENV=test mocha --opts .mocharc",
     "test:check-coverage": "yarn test:coverage && nyc check-coverage",
     "test:coverage": "cross-env NODE_ENV=test nyc mocha --opts .mocharc",
-    "test:watch": "yarn test --watch"
+    "test:watch": "yarn test --watch",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -47,7 +49,7 @@
     "i18n": "^0.8.3",
     "into-stream": "^3.1.0",
     "json2csv": "^3.7.2",
-    "jsonwebtoken": "^7.1.9",
+    "jsonwebtoken": "^8.0.0",
     "lodash": "^4.17.4",
     "moment": "^2.17.0",
     "nodemailer": "^2.6.0",
@@ -55,11 +57,12 @@
     "passport-http": "^0.3.0",
     "pg": "^6.2.4",
     "request": "^2.79.0",
-    "sequelize": "4.0.0-2",
+    "sequelize": "4.17.2",
     "swagger-tools": "^0.10.3",
     "winston": "^2.2.0",
-    "xlsx": "^0.8.0",
-    "yarn": "^1.5.1"
+    "xlsx": "^0.12.2",
+    "yarn": "^1.21.1",
+    "snyk": "^1.290.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
@@ -85,5 +88,6 @@
     "supertest-session": "^3.0.0",
     "unzipper": "^0.8.9",
     "winston-spy": "^0.2.0"
-  }
+  },
+  "snyk": true
 }
